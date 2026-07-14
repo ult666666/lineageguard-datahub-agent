@@ -1,0 +1,46 @@
+{
+  "datasets": [
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)",
+      "name": "prod.analytics.orders",
+      "platform": "Snowflake",
+      "owner": "Commerce Data",
+      "weeklyQueries": 64,
+      "tags": ["Tier1", "Financial"],
+      "qualitySignals": ["orders_primary_key", "orders_total_nonnegative"],
+      "schema": [
+        { "field": "order_id", "type": "NUMBER", "nullable": false },
+        { "field": "customer_id", "type": "NUMBER", "nullable": false },
+        { "field": "order_total", "type": "DECIMAL(12,2)", "nullable": true },
+        { "field": "currency", "type": "VARCHAR", "nullable": true },
+        { "field": "order_status", "type": "VARCHAR", "nullable": true }
+      ],
+      "downstream": [
+        {
+          "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.finance.fct_revenue,PROD)",
+          "name": "prod.finance.fct_revenue",
+          "type": "dataset",
+          "owner": "Finance Analytics"
+        },
+        {
+          "urn": "urn:li:dashboard:(looker,revenue-executive)",
+          "name": "Executive Revenue Dashboard",
+          "type": "dashboard",
+          "owner": "Finance Analytics"
+        },
+        {
+          "urn": "urn:li:mlModel:(churn-value-v3,PROD)",
+          "name": "Customer Lifetime Value Model",
+          "type": "mlModel",
+          "owner": "ML Platform"
+        },
+        {
+          "urn": "urn:li:dataJob:(airflow,revenue-close)",
+          "name": "Monthly Revenue Close",
+          "type": "pipeline",
+          "owner": null
+        }
+      ]
+    }
+  ]
+}

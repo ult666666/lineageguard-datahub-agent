@@ -1,0 +1,24 @@
+{
+  "datasetUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)",
+  "changeRequest": {
+    "summary": "Replace order_total with a text-based gross_amount field and remove currency.",
+    "changes": [
+      {
+        "kind": "rename",
+        "field": "order_total",
+        "to": "gross_amount",
+        "type": "DECIMAL(12,2)"
+      },
+      {
+        "kind": "type_change",
+        "field": "order_total",
+        "from": "DECIMAL(12,2)",
+        "to": "VARCHAR"
+      },
+      {
+        "kind": "drop",
+        "field": "currency"
+      }
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "id": "lg-1783897282358",
+  "createdAt": "2026-07-12T23:01:22.358Z",
+  "mode": "mock-datahub-snapshot",
+  "request": {
+    "datasetUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)",
+    "summary": "Replace order_total with a text-based gross_amount field and remove currency.",
+    "changes": [
+      {
+        "kind": "rename",
+        "field": "order_total",
+        "to": "gross_amount",
+        "type": "DECIMAL(12,2)"
+      },
+      {
+        "kind": "type_change",
+        "field": "order_total",
+        "from": "DECIMAL(12,2)",
+        "to": "VARCHAR"
+      },
+      {
+        "kind": "drop",
+        "field": "currency"
+      }
+    ]
+  },
+  "trace": [
+    {
+      "step": "plan",
+      "status": "complete",
+      "detail": "Identify target dataset and proposed schema changes."
+    },
+    {
+      "step": "retrieve",
+      "status": "complete",
+      "detail": "Read schemas, ownership, usage, and downstream lineage from DataHub MCP."
+    },
+    {
+      "step": "analyze",
+      "status": "complete",
+      "detail": "Evaluate blast radius across 4 downstream assets."
+    },
+    {
+      "step": "generate",
+      "status": "complete",
+      "detail": "Generate staged migration SQL, validation tests, owner notifications, and PR notes."
+    },
+    {
+      "step": "write-back",
+      "status": "proposed",
+      "detail": "Prepare a DataHub context/proposal update; mutation remains approval-gated."
+    }
+  ],
+  "dataset": {
+    "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)",
+    "name": "prod.analytics.orders",
+    "owner": "Commerce Data",
+    "platform": "Snowflake"
+  },
+  "score": 100,
+  "severity": "critical",
+  "decision": "block",
+  "reasons": [
+    "Renames order_total to gross_amount (+20)",
+    "Breaking type change on order_total: DECIMAL(12,2) → VARCHAR (+40)",
+    "Drops currency (+30)",
+    "4 downstream assets across DataHub lineage (+30)",
+    "1 downstream assets have no assigned owner (+5)",
+    "64 recent weekly queries indicate active usage (+15)",
+    "Sensitive-data tag increases rollout and validation risk (+12)"
+  ],
+  "impactedAssets": [
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.finance.fct_revenue,PROD)",
+      "name": "prod.finance.fct_revenue",
+      "type": "dataset",
+      "owner": "Finance Analytics"
+    },
+    {
+      "urn": "urn:li:dashboard:(looker,revenue-executive)",
+      "name": "Executive Revenue Dashboard",
+      "type": "dashboard",
+      "owner": "Finance Analytics"
+    },
+    {
+      "urn": "urn:li:mlModel:(churn-value-v3,PROD)",
+      "name": "Customer Lifetime Value Model",
+      "type": "mlModel",
+      "owner": "ML Platform"
+    },
+    {
+      "urn": "urn:li:dataJob:(airflow,revenue-close)",
+      "name": "Monthly Revenue Close",
+      "type": "pipeline",
+      "owner": null
+    }
+  ],
+  "ownerNotifications": [
+    "Finance Analytics",
+    "ML Platform"
+  ],
+  "tests": [
+    "Compare row count before and after migration.",
+    "Compare primary-key uniqueness and null rates.",
+    "Re-run known downstream queries and dashboards.",
+    "Assert order_total and gross_amount match during the compatibility window.",
+    "Count failed casts from order_total (DECIMAL(12,2)) to VARCHAR.",
+    "Confirm zero recent queries reference currency before removal.",
+    "Re-run DataHub quality assertions tied to the dataset."
+  ],
+  "migrationSql": "-- LineageGuard staged migration for prod.analytics.orders\n-- Review in a non-production environment before execution.\nBEGIN;\n-- Additive rename: keep order_total until every downstream consumer migrates.\nALTER TABLE prod.analytics.orders ADD COLUMN gross_amount DECIMAL(12,2);\nUPDATE prod.analytics.orders SET gross_amount = order_total WHERE gross_amount IS NULL;\n-- Shadow-column conversion prevents an irreversible in-place cast.\nALTER TABLE prod.analytics.orders ADD COLUMN order_total__next VARCHAR;\nUPDATE prod.analytics.orders SET order_total__next = TRY_CAST(order_total AS VARCHAR);\n-- Block promotion when this query returns rows:\nSELECT * FROM prod.analytics.orders WHERE order_total IS NOT NULL AND order_total__next IS NULL;\n-- Deferred destructive change: do not run until owners approve and usage is zero.\n-- ALTER TABLE prod.analytics.orders DROP COLUMN currency;\nCOMMIT;",
+  "prMarkdown": "# LineageGuard change review\n\n## Decision\n\n**CRITICAL RISK — 100/100**\n\n## Proposed changes\n\n- Renames order_total to gross_amount\n- Breaking type change on order_total: DECIMAL(12,2) → VARCHAR\n- Drops currency\n\n## DataHub blast radius\n\n- **prod.finance.fct_revenue** (dataset) — owner: Finance Analytics\n- **Executive Revenue Dashboard** (dashboard) — owner: Finance Analytics\n- **Customer Lifetime Value Model** (mlModel) — owner: ML Platform\n- **Monthly Revenue Close** (pipeline) — owner: unassigned\n\n## Risk signals\n\n- Renames order_total to gross_amount (+20)\n- Breaking type change on order_total: DECIMAL(12,2) → VARCHAR (+40)\n- Drops currency (+30)\n- 4 downstream assets across DataHub lineage (+30)\n- 1 downstream assets have no assigned owner (+5)\n- 64 recent weekly queries indicate active usage (+15)\n- Sensitive-data tag increases rollout and validation risk (+12)\n\n## Required validation\n\n- [ ] Compare row count before and after migration.\n- [ ] Compare primary-key uniqueness and null rates.\n- [ ] Re-run known downstream queries and dashboards.\n- [ ] Assert order_total and gross_amount match during the compatibility window.\n- [ ] Count failed casts from order_total (DECIMAL(12,2)) to VARCHAR.\n- [ ] Confirm zero recent queries reference currency before removal.\n- [ ] Re-run DataHub quality assertions tied to the dataset.\n\n## Rollout recommendation\n\nUse an additive compatibility window, notify every listed owner, validate downstream behavior, and remove legacy fields only after usage reaches zero.\n\n_Dataset: urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)_\n",
+  "writeBackPlan": {
+    "status": "proposed",
+    "targetUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)",
+    "summary": "LineageGuard critical risk review (100/100)",
+    "actions": [
+      "Attach review summary to the dataset as a DataHub context document or proposal.",
+      "Notify downstream owners before merge.",
+      "Record the compatibility-window end date after approvals."
+    ]
+  }
+}

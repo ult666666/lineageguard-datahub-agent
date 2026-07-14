@@ -1,0 +1,15 @@
+{
+  "name": "lineageguard-datahub-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A DataHub-context agent that reviews schema changes before they break downstream systems.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test",
+    "demo": "node src/demo.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

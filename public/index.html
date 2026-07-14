@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LineageGuard — DataHub Change Agent</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">LG</span><span>LineageGuard</span></div>
+      <div class="mode" id="mode">Connecting…</div>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">DATAHUB-CONTEXT CHANGE AGENT</p>
+          <h1>Stop schema changes before they break production.</h1>
+          <p class="lede">LineageGuard reads ownership, usage, quality, and downstream lineage through DataHub MCP, scores the blast radius, and generates a staged migration plan your team can review before merge.</p>
+        </div>
+        <div class="hero-card">
+          <span>Agent loop</span>
+          <ol><li>Plan</li><li>Read DataHub context</li><li>Analyze impact</li><li>Generate safe artifacts</li><li>Propose write-back</li></ol>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <form id="review-form" class="panel input-panel">
+          <div class="panel-heading"><div><p class="kicker">CHANGE REQUEST</p><h2>Review a proposed migration</h2></div><button type="button" class="secondary" id="load-demo">Load risky demo</button></div>
+          <label>Dataset URN<input id="dataset-urn" name="datasetUrn" required /></label>
+          <label>Change request JSON<textarea id="change-request" name="changeRequest" rows="15" spellcheck="false" required></textarea></label>
+          <button class="primary" type="submit" id="analyze">Analyze with LineageGuard</button>
+          <p class="hint">Live mode uses DataHub MCP. Without credentials, the app runs on an included DataHub-shaped snapshot.</p>
+        </form>
+
+        <section class="panel results-panel" aria-live="polite">
+          <div id="empty-state" class="empty"><div class="radar"></div><h2>Ready for a change request</h2><p>Load the demo to see lineage-aware risk scoring, migration SQL, and PR documentation.</p></div>
+          <div id="results" hidden>
+            <div class="result-head"><div><p class="kicker">REVIEW DECISION</p><h2 id="decision">—</h2></div><div class="score" id="score">0</div></div>
+            <div class="metric-grid"><article><span>Severity</span><strong id="severity">—</strong></article><article><span>Downstream assets</span><strong id="asset-count">0</strong></article><article><span>Owners to notify</span><strong id="owner-count">0</strong></article></div>
+            <h3>Why this is risky</h3><ul id="reasons" class="risk-list"></ul>
+            <h3>DataHub blast radius</h3><div id="assets" class="assets"></div>
+            <details open><summary>Staged migration SQL</summary><pre id="sql"></pre></details>
+            <details><summary>Generated PR review</summary><pre id="pr"></pre></details>
+            <details><summary>Agent execution trace</summary><div id="trace" class="trace"></div></details>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
