@@ -79,6 +79,7 @@ Completed public assets:
 
 - Repository: https://github.com/ult666666/lineageguard-datahub-agent
 - Hosted demo: https://lineageguard-datahub-agent.vercel.app
+- Submission screenshots: `assets/demo-landing.jpg`, `assets/demo-request.jpg`, `assets/demo-result-top.jpg`, `assets/demo-impact.jpg`, `assets/demo-artifacts.jpg`, and `assets/demo-trace.jpg`
 
 ## Honest limitations
 
@@ -127,6 +128,6 @@ Show the plan, retrieve, analyze, generate, and proposed write-back trace. Expla
 - [x] Add public hosted-demo URL: https://lineageguard-datahub-agent.vercel.app
 - [x] Add public repository URL: https://github.com/ult666666/lineageguard-datahub-agent
 - [ ] Add public YouTube or Vimeo demo URL under three minutes.
-- [ ] Add screenshots and sample outputs.
+- [x] Add screenshots and sample outputs.
 - [ ] Complete the optional actionable-feedback section for the $50 feedback prizes.
 - [ ] Submit before August 10, 2026 at 5:00 PM EDT.

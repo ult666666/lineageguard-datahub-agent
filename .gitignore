@@ -8,3 +8,7 @@ coverage/
 dist/
 
 .vercel
+
+# Locally generated demo media; upload the reviewed final video separately.
+assets/demo-narration.aiff
+assets/lineageguard-demo-draft.mp4

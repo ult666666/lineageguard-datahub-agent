@@ -1,0 +1,11 @@
+A schema change can look safe in code while breaking downstream dashboards, pipelines, and machine-learning models. LineageGuard prevents that by using DataHub as the context layer for an AI change-safety agent.
+
+The reviewer provides a DataHub dataset U R N and a structured proposal. This demo renames a revenue field, changes its type from decimal to text, and removes the currency column. LineageGuard retrieves schema, ownership, usage, quality, sensitive-data tags, and downstream lineage through the DataHub M C P interface.
+
+The agent scores the blast radius and blocks this change with a critical score of one hundred. It identifies four downstream assets: a finance dataset, an executive revenue dashboard, a customer-lifetime-value model, and a monthly-close pipeline. It also spots a missing owner and active production usage.
+
+LineageGuard does more than flag risk. It generates an additive migration plan that preserves compatibility, creates a shadow column for the type conversion, blocks promotion when casts fail, and delays destructive removal until owners approve and usage reaches zero.
+
+The generated P R review gives engineers the risk evidence, affected owners, validation checklist, and rollout recommendation in a form they can use before merge. The execution trace makes the agent workflow inspectable: plan, retrieve DataHub context, analyze impact, generate safe artifacts, and propose a write-back.
+
+Reads are automatic. Mutations remain approval-gated, and the demo never executes production S Q L. LineageGuard turns DataHub's context graph into a practical safety layer for schema changes: fewer production surprises, clearer ownership, and migration artifacts a data team can actually review.

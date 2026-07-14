@@ -1,0 +1,14 @@
+ffconcat version 1.0
+file 'demo-landing.jpg'
+duration 14
+file 'demo-request.jpg'
+duration 18
+file 'demo-result-top.jpg'
+duration 18
+file 'demo-impact.jpg'
+duration 18
+file 'demo-artifacts.jpg'
+duration 18
+file 'demo-trace.jpg'
+duration 20
+file 'demo-trace.jpg'

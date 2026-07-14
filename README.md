@@ -6,6 +6,8 @@ LineageGuard is a DataHub-context agent that reviews schema changes before they 
 
 **Source:** https://github.com/ult666666/lineageguard-datahub-agent
 
+![LineageGuard blocks a critical schema change after evaluating its DataHub blast radius](assets/demo-result-top.jpg)
+
 It reads ownership, usage, quality signals, and lineage through the DataHub MCP Server; scores the blast radius; and generates:
 
 - a block / approval / proceed decision;
@@ -115,4 +117,4 @@ The project is newly created during the July 6–August 10, 2026 submission wind
 
 ## Repository status
 
-The public Apache-2.0 MVP is deployed and its browser/API workflow is operational. Before the hackathon submission it still needs a live DataHub test tenant, a public screen-demo video under three minutes, and Devpost registration and submission.
+The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, and the submission screenshots are ready. Before the hackathon submission it still needs a live DataHub test tenant, a public screen-demo video under three minutes, and Devpost registration and submission.
