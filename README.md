@@ -2,7 +2,8 @@
 
 LineageGuard is a DataHub-context agent that reviews schema changes before they break downstream datasets, dashboards, pipelines, or ML models.
 
-**Live demo:** https://lineageguard-datahub-agent.vercel.app  
+**Live demo:** https://lineageguard-datahub-agent.vercel.app
+
 **Source:** https://github.com/ult666666/lineageguard-datahub-agent
 
 It reads ownership, usage, quality signals, and lineage through the DataHub MCP Server; scores the blast radius; and generates:
