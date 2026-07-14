@@ -72,10 +72,13 @@ The MVP uses the MCP tools `get_entities` and `get_lineage`. The adapter is desi
 - Test the MCP adapter against a live DataHub Cloud/Core instance.
 - Confirm exact live tool schemas and adjust argument mapping if needed.
 - Implement an optional approved write-back mutation to attach the review to DataHub.
-- Publish a public Apache-2.0 GitHub repository.
-- Host the app at a public free URL.
 - Record and upload the public screen demo under three minutes.
 - Join and submit through Devpost.
+
+Completed public assets:
+
+- Repository: https://github.com/ult666666/lineageguard-datahub-agent
+- Hosted demo: https://lineageguard-datahub-agent.vercel.app
 
 ## Honest limitations
 
@@ -119,10 +122,10 @@ Show the plan, retrieve, analyze, generate, and proposed write-back trace. Expla
 - [ ] Create or sign in to Devpost.
 - [ ] Review and accept the official hackathon rules personally.
 - [ ] Join the hackathon and complete any reCAPTCHA.
-- [ ] Create a public GitHub repository with this project.
-- [ ] Ensure the GitHub About section detects the Apache 2.0 license.
-- [ ] Add public hosted-demo URL.
-- [ ] Add public repository URL.
+- [x] Create a public GitHub repository with this project.
+- [x] Ensure GitHub detects the Apache 2.0 license.
+- [x] Add public hosted-demo URL: https://lineageguard-datahub-agent.vercel.app
+- [x] Add public repository URL: https://github.com/ult666666/lineageguard-datahub-agent
 - [ ] Add public YouTube or Vimeo demo URL under three minutes.
 - [ ] Add screenshots and sample outputs.
 - [ ] Complete the optional actionable-feedback section for the $50 feedback prizes.
