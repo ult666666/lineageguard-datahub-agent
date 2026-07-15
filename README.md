@@ -65,6 +65,16 @@ No API key, paid service, catalog mutation, or production data is required. Miss
 
 This Codex-native extension was added on July 14, 2026, after the OpenAI Build Week submission period opened, and is isolated from the original web MVP for clear review and testing.
 
+### OpenAI Build Week evidence
+
+- **Track:** Developer Tools.
+- **New work:** the portable skill, deterministic scorer, risk policy, MCP evidence guide, tests, and this installation/testing documentation.
+- **Codex model:** `gpt-5.6-sol`, verified from the persisted Codex thread metadata.
+- **Required `/feedback` Codex Session ID:** `019f5815-17d2-7bd2-81cc-68d346d79d63`.
+- **Dated source evidence:** commit `00a0d00` and [draft pull request #1](https://github.com/ult666666/lineageguard-datahub-agent/pull/1).
+
+GPT-5.6 was used through Codex to design, implement, review, and verify the extension. The shipped skill itself stays local and deterministic, so judges can test it without an API key, paid credits, or access to private production data.
+
 ## Run with Docker
 
 Requirements: Docker Engine or Docker Desktop.
@@ -127,7 +137,7 @@ LineageGuard agent ──► DataHub MCP ──► schema, owners, usage, qualit
    └── approval-gated DataHub write-back plan
 ```
 
-## Hackathon track
+## Original DataHub hackathon track
 
 Primary: **Agents That Do Real Work**. Secondary: **Metadata-Aware Code Generation & Development**.
 
@@ -143,7 +153,9 @@ The project is newly created during the July 6–August 10, 2026 submission wind
 
 ## Codex collaboration
 
-The project owner set the product goal, strict USD 0 budget, and approval-gated safety boundary. Codex implemented the working agent, browser experience, tests, deployment assets, and the reusable skill. The deterministic risk policy keeps the core deployment decision auditable; Codex explains evidence and generates mitigations without being allowed to execute a schema change.
+The project owner set the product goal, strict USD 0 budget, and approval-gated safety boundary. The owner also made the key product decisions: schema changes must never execute automatically, missing production evidence must increase risk rather than disappear, and judges must be able to test the extension without paid infrastructure.
+
+Working in the GPT-5.6 Codex thread above, Codex translated those constraints into the reusable skill, deterministic scoring policy, MCP evidence contract, tests, and public documentation. Codex accelerated implementation and edge-case review; the owner retained authority over product scope and every external publication step. The deterministic risk policy keeps the core deployment decision auditable: Codex explains evidence and generates mitigations without being allowed to execute a schema change.
 
 ## Repository status
 
