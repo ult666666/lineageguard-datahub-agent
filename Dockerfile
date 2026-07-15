@@ -7,10 +7,13 @@ ENV NODE_ENV=production \
     PORT=4173
 
 COPY --chown=node:node package.json ./
+COPY --chown=node:node api ./api
 COPY --chown=node:node src ./src
 COPY --chown=node:node public ./public
 COPY --chown=node:node data ./data
 COPY --chown=node:node examples ./examples
+COPY --chown=node:node scripts ./scripts
+COPY --chown=node:node skills ./skills
 COPY --chown=node:node test ./test
 
 USER node

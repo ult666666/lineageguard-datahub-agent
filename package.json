@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/server.mjs",
     "test": "node --test",
-    "demo": "node src/demo.mjs"
+    "demo": "node src/demo.mjs",
+    "mcp:smoke": "node scripts/mock-mcp-smoke.mjs"
   },
   "engines": {
     "node": ">=20"

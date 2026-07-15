@@ -2,6 +2,8 @@
 
 Target runtime: 2:30–2:50. Keep the final public video under three minutes.
 
+Use this only for the separate DataHub-tailored video. The current unlisted OpenAI Build Week video is a different asset and should not be submitted to the DataHub hackathon. The timed final script is in [`DATAHUB_DEMO_SCRIPT.md`](DATAHUB_DEMO_SCRIPT.md).
+
 ## Capture order
 
 1. `assets/demo-landing.jpg` — introduce the production risk and the DataHub-context agent loop.
@@ -10,12 +12,13 @@ Target runtime: 2:30–2:50. Keep the final public video under three minutes.
 4. `assets/demo-impact.jpg` — show the risk evidence and downstream DataHub blast radius.
 5. `assets/demo-artifacts.jpg` — show the additive migration SQL and validation gate.
 6. `assets/demo-trace.jpg` — show the PR review and the plan/retrieve/analyze/generate/write-back workflow.
+7. Terminal — run `npm run mcp:smoke`, then `npm test`, and show the successful summaries.
 
 ## Narration
 
 “A schema change can look safe in code while breaking downstream dashboards, pipelines, and machine-learning models. LineageGuard prevents that by using DataHub as the context layer for an AI change-safety agent.
 
-The reviewer provides a DataHub dataset URN and a structured proposal. This demo renames a revenue field, changes its type from decimal to text, and removes the currency column. LineageGuard retrieves schema, ownership, usage, quality, sensitive-data tags, and downstream lineage through the DataHub MCP interface.
+The reviewer provides a DataHub dataset URN and a structured proposal. This demo renames a revenue field, changes its type from decimal to text, and removes the currency column. The hosted demo uses a disclosed synthetic DataHub-shaped snapshot so it runs without credentials. The live adapter retrieves schema, ownership, usage, quality, sensitive-data tags, and downstream lineage through the DataHub MCP interface.
 
 The agent scores the blast radius and blocks this change with a critical score of one hundred. It identifies four downstream assets: a finance dataset, an executive revenue dashboard, a customer-lifetime-value model, and a monthly-close pipeline. It also spots a missing owner and active production usage.
 
@@ -24,6 +27,8 @@ LineageGuard does more than flag risk. It generates an additive migration plan t
 The generated PR review gives engineers the risk evidence, affected owners, validation checklist, and rollout recommendation in a form they can use before merge. The execution trace makes the agent workflow inspectable: plan, retrieve DataHub context, analyze impact, generate safe artifacts, and propose a write-back.
 
 Reads are automatic. Mutations remain approval-gated, and the demo never executes production SQL. LineageGuard turns DataHub’s context graph into a practical safety layer for schema changes: fewer production surprises, clearer ownership, and migration artifacts a data team can actually review.”
+
+Finish by running the bounded local MCP smoke test. State that it validates the Streamable HTTP handshake, official `get_entities` and downstream `get_lineage` argument shapes, and response normalization without claiming a live tenant connection.
 
 ## Recording notes
 

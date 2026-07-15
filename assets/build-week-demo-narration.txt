@@ -1,0 +1,15 @@
+A schema edit can look safe in one file and still break dashboards, pipelines, models, and customer alerts downstream. LineageGuard gives Codex a repeatable way to review that blast radius before deployment.
+
+For OpenAI Build Week, I turned the original LineageGuard browser prototype into a portable Codex skill. The new work includes the skill contract, deterministic scorer, transparent risk policy, read-only DataHub evidence guide, tests, and judge instructions. It covers database, warehouse, event, API, and data-contract changes and returns one auditable decision: approve, conditional, or block.
+
+The skill can collect owners, usage, quality signals, incidents, and downstream lineage through read-only DataHub M C P, or accept a redacted local manifest. In this synthetic demo, a risky revenue schema change reaches four downstream assets. LineageGuard blocks it, identifies the critical paths, and generates additive migration S Q L, validation checks, rollback steps, and P R-ready review notes. This is not a live tenant, and the demo never executes production S Q L.
+
+The final score is deterministic and runs locally with the Python standard library. This breaking, high-blast-radius rename returns block at seventy-two. A controlled nullable addition returns approve at zero. When production evidence is missing, LineageGuard raises the score and can block instead of treating unknown as safe.
+
+Codex owns interpretation, not production authority. Evidence collection is read-only. Every catalog or schema mutation stays behind a separate human approval gate.
+
+I used G P T five point six through Codex to translate three owner-set constraints into the skill contract, scorer, policy, tests, and documentation: never auto-execute schema changes, never hide missing evidence, and require no paid infrastructure. The dated Build Week work is isolated in commits zero zero a zero d zero zero and two four six eight four eight two, with the persisted Codex session documented in the repository.
+
+Judges can clone the public repository, check out the Codex LineageGuard skill branch, and run N P M test. All nine tests pass, including the decision paths, uncertainty handling, and ambiguous-input rejection. The scorer needs no A P I key, production credential, or paid service.
+
+LineageGuard makes hidden schema risk visible before a small edit becomes a production incident. The public repository and browser demo are ready for review, and the new skill can be tested entirely locally.
