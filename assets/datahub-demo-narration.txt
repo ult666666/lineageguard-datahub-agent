@@ -1,0 +1,13 @@
+A schema change can look safe in code while breaking downstream dashboards, pipelines, datasets, and machine-learning models, including dependencies that do not appear in the pull request. LineageGuard uses DataHub context to reveal that blast radius before merge.
+
+The reviewer provides a DataHub dataset U R N and a structured proposal. This change renames a revenue field, converts it from decimal to text, and removes the currency column. The request stays readable and auditable. The hosted demo uses a clearly disclosed, synthetic, DataHub-shaped snapshot so anyone can run it without credentials.
+
+LineageGuard combines schema risk with metadata a normal code review cannot see: downstream lineage, ownership gaps, recent usage, quality context, and sensitive-data tags. Every factor remains visible and reviewable. It blocks this change at critical risk and identifies the affected finance dataset, executive dashboard, machine-learning model, and monthly-close pipeline.
+
+The agent does more than warn. It generates additive migration S Q L, preserves the old field during a compatibility window, creates a shadow-column conversion, blocks promotion when casts fail, and delays destructive removal until owners approve and usage reaches zero. Existing consumers stay online while teams migrate in a controlled sequence.
+
+The generated P R review packages the evidence, affected owners, checks, and rollout recommendation before merge, so a human can verify every recommendation. DataHub reads are automatic. Production S Q L and catalog mutation remain approval-gated and are never executed by this demo.
+
+The live adapter uses the DataHub M C P Server tools get entities and downstream get lineage over Streamable H T T P. This bounded local smoke test verifies one M C P session, the official tool arguments, J S O N and event-stream responses, and downstream normalization without a tenant, A P I key, or paid service.
+
+LineageGuard turns DataHub's context graph into merge-ready migration code and a safer review decision. The live demo and Apache two point zero repository are public, and all ten tests pass.

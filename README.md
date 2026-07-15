@@ -77,7 +77,8 @@ This Codex-native extension was added on July 14, 2026, after the OpenAI Build W
 - **Codex model:** `gpt-5.6-sol`, verified from the persisted Codex thread metadata.
 - **Required `/feedback` Codex Session ID:** `019f5815-17d2-7bd2-81cc-68d346d79d63`.
 - **Dated source evidence:** commit `00a0d00` and [draft pull request #1](https://github.com/ult666666/lineageguard-datahub-agent/pull/1).
-- **Public demo:** [2:35 narrated Build Week video](https://youtu.be/yMaMvqcoV7w), publicly viewable without repository access.
+- **OpenAI Build Week demo:** [2:35 narrated video](https://youtu.be/yMaMvqcoV7w), publicly viewable without repository access.
+- **DataHub demo asset:** [`assets/lineageguard-datahub-demo.mp4`](assets/lineageguard-datahub-demo.mp4), a separate 2:34 narrated 1080p walkthrough prepared for public upload.
 
 GPT-5.6 was used through Codex to design, implement, review, and verify the extension. The shipped skill itself stays local and deterministic, so judges can test it without an API key, paid credits, or access to private production data.
 
@@ -181,4 +182,4 @@ Working in the GPT-5.6 Codex thread above, Codex translated those constraints in
 
 ## Repository status
 
-The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, all ten tests pass, GitHub detects the Apache-2.0 license, and the screenshots and submission copy are ready. A separate DataHub-tailored video with public visibility is still required before the DataHub Devpost entry is submitted. The existing unlisted video is an OpenAI Build Week asset and is not the DataHub submission video. A live DataHub tenant remains optional follow-up work because the bounded local MCP smoke test covers transport and official tool-shape validation without claiming tenant validation.
+The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, all ten tests pass, GitHub detects the Apache-2.0 license, and the screenshots and submission copy are ready. The separate 2:34 DataHub-tailored 1080p video is complete in `assets/`; it still needs a public YouTube or Vimeo URL before the DataHub Devpost entry is submitted. The existing unlisted video is an OpenAI Build Week asset and is not the DataHub submission video. A live DataHub tenant remains optional follow-up work because the bounded local MCP smoke test covers transport and official tool-shape validation without claiming tenant validation.

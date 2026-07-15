@@ -222,12 +222,12 @@ Credentials are read only at runtime and are never committed.
 - [x] GitHub detects Apache-2.0.
 - [x] Sample output exists in `examples/`.
 - [x] Six DataHub demo screenshots exist in `assets/`.
-- [ ] Record the separate DataHub-tailored video from `DATAHUB_DEMO_SCRIPT.md`.
-- [ ] Keep the final video under 3:00; target 2:20–2:40.
-- [ ] Show the project actually functioning on screen.
-- [ ] State that the hosted demo uses a synthetic snapshot.
-- [ ] Show `npm run mcp:smoke` succeeding.
-- [ ] Use entrant-owned narration and no copyrighted music.
+- [x] Record the separate DataHub-tailored video from `DATAHUB_DEMO_SCRIPT.md`.
+- [x] Keep the final video under 3:00; final runtime 2:34.
+- [x] Show the project actually functioning on screen.
+- [x] State that the hosted demo uses a synthetic snapshot.
+- [x] Show `npm run mcp:smoke` succeeding.
+- [x] Use entrant-owned local narration and no copyrighted music.
 - [ ] Upload to YouTube or Vimeo with **Public** visibility.
 - [ ] Confirm the video opens in a logged-out/private window.
 - [ ] Paste the new public video URL into Devpost.
