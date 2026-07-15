@@ -12,3 +12,5 @@ dist/
 # Locally generated demo media; upload the reviewed final video separately.
 assets/demo-narration.aiff
 assets/lineageguard-demo-draft.mp4
+assets/.build-week-narration/
+assets/.lineageguard-build-week-silent.mov
