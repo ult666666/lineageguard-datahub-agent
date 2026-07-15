@@ -72,6 +72,7 @@ This Codex-native extension was added on July 14, 2026, after the OpenAI Build W
 - **Codex model:** `gpt-5.6-sol`, verified from the persisted Codex thread metadata.
 - **Required `/feedback` Codex Session ID:** `019f5815-17d2-7bd2-81cc-68d346d79d63`.
 - **Dated source evidence:** commit `00a0d00` and [draft pull request #1](https://github.com/ult666666/lineageguard-datahub-agent/pull/1).
+- **Public demo:** [2:35 narrated Build Week video](https://youtu.be/yMaMvqcoV7w), publicly viewable without repository access.
 
 GPT-5.6 was used through Codex to design, implement, review, and verify the extension. The shipped skill itself stays local and deterministic, so judges can test it without an API key, paid credits, or access to private production data.
 
@@ -159,4 +160,4 @@ Working in the GPT-5.6 Codex thread above, Codex translated those constraints in
 
 ## Repository status
 
-The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, and the submission screenshots are ready. Before the hackathon submission it still needs a live DataHub test tenant, a public screen-demo video under three minutes, and Devpost registration and submission.
+The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, all nine tests pass, and the screenshots, submission packet, and public video are ready. Devpost registration is complete; the final OpenAI Build Week project record and submission are still pending. A live DataHub test tenant remains optional follow-up work for the separate DataHub hackathon track.
