@@ -134,7 +134,7 @@ The scorer uses only the Python standard library.
 - Build Week draft pull request: <https://github.com/ult666666/lineageguard-datahub-agent/pull/1>
 - Live demo: <https://lineageguard-datahub-agent.vercel.app>
 - Local reviewed demo video: [`assets/lineageguard-openai-build-week-demo.mp4`](assets/lineageguard-openai-build-week-demo.mp4) — 2:35.7, 1920×1080 H.264 with AAC narration
-- Public YouTube demo: pending
+- Publicly viewable unlisted YouTube demo: https://youtu.be/yMaMvqcoV7w
 
 ## Demo video script — target 2:35
 
