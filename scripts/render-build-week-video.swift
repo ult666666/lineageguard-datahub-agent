@@ -24,6 +24,31 @@ private let muted = NSColor(calibratedWhite: 0.72, alpha: 1)
 private let red = NSColor(calibratedRed: 1, green: 0.38, blue: 0.43, alpha: 1)
 private let amber = NSColor(calibratedRed: 1, green: 0.76, blue: 0.28, alpha: 1)
 
+private enum VideoMode {
+    case buildWeek
+    case dataHub
+
+    var footer: String {
+        switch self {
+        case .buildWeek:
+            return "OPENAI BUILD WEEK  ·  LOCAL DEMO  ·  USD 0"
+        case .dataHub:
+            return "DATAHUB AGENT HACKATHON  ·  LOCAL PROOF  ·  USD 0"
+        }
+    }
+
+    var sayRate: String {
+        switch self {
+        case .buildWeek:
+            return "165"
+        case .dataHub:
+            return "140"
+        }
+    }
+}
+
+private var videoMode: VideoMode = .buildWeek
+
 private enum SceneKind {
     case screenshot(String, String)
     case product
@@ -32,6 +57,8 @@ private enum SceneKind {
     case collaboration
     case tests
     case close
+    case mcpProof
+    case dataHubClose
 }
 
 private struct Scene {
@@ -126,7 +153,7 @@ private func drawChrome(_ scene: Scene, index: Int, total: Int) {
     NSBezierPath(rect: NSRect(x: 72, y: 42, width: 1776, height: 4)).fill()
     let progress = CGFloat(index + 1) / CGFloat(total)
     NSGradient(colors: [teal, blue])!.draw(in: NSRect(x: 72, y: 42, width: 1776 * progress, height: 4), angle: 0)
-    drawText("OPENAI BUILD WEEK  ·  LOCAL DEMO  ·  USD 0", rect: NSRect(x: 72, y: 62, width: 680, height: 24), size: 14, weight: .medium, color: color(muted, alpha: 0.75), lineSpacing: 0)
+    drawText(videoMode.footer, rect: NSRect(x: 72, y: 62, width: 780, height: 24), size: 14, weight: .medium, color: color(muted, alpha: 0.75), lineSpacing: 0)
     drawText("\(index + 1) / \(total)", rect: NSRect(x: 1720, y: 62, width: 128, height: 24), size: 14, weight: .medium, color: color(muted, alpha: 0.75), alignment: .right, lineSpacing: 0)
 }
 
@@ -344,6 +371,86 @@ private func drawCloseScene(_ scene: Scene) {
     drawText("Public repository  ·  Local test path  ·  No paid infrastructure", rect: NSRect(x: 300, y: 162, width: 1320, height: 42), size: 23, weight: .medium, color: muted, alignment: .center, lineSpacing: 0)
 }
 
+private func drawMCPProofScene(_ scene: Scene) {
+    drawSceneTitle(scene, subtitle: "A bounded Streamable HTTP check validates the real adapter contract without credentials.")
+
+    let terminal = NSRect(x: 96, y: 122, width: 1100, height: 660)
+    roundedRect(terminal, radius: 28, fill: NSColor(calibratedWhite: 0.018, alpha: 0.97), stroke: color(teal, alpha: 0.35), lineWidth: 2)
+    drawPill("npm run mcp:smoke", rect: NSRect(x: 134, y: 708, width: 290, height: 42), fill: color(teal, alpha: 0.17), textColor: teal)
+    let output = """
+    $ npm run mcp:smoke
+
+    {
+      "ok": true,
+      "transport": "local Streamable HTTP mock",
+      "initializeCalls": 1,
+      "tools": [
+        "get_entities",
+        "get_lineage"
+      ],
+      "downstreamAssets": 3,
+      "decision": "block"
+    }
+    """
+    drawText(output, rect: NSRect(x: 144, y: 190, width: 960, height: 480), size: 24, weight: .medium, color: white, mono: true, lineSpacing: 7)
+    drawPill("SUCCESS", rect: NSRect(x: 938, y: 704, width: 190, height: 48), fill: color(teal, alpha: 0.18), textColor: teal)
+
+    let proof = NSRect(x: 1240, y: 122, width: 584, height: 660)
+    roundedRect(proof, radius: 28, fill: surface2, stroke: color(blue, alpha: 0.34), lineWidth: 2)
+    drawText("What this proves", rect: NSRect(x: 1282, y: 700, width: 500, height: 50), size: 31, weight: .bold, color: white, lineSpacing: 0)
+    let checks: [(String, String)] = [
+        ("01", "One initialized MCP session"),
+        ("02", "Official get_entities arguments"),
+        ("03", "Downstream get_lineage normalization"),
+        ("04", "JSON + event-stream responses"),
+        ("05", "No tenant, API key, or paid service"),
+    ]
+    for (index, check) in checks.enumerated() {
+        let y = 606 - CGFloat(index) * 102
+        roundedRect(NSRect(x: 1280, y: y, width: 502, height: 78), radius: 18, fill: color(surface, alpha: 0.92), stroke: color(teal, alpha: 0.2))
+        drawText(check.0, rect: NSRect(x: 1300, y: y + 24, width: 50, height: 30), size: 18, weight: .bold, color: teal, mono: true, alignment: .center, lineSpacing: 0)
+        drawText(check.1, rect: NSRect(x: 1372, y: y + 17, width: 380, height: 45), size: 19, weight: .semibold, color: white, lineSpacing: 3)
+    }
+}
+
+private func drawDataHubCloseScene(_ scene: Scene) {
+    drawSceneTitle(scene, subtitle: "Public proof, reproducible tests, and an approval-gated production boundary.")
+
+    let terminal = NSRect(x: 96, y: 244, width: 760, height: 530)
+    roundedRect(terminal, radius: 28, fill: NSColor(calibratedWhite: 0.018, alpha: 0.97), stroke: color(teal, alpha: 0.34), lineWidth: 2)
+    drawPill("npm test", rect: NSRect(x: 132, y: 704, width: 190, height: 42), fill: color(teal, alpha: 0.17), textColor: teal)
+    let tests = """
+    $ npm test
+
+    ✔ serverless endpoints
+    ✔ DataHub MCP smoke flow
+    ✔ risky migration blocked
+    ✔ safe addition approved
+    ✔ unknown evidence raises risk
+    ✔ ambiguous input rejected
+
+    tests   10
+    pass    10
+    fail     0
+    """
+    drawText(tests, rect: NSRect(x: 142, y: 276, width: 650, height: 390), size: 22, weight: .medium, color: white, mono: true, lineSpacing: 5)
+    drawPill("10 / 10 PASS", rect: NSRect(x: 570, y: 700, width: 230, height: 48), fill: color(teal, alpha: 0.18), textColor: teal)
+
+    let links = NSRect(x: 900, y: 244, width: 924, height: 530)
+    roundedRect(links, radius: 28, fill: surface2, stroke: color(blue, alpha: 0.34), lineWidth: 2)
+    drawPill("PUBLIC", rect: NSRect(x: 944, y: 704, width: 150, height: 42), fill: color(blue, alpha: 0.18), textColor: blue)
+    drawText("Live demo", rect: NSRect(x: 944, y: 630, width: 500, height: 34), size: 20, weight: .bold, color: muted, lineSpacing: 0)
+    drawText("lineageguard-datahub-agent.vercel.app", rect: NSRect(x: 944, y: 578, width: 820, height: 42), size: 25, weight: .semibold, color: blue, mono: true, lineSpacing: 0)
+    drawText("Repository", rect: NSRect(x: 944, y: 500, width: 500, height: 34), size: 20, weight: .bold, color: muted, lineSpacing: 0)
+    drawText("github.com/ult666666/lineageguard-datahub-agent", rect: NSRect(x: 944, y: 448, width: 820, height: 42), size: 24, weight: .semibold, color: white, mono: true, lineSpacing: 0)
+    drawPill("APACHE-2.0", rect: NSRect(x: 944, y: 354, width: 230, height: 48), fill: color(teal, alpha: 0.17), textColor: teal)
+    drawPill("READ-ONLY DATAHUB", rect: NSRect(x: 1200, y: 354, width: 310, height: 48), fill: color(blue, alpha: 0.17), textColor: blue)
+    drawPill("MUTATIONS GATED", rect: NSRect(x: 1536, y: 354, width: 244, height: 48), fill: color(amber, alpha: 0.17), textColor: amber)
+    drawText("Merge-ready migration code from DataHub context.", rect: NSRect(x: 944, y: 282, width: 820, height: 42), size: 24, weight: .bold, color: white, lineSpacing: 0)
+
+    drawText("Synthetic demo snapshot disclosed  ·  USD 0 to verify  ·  No production mutation", rect: NSRect(x: 96, y: 142, width: 1728, height: 50), size: 24, weight: .semibold, color: teal, alignment: .center, lineSpacing: 0)
+}
+
 private func renderScene(_ scene: Scene, index: Int, total: Int) -> CGImage {
     let rep = NSBitmapImageRep(
         bitmapDataPlanes: nil,
@@ -377,6 +484,10 @@ private func renderScene(_ scene: Scene, index: Int, total: Int) -> CGImage {
         drawTestsScene(scene)
     case .close:
         drawCloseScene(scene)
+    case .mcpProof:
+        drawMCPProofScene(scene)
+    case .dataHubClose:
+        drawDataHubCloseScene(scene)
     }
     NSGraphicsContext.restoreGraphicsState()
     return rep.cgImage!
@@ -414,7 +525,7 @@ private func runSay(text: String, output: URL) throws {
     try? FileManager.default.removeItem(at: output)
     let process = Process()
     process.executableURL = URL(fileURLWithPath: "/usr/bin/say")
-    process.arguments = ["-v", "Samantha", "-r", "165", "-o", output.path, text]
+    process.arguments = ["-v", "Samantha", "-r", videoMode.sayRate, "-o", output.path, text]
     try process.run()
     process.waitUntilExit()
     guard process.terminationStatus == 0 else {
@@ -637,36 +748,53 @@ private func inspect(_ output: URL) {
 private func main() throws {
     let repo = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true).standardizedFileURL
     let assets = repo.appendingPathComponent("assets", isDirectory: true)
-    let narrationURL = assets.appendingPathComponent("build-week-demo-narration.txt")
-    let output = assets.appendingPathComponent("lineageguard-openai-build-week-demo.mp4")
-    let silent = assets.appendingPathComponent(".lineageguard-build-week-silent.mov")
-    let audioDir = assets.appendingPathComponent(".build-week-narration", isDirectory: true)
-    let contactSheet = assets.appendingPathComponent("lineageguard-openai-build-week-demo-contact-sheet.png")
+    let isDataHub = CommandLine.arguments.contains("--datahub")
+    videoMode = isDataHub ? .dataHub : .buildWeek
+    let narrationURL = assets.appendingPathComponent(isDataHub ? "datahub-demo-narration.txt" : "build-week-demo-narration.txt")
+    let output = assets.appendingPathComponent(isDataHub ? "lineageguard-datahub-demo.mp4" : "lineageguard-openai-build-week-demo.mp4")
+    let silent = assets.appendingPathComponent(isDataHub ? ".lineageguard-datahub-silent.mov" : ".lineageguard-build-week-silent.mov")
+    let audioDir = assets.appendingPathComponent(isDataHub ? ".datahub-narration" : ".build-week-narration", isDirectory: true)
+    let contactSheet = assets.appendingPathComponent(isDataHub ? "lineageguard-datahub-demo-contact-sheet.png" : "lineageguard-openai-build-week-demo-contact-sheet.png")
 
     let narration = try String(contentsOf: narrationURL, encoding: .utf8)
     let paragraphs = narration
         .components(separatedBy: "\n\n")
         .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         .filter { !$0.isEmpty }
-    guard paragraphs.count == 8 else {
-        throw NSError(domain: "LineageGuardVideo", code: 14, userInfo: [NSLocalizedDescriptionKey: "Expected 8 narration paragraphs, found \(paragraphs.count)"])
+    let expectedParagraphs = isDataHub ? 7 : 8
+    guard paragraphs.count == expectedParagraphs else {
+        throw NSError(domain: "LineageGuardVideo", code: 14, userInfo: [NSLocalizedDescriptionKey: "Expected \(expectedParagraphs) narration paragraphs, found \(paragraphs.count)"])
     }
 
-    let scenes: [Scene] = [
-        Scene(title: "Hidden blast radius, visible before merge", eyebrow: "Problem", narration: paragraphs[0], kind: .screenshot(assets.appendingPathComponent("demo-result-top.jpg").path, "One local edit can break dashboards, pipelines, models, and alerts downstream.")),
-        Scene(title: "A portable Codex schema-review skill", eyebrow: "Build Week extension", narration: paragraphs[1], kind: .product),
-        Scene(title: "From DataHub context to a safe decision", eyebrow: "Working output", narration: paragraphs[2], kind: .screenshot(assets.appendingPathComponent("demo-impact.jpg").path, "Read-only evidence in; decision, critical paths, and migration artifacts out.")),
-        Scene(title: "Deterministic safety—not a hidden model score", eyebrow: "Local scorer", narration: paragraphs[3], kind: .deterministic),
-        Scene(title: "Interpretation without production authority", eyebrow: "Safety boundary", narration: paragraphs[4], kind: .authority),
-        Scene(title: "How GPT-5.6 and Codex were used", eyebrow: "Collaboration", narration: paragraphs[5], kind: .collaboration),
-        Scene(title: "Nine tests. One command. No paid service.", eyebrow: "Easy verification", narration: paragraphs[6], kind: .tests),
-        Scene(title: "Ready to inspect and run locally", eyebrow: "Proof and close", narration: paragraphs[7], kind: .close),
-    ]
+    let scenes: [Scene]
+    if isDataHub {
+        scenes = [
+            Scene(title: "Reveal schema blast radius before merge", eyebrow: "DataHub advantage", narration: paragraphs[0], kind: .screenshot(assets.appendingPathComponent("demo-landing.jpg").path, "LineageGuard reads DataHub context before a small edit becomes a production incident.")),
+            Scene(title: "One structured change request", eyebrow: "Synthetic snapshot disclosed", narration: paragraphs[1], kind: .screenshot(assets.appendingPathComponent("demo-request.jpg").path, "Dataset URN plus rename, breaking type change, and destructive column removal.")),
+            Scene(title: "BLOCK · CRITICAL · 100 / 100", eyebrow: "Context-aware decision", narration: paragraphs[2], kind: .screenshot(assets.appendingPathComponent("demo-impact.jpg").path, "Four downstream assets, active usage, sensitive data, ownership gaps, and quality context.")),
+            Scene(title: "Generate a staged migration—not just a warning", eyebrow: "Merge-ready code", narration: paragraphs[3], kind: .screenshot(assets.appendingPathComponent("demo-artifacts.jpg").path, "Additive compatibility window, shadow conversion, validation gate, and deferred removal.")),
+            Scene(title: "Evidence packaged for review", eyebrow: "PR artifact + authority boundary", narration: paragraphs[4], kind: .screenshot(assets.appendingPathComponent("demo-trace.jpg").path, "DataHub reads are automatic; production SQL and catalog mutations remain approval-gated.")),
+            Scene(title: "DataHub MCP contract, verified locally", eyebrow: "Transport proof", narration: paragraphs[5], kind: .mcpProof),
+            Scene(title: "Public, reproducible, and ready to inspect", eyebrow: "Proof and close", narration: paragraphs[6], kind: .dataHubClose),
+        ]
+    } else {
+        scenes = [
+            Scene(title: "Hidden blast radius, visible before merge", eyebrow: "Problem", narration: paragraphs[0], kind: .screenshot(assets.appendingPathComponent("demo-result-top.jpg").path, "One local edit can break dashboards, pipelines, models, and alerts downstream.")),
+            Scene(title: "A portable Codex schema-review skill", eyebrow: "Build Week extension", narration: paragraphs[1], kind: .product),
+            Scene(title: "From DataHub context to a safe decision", eyebrow: "Working output", narration: paragraphs[2], kind: .screenshot(assets.appendingPathComponent("demo-impact.jpg").path, "Read-only evidence in; decision, critical paths, and migration artifacts out.")),
+            Scene(title: "Deterministic safety—not a hidden model score", eyebrow: "Local scorer", narration: paragraphs[3], kind: .deterministic),
+            Scene(title: "Interpretation without production authority", eyebrow: "Safety boundary", narration: paragraphs[4], kind: .authority),
+            Scene(title: "How GPT-5.6 and Codex were used", eyebrow: "Collaboration", narration: paragraphs[5], kind: .collaboration),
+            Scene(title: "Nine tests. One command. No paid service.", eyebrow: "Easy verification", narration: paragraphs[6], kind: .tests),
+            Scene(title: "Ready to inspect and run locally", eyebrow: "Proof and close", narration: paragraphs[7], kind: .close),
+        ]
+    }
 
     try FileManager.default.createDirectory(at: audioDir, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: audioDir) }
     var timed: [TimedScene] = []
     var cursor = 0.0
+    let dataHubMinimumDurations: [Double] = [18, 24, 28, 24, 21, 25, 14]
     for (index, scene) in scenes.enumerated() {
         let audioURL = audioDir.appendingPathComponent(String(format: "scene-%02d.aiff", index + 1))
         try runSay(text: scene.narration, output: audioURL)
@@ -674,7 +802,9 @@ private func main() throws {
         guard duration > 0 else {
             throw NSError(domain: "LineageGuardVideo", code: 15, userInfo: [NSLocalizedDescriptionKey: "Narration duration is zero for scene \(index + 1)"])
         }
-        let end = cursor + duration + (index == scenes.count - 1 ? 0.8 : gapSeconds)
+        let naturalDuration = duration + (index == scenes.count - 1 ? 0.8 : gapSeconds)
+        let sceneDuration = isDataHub ? max(naturalDuration, dataHubMinimumDurations[index]) : naturalDuration
+        let end = cursor + sceneDuration
         timed.append(TimedScene(scene: scene, audioURL: audioURL, start: cursor, audioDuration: duration, end: end))
         cursor = end
         print(String(format: "Scene %d: %.2fs", index + 1, duration))

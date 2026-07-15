@@ -2,6 +2,8 @@
 
 Target runtime: **2:20–2:40**. Hard limit: **under 3:00**.
 
+Final local asset: `assets/lineageguard-datahub-demo.mp4` — **2:34**, 1920×1080, H.264/AAC, SHA-256 `91430050567048cf2a37297b82b561956775112232077d6058e91b68d5209fb4`.
+
 Upload the final video to YouTube or Vimeo with **Public** visibility. Use no music or third-party footage. The existing unlisted OpenAI Build Week video is a separate asset and should not be reused for this Devpost entry.
 
 ## Recording order
@@ -73,6 +75,6 @@ Upload the final video to YouTube or Vimeo with **Public** visibility. Use no mu
 - [ ] `npm run mcp:smoke` success is shown.
 - [ ] `npm test` shows ten passes.
 - [ ] Repository and demo URLs are shown.
-- [ ] Runtime is below 3:00.
+- [x] Runtime is below 3:00.
 - [ ] YouTube/Vimeo visibility is Public.
 - [ ] Logged-out playback works.
