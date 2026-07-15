@@ -39,6 +39,32 @@ The server binds to `127.0.0.1:4173` by default. Override either value when need
 HOST=0.0.0.0 PORT=8080 npm start
 ```
 
+## Use as a Codex skill
+
+The repository includes a portable Codex skill at [`skills/lineageguard-schema-review`](skills/lineageguard-schema-review). It reviews database, warehouse, event, API, or data-contract changes and returns an evidence-backed `APPROVE`, `CONDITIONAL`, or `BLOCK` decision.
+
+Install it locally:
+
+```bash
+cp -R skills/lineageguard-schema-review "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+Then ask Codex:
+
+```text
+Use $lineageguard-schema-review to assess renaming orders.total to gross_total.
+```
+
+The skill can query DataHub MCP in read-only mode, or score a redacted JSON manifest completely offline. Its deterministic scorer uses only the Python standard library:
+
+```bash
+python3 skills/lineageguard-schema-review/scripts/score_change.py change.json --format markdown
+```
+
+No API key, paid service, catalog mutation, or production data is required. Missing safety evidence is reported as uncertainty and increases risk instead of being silently treated as zero.
+
+This Codex-native extension was added on July 14, 2026, after the OpenAI Build Week submission period opened, and is isolated from the original web MVP for clear review and testing.
+
 ## Run with Docker
 
 Requirements: Docker Engine or Docker Desktop.
@@ -114,6 +140,10 @@ The project is newly created during the July 6–August 10, 2026 submission wind
 - DataHub mutations remain proposed until an authorized person approves them.
 - Migration SQL is additive by default and includes explicit validation gates.
 - The demo contains synthetic metadata only.
+
+## Codex collaboration
+
+The project owner set the product goal, strict USD 0 budget, and approval-gated safety boundary. Codex implemented the working agent, browser experience, tests, deployment assets, and the reusable skill. The deterministic risk policy keeps the core deployment decision auditable; Codex explains evidence and generates mitigations without being allowed to execute a schema change.
 
 ## Repository status
 

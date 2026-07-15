@@ -1,0 +1,4 @@
+interface:
+  display_name: "LineageGuard Review"
+  short_description: "Review schema changes before they break data"
+  default_prompt: "Use $lineageguard-schema-review to evaluate this schema change and produce a safe rollout decision."
