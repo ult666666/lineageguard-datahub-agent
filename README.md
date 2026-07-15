@@ -6,6 +6,10 @@ LineageGuard is a DataHub-context agent that reviews schema changes before they 
 
 **Source:** https://github.com/ult666666/lineageguard-datahub-agent
 
+**Build with DataHub category:** Metadata-Aware Code Generation & Development
+
+**DataHub technology:** DataHub MCP Server
+
 ![LineageGuard blocks a critical schema change after evaluating its DataHub blast radius](assets/demo-result-top.jpg)
 
 It reads ownership, usage, quality signals, and lineage through the DataHub MCP Server; scores the blast radius; and generates:
@@ -27,6 +31,7 @@ Requirements: Node.js 20+; no package installation is required.
 
 ```bash
 npm test
+npm run mcp:smoke
 npm run demo
 npm start
 ```
@@ -123,6 +128,18 @@ npm start
 
 LineageGuard calls the DataHub MCP tools `get_entities` and `get_lineage`. Mutation is deliberately approval-gated: the first release generates a write-back proposal rather than changing catalog state automatically.
 
+## Verify the DataHub MCP path without a tenant
+
+Run the bounded local smoke test:
+
+```bash
+npm run mcp:smoke
+```
+
+The test starts an ephemeral Streamable HTTP MCP server on `127.0.0.1`, completes one MCP initialization and session handshake, exercises `get_entities` and downstream `get_lineage`, and validates the official DataHub MCP argument and response shapes. It uses no network service, credential, paid API, or persistent port.
+
+This is a transport and adapter validation, not a claim that the public demo is connected to a live DataHub tenant. Live-tenant testing remains an optional follow-up using the environment variables above.
+
 ## Architecture
 
 ```text
@@ -138,9 +155,13 @@ LineageGuard agent ──► DataHub MCP ──► schema, owners, usage, qualit
    └── approval-gated DataHub write-back plan
 ```
 
-## Original DataHub hackathon track
+## Build with DataHub hackathon category
 
-Primary: **Agents That Do Real Work**. Secondary: **Metadata-Aware Code Generation & Development**.
+Primary: **Metadata-Aware Code Generation & Development**.
+
+LineageGuard reads real schemas, ownership, usage signals, tags, quality context, and downstream lineage through the DataHub MCP Server, then generates merge-ready migration SQL, validation checks, owner notifications, and a PR review. This directly matches the category's requirement that generated production data code be grounded in DataHub context and delivered as repository artifacts a data team could review.
+
+The app also prepares an approval-gated DataHub write-back plan, but it does not claim an automatic catalog mutation. For that reason, the submission targets the metadata-aware code-generation category rather than relying on the separate write-back language in **Agents That Do Real Work**.
 
 The project is newly created during the July 6–August 10, 2026 submission window. DataHub is the required context layer, and the MCP Server is the required agent integration.
 
@@ -160,4 +181,4 @@ Working in the GPT-5.6 Codex thread above, Codex translated those constraints in
 
 ## Repository status
 
-The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, all nine tests pass, and the screenshots, submission packet, and public video are ready. Devpost registration is complete; the final OpenAI Build Week project record and submission are still pending. A live DataHub test tenant remains optional follow-up work for the separate DataHub hackathon track.
+The public Apache-2.0 MVP is deployed, its browser/API workflow is operational, all ten tests pass, GitHub detects the Apache-2.0 license, and the screenshots and submission copy are ready. A separate DataHub-tailored video with public visibility is still required before the DataHub Devpost entry is submitted. The existing unlisted video is an OpenAI Build Week asset and is not the DataHub submission video. A live DataHub tenant remains optional follow-up work because the bounded local MCP smoke test covers transport and official tool-shape validation without claiming tenant validation.

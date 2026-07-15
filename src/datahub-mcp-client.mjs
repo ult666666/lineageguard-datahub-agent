@@ -17,7 +17,9 @@ export class DataHubMcpClient {
     this.fetchImpl = fetchImpl;
     this.nextId = 1;
     this.sessionId = null;
+    this.protocolVersion = "2025-11-25";
     this.initialized = false;
+    this.initializePromise = null;
   }
 
   async request(method, params = undefined, notification = false) {
@@ -30,6 +32,7 @@ export class DataHubMcpClient {
     };
     if (this.token) headers.authorization = `Bearer ${this.token}`;
     if (this.sessionId) headers["mcp-session-id"] = this.sessionId;
+    if (method !== "initialize") headers["mcp-protocol-version"] = this.protocolVersion;
 
     const response = await this.fetchImpl(this.url, { method: "POST", headers, body: JSON.stringify(payload) });
     if (!response.ok) throw new Error(`DataHub MCP ${method} failed: ${response.status} ${await response.text()}`);
@@ -42,13 +45,28 @@ export class DataHubMcpClient {
 
   async initialize() {
     if (this.initialized) return;
-    await this.request("initialize", {
-      protocolVersion: "2025-03-26",
-      capabilities: {},
-      clientInfo: { name: "lineageguard", version: "0.1.0" },
-    });
-    await this.request("notifications/initialized", undefined, true);
-    this.initialized = true;
+    if (!this.initializePromise) {
+      this.initializePromise = (async () => {
+        const result = await this.request("initialize", {
+          protocolVersion: this.protocolVersion,
+          capabilities: {},
+          clientInfo: { name: "lineageguard", version: "0.1.0" },
+        });
+        this.protocolVersion = result?.protocolVersion || this.protocolVersion;
+        try {
+          await this.request("notifications/initialized", undefined, true);
+          this.initialized = true;
+        } catch (error) {
+          this.initialized = false;
+          throw error;
+        }
+      })();
+    }
+    try {
+      await this.initializePromise;
+    } finally {
+      if (!this.initialized) this.initializePromise = null;
+    }
   }
 
   async listTools() {

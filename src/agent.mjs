@@ -20,7 +20,7 @@ export async function runLineageGuard({ datasetUrn, changeRequest, catalog }) {
   return {
     id: `lg-${Date.now()}`,
     createdAt: new Date().toISOString(),
-    mode: process.env.DATAHUB_MCP_URL ? "live-datahub-mcp" : "mock-datahub-snapshot",
+    mode: catalog.mode || (process.env.DATAHUB_MCP_URL ? "live-datahub-mcp" : "mock-datahub-snapshot"),
     request: { datasetUrn, summary: changeRequest.summary || "Schema change review", changes: changeRequest.changes },
     trace,
     ...analysis,
