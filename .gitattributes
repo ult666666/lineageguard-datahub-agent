@@ -1,0 +1,6 @@
+# LineageGuard is a Node.js / MCP agent packaged with Docker.
+# scripts/render-build-week-video.swift is a one-off demo-video rendering helper,
+# not project source. It is the largest single file by bytes, which made GitHub
+# report the whole repository as Swift. Excluding it from language statistics so
+# the reported stack matches what the project actually is.
+scripts/render-build-week-video.swift linguist-detectable=false
