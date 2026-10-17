@@ -1,5 +1,9 @@
 # LineageGuard
 
+[![Verified demo and MCP tests](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml)
+
+[Engineering review guide: source map, reproducible checks, and limits](docs/ENGINEERING_REVIEW.md)
+
 LineageGuard is a DataHub-context agent that reviews schema changes before they break downstream datasets, dashboards, pipelines, or ML models.
 
 **Live demo:** https://lineageguard-datahub-agent.vercel.app
