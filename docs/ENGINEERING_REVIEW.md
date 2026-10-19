@@ -22,7 +22,7 @@ npm test
 npm run mcp:smoke
 ```
 
-The complete suite currently has **10 distinct tests** across four files. The matrix replays the same tests on two Node versions; it does not double the number of unique tests.
+The complete suite currently has **23 distinct tests** across five files. The matrix replays the same tests on two Node versions; it does not double the number of unique tests.
 
 | Public test file | Evidence covered |
 | --- | --- |
@@ -36,3 +36,11 @@ The complete suite currently has **10 distinct tests** across four files. The ma
 ## Product and collaboration boundaries
 
 Schema changes are reviewed, not executed. Migration SQL and catalog write-back remain proposals requiring an authorized human decision. The project's [README](../README.md#codex-collaboration) documents the owner's product decisions and AI-assisted implementation workflow; this guide does not imply unaided authorship or employment/client results.
+
+## Generated-SQL input contract
+
+The application validates change objects before asking the catalog for metadata, and the direct impact-engine entry applies the same contract before producing SQL suggestions. Unsupported operations, string-valued booleans, missing identifiers and statement/comment fragments in type positions are rejected rather than scored optimistically or silently rewritten. The current simple-identifier contract deliberately rejects quoted, whitespace-containing and punctuation-bearing identifiers; table names support up to four dotted segments.
+
+`change-contract.test.mjs` covers those refusals, bounded change counts, direct-library use, unchanged valid inputs and accepted scalar/parameterized types. The type rule is a conservative lexical subset, not a complete SQL dialect or parameter-range validator. SQL remains a human-reviewed suggestion; no migration is executed.
+
+Input validation produces a stable copy of each SQL-relevant value. Later catalog awaits, prototype values, or repeat getter reads cannot silently change the values used for a migration suggestion. The original request object is not modified.

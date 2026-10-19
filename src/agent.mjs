@@ -1,10 +1,8 @@
+import { validateRequest } from "./change-contract.mjs";
 import { analyzeImpact } from "./impact-engine.mjs";
 
 export async function runLineageGuard({ datasetUrn, changeRequest, catalog }) {
-  if (!datasetUrn) throw new Error("datasetUrn is required.");
-  if (!Array.isArray(changeRequest?.changes) || !changeRequest.changes.length) {
-    throw new Error("changeRequest.changes must contain at least one schema change.");
-  }
+  changeRequest = validateRequest(datasetUrn, changeRequest);
 
   const trace = [
     { step: "plan", status: "complete", detail: "Identify target dataset and proposed schema changes." },
