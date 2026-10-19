@@ -1,3 +1,5 @@
+import { validateChanges, validateSqlDataset } from "./change-contract.mjs";
+
 const TYPE_FAMILIES = {
   numeric: new Set(["tinyint", "smallint", "int", "integer", "bigint", "float", "double", "decimal", "number", "numeric"]),
   text: new Set(["char", "varchar", "string", "text"]),
@@ -108,6 +110,8 @@ function buildPrMarkdown({ dataset, score, severity, reasons, impactedAssets, ch
 }
 
 export function analyzeImpact({ dataset, changes = [] }) {
+  changes = validateChanges(changes);
+  dataset = validateSqlDataset(dataset);
   const impactedAssets = dataset.downstream || [];
   const reasons = [];
   let score = 0;
