@@ -62,9 +62,9 @@ function qualitySignals(entity) {
 
 function selectEntity(payload, datasetUrn) {
   const entities = Array.isArray(payload) ? payload : [payload];
-  return entities.find((entity) => entity?.urn === datasetUrn)
-    || entities.find((entity) => entity && !entity.error)
-    || {};
+  const match = entities.find((entity) => entity?.urn === datasetUrn && !entity.error);
+  if (!match) throw new Error("Requested dataset target was not returned by the catalog.");
+  return match;
 }
 
 function downstreamEntities(payload) {
@@ -94,7 +94,7 @@ function normalizeLiveCatalog(datasetUrn, entityPayload, lineagePayload) {
     ? directWeeklyQueries
     : Number.isFinite(queriesLast30Days)
       ? Math.ceil((queriesLast30Days * 7) / 30)
-      : 0;
+      : null;
   return {
     urn: datasetUrn,
     name: entityName(entity, parseDatasetName(datasetUrn)),
@@ -104,6 +104,10 @@ function normalizeLiveCatalog(datasetUrn, entityPayload, lineagePayload) {
     tags: tagNames(entity),
     qualitySignals: qualitySignals(entity),
     downstream,
+    evidenceCoverage: {
+      usage: weeklyQueries === null ? "unknown" : "complete",
+      lineage: Number.isInteger((lineagePayload?.downstreams || lineagePayload?.downstream)?.total) && (lineagePayload?.downstreams || lineagePayload?.downstream).total === downstream.length ? "complete" : "partial",
+    },
     raw: { entityPayload, lineagePayload },
   };
 }
@@ -115,7 +119,8 @@ export class MockCatalogAdapter {
   }
   async getDataset(datasetUrn) {
     const catalog = JSON.parse(await fs.readFile(this.filePath, "utf8"));
-    const dataset = catalog.datasets.find((item) => item.urn === datasetUrn) || catalog.datasets[0];
+    const dataset = catalog.datasets.find((item) => item.urn === datasetUrn);
+    if (!dataset) throw new Error("Requested dataset target was not found in the snapshot.");
     return structuredClone(dataset);
   }
 }
