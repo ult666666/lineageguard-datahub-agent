@@ -1,6 +1,4 @@
-name: Verified demo and MCP tests
-# All application calls use synthetic fixtures or a loopback-only mock server.
-# No tenant credentials, catalog writes, schema migrations, deployment, or paid inference.
+name: Studio and MCP verification
 on:
   push:
     branches: [main]
@@ -16,7 +14,7 @@ jobs:
   test:
     name: Offline tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 6
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +35,34 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.13'
-      - name: Run the complete dependency-free test suite
+      - name: Full suite including SQLite interruption and recovery
         run: npm test
-      - name: Exercise the local mock MCP transport
+      - name: Read-only loopback MCP handshake
         run: npm run mcp:smoke
+      - name: Execute named synthetic evaluations
+        run: npm run studio:evaluate
+      - name: Build and verify the exact public static payload
+        run: npm run build && node scripts/build-studio.mjs --verify dist
+  browser:
+    name: Studio browser workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CI: 'true'
+      DATAHUB_MCP_URL: ''
+      DATAHUB_MCP_TOKEN: ''
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install pinned development tools without install scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check formatting of the Studio implementation
+        run: npm run format:check
+      - name: Install Chromium for isolated browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Real browser-session and durable-local workflows
+        run: npm run test:browser

@@ -14,3 +14,15 @@ assets/demo-narration.aiff
 assets/lineageguard-demo-draft.mp4
 assets/.build-week-narration/
 assets/.lineageguard-build-week-silent.mov
+
+# Private local runtime and verification output; never publish.
+.lineageguard/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+test-results/
+playwright-report/
+*.log
+*.pem
+*.key
+*.p12

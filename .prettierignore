@@ -1,0 +1,6 @@
+node_modules
+dist
+test-results
+assets
+.lineageguard
+docs/CLASSIC_HISTORY.md
