@@ -32,6 +32,10 @@ LineageGuard Studio is a data-change review orchestrator built by Charles Dai wi
 
 There is **no SQL-execution or catalog-mutation capability** in the registry. A local acknowledgement is an unverified review note, not an organizational approval. Studio uses deterministic components; it does not pretend those components are an autonomous LLM team.
 
+## Delivery
+
+The [2.0 delivery guide](docs/RELEASE_2_0.md) gives exact local-stack commands, the five-minute demonstration, and the explicit deployed acceptance check. The public preview and local SQLite service are different runtimes, not interchangeable deployment claims.
+
 ## Run locally
 
 Use **Node 24** (Node 22.13+ is also tested) and Python 3 for the preserved skill tests. The application has **zero runtime npm dependencies**. The two development dependencies are pinned browser-testing and formatting tools.

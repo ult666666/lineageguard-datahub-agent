@@ -1,5 +1,15 @@
 # Studio 2.0 verification
 
+## Publication verification — 20 October 2026
+
+The application implementation merged through [PR #6](https://github.com/ult666666/lineageguard-datahub-agent/pull/6) at `a37c3bc5bc586bd8f7f49a6f6e4fbe856dbb9336`. A fresh checkout passed all 84 Node tests, the 24 browser journeys in both runtime modes, the 19 evaluation assertions, the original MCP smoke, formatting, and the exact 19-file static build. This rerun includes the real test-owned process interruption and SQLite recovery; it is not inferred from the public browser.
+
+The published origin returned Studio version 2.0.0 with browser-session mode and model inference, catalog writes and SQL execution all disabled. The new opt-in `npm run verify:deployed` command passed 17 acceptance sections, including every static asset and manifest byte, serverless compilation and refusal cases, the classic API, verified exports, real UI execution, input invalidation, comparison, browser reload/resume, source-outage recovery, cancellation, executed evaluations and three responsive widths. No external runtime request or JavaScript page error was observed. A deliberately changed expected manifest caused an assertion failure before any passing verification report; the original local build was restored afterward.
+
+This is live verification of a synthetic demonstration, not live-tenant validation. The command records source commit, working-tree cleanliness, output hashes, timestamp and scope under `test-results/`. The final tagged release carries the clean-source verification record and source-package checksums separately from this documentation. Follow the [delivery guide](RELEASE_2_0.md) to reproduce it.
+
+The portfolio and profile updates are [portfolio PR #4](https://github.com/ult666666/ult666666.github.io/pull/4) and [profile PR #3](https://github.com/ult666666/ult666666/pull/3). Their source review preserves the concurrently updated fintech project and original project history. Portfolio verification is a separate suite: 37 Python tests, its real staged browser suite including 56 navigation checks, and the 28-file static inventory.
+
 ## Local implementation verification — 19 October 2026
 
 These results were executed against the Studio 2.0 candidate derived from public base `0ca61b69ce401ff5e0d87d78f8d3ddbf95da4585`. CI, hosted deployment and source publication are separate gates; their final commit and subsequent evidence belong to the release record, not an inferred local success.
