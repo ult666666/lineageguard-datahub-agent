@@ -31,6 +31,10 @@ npm run studio:local -- --port=4183 --store=/absolute/private/lineageguard-runs
 
 Do not put a tenant capture, database or run export in public source. The optional live-capture CLI is separate and requires an explicit flag, request file and locally configured credentials. No tenant connection is required to run Studio or its evaluations.
 
+## Subsequent launcher update
+
+The original `v2.0.0` tag remains unchanged. Current `main` adds `npm run studio:status`, `npm run studio:open` and a clear already-running message for repeat starts. See [LOCAL_LAUNCH.md](LOCAL_LAUNCH.md) for exact commands, version boundaries and safe handling of an occupied port. This update does not require migrating existing 2.0.0 checkpoints.
+
 ## What each surface proves
 
 | Surface | Execution | Checkpoint location | Boundary |

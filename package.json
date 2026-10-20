@@ -16,7 +16,9 @@
     "build": "node scripts/build-studio.mjs",
     "verify": "npm test && npm run studio:evaluate && npm run build",
     "format:check": "prettier --check public/studio public/studio.js public/studio.css public/index.html src/studio src/datahub-mcp-client.mjs src/catalog-adapter.mjs src/server.mjs api/studio.js test/studio test/mcp-boundary.test.mjs scripts/studio-browser.cjs scripts/studio-server.mjs scripts/studio-review.mjs scripts/studio-evaluate.mjs scripts/build-studio.mjs scripts/studio-deployed.cjs",
-    "verify:deployed": "node scripts/studio-deployed.cjs"
+    "verify:deployed": "node scripts/studio-deployed.cjs",
+    "studio:status": "node scripts/studio-server.mjs --status",
+    "studio:open": "node scripts/studio-server.mjs --status --open"
   },
   "engines": {
     "node": ">=22.13.0 <25"

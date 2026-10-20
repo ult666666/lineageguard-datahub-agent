@@ -1,5 +1,13 @@
 # Studio 2.0 verification
 
+## Local launcher follow-up — 20 October 2026
+
+The post-release launcher change preserves application/policy version 2.0.0 and every public runtime asset. It adds 17 focused launch checks to the preserved 84-test application suite: **101 Node tests passed**. The same 24 browser journeys, 19 evaluation assertions, original MCP smoke, formatting, exact 19-file static payload and 17 hosted acceptance sections were rerun successfully. These are overlapping layers, not a summed count of independent tests.
+
+A real duplicate-start regression failed against the original CLI: it threw `EADDRINUSE` after attempting to initialize an unused store. The corrected CLI identifies the existing service through bounded read-only metadata. The regression leaves an actual paused run unchanged and does not create a database in the second working directory. Other cases cover unrelated/redirecting/oversized/unfinished responses, mode/version mismatch, explicit-store refusal, stopped status, invalid options, opener failure, an injected bind race and actual foreground restart with an exact preserved checkpoint. An inconclusive connection is not labeled occupied or free.
+
+Status is not process authentication or a database integrity audit. No automatic listener termination, port change, database deletion, paid inference or migration was added. See [LOCAL_LAUNCH.md](LOCAL_LAUNCH.md). The original v2.0.0 tag and its historical 84-test release evidence are not rewritten; follow the launcher-update commit on main for the added commands. Final cloud CI and native-desktop observations are recorded separately after publication. Review comprises direct source inspection, demonstrated regressions and automated checks; an unavailable independent reviewer is not claimed.
+
 ## Publication verification — 20 October 2026
 
 The application implementation merged through [PR #6](https://github.com/ult666666/lineageguard-datahub-agent/pull/6) at `a37c3bc5bc586bd8f7f49a6f6e4fbe856dbb9336`. A fresh checkout passed all 84 Node tests, the 24 browser journeys in both runtime modes, the 19 evaluation assertions, the original MCP smoke, formatting, and the exact 19-file static build. This rerun includes the real test-owned process interruption and SQLite recovery; it is not inferred from the public browser.

@@ -68,6 +68,18 @@ npm run studio:review -- --live-datahub --request=./private-request.json --outpu
 
 This mode is not invoked by the hosted demo, tests or evaluations. Keep tenant exports private. The capture deliberately supports the tested **MCP 2025-11-25 handshake profile**, not the different 2026-07-28 stateless lifecycle. Unsupported schema fields, unverified column paths or missing exact weekly usage remain incomplete evidence. A capture is a one-shot review input; it is not a background tenant synchronization service.
 
+## Open, check or restart local Studio
+
+The [local-launch update](docs/LOCAL_LAUNCH.md) makes repeat starts safe to understand. These commands require the launcher update after the original `v2.0.0` tag; the application and checkpoint format remain 2.0.0.
+
+```sh
+npm run studio:local   # Start if free; otherwise identify the compatible running service.
+npm run studio:status # Read-only status, without opening the database or starting a server.
+npm run studio:open   # Open the already-running service in your browser.
+```
+
+Leave the original server terminal open. Ctrl+C in that terminal stops it. The launcher does not kill another listener, silently change ports or substitute an explicitly requested storage directory. Status checks do not authenticate process ownership or prove a storage path.
+
 ## Engineering map
 
 | Concern | Implementation | Concrete verification |
