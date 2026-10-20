@@ -129,10 +129,11 @@ export async function runMockMcpSmoke() {
         return;
       }
       throw new Error(`Unexpected tool: ${message.params.name}`);
-    } catch (error) {
+    } catch {
       response.statusCode = 500;
       response.setHeader("content-type", "text/plain");
-      response.end(error.stack || error.message);
+      // Even the loopback fixture must not return assertion inputs or local paths.
+      response.end("Mock MCP request failed");
     }
   });
 
