@@ -68,6 +68,18 @@ npm run studio:review -- --live-datahub --request=./private-request.json --outpu
 
 This mode is not invoked by the hosted demo, tests or evaluations. Keep tenant exports private. The capture deliberately supports the tested **MCP 2025-11-25 handshake profile**, not the different 2026-07-28 stateless lifecycle. Unsupported schema fields, unverified column paths or missing exact weekly usage remain incomplete evidence. A capture is a one-shot review input; it is not a background tenant synchronization service.
 
+## Inspect a review after export
+
+**Review package → Review Inspector** checks saved JSON without uploading it or importing a runnable checkpoint. It verifies hashes and evidence contracts, reproduces deterministic conclusions and draft artifacts, and separates the recorded decision from the embedded evidence's freshness at inspection time. The same guard protects JSON, Markdown and SQL-draft exports. Passing inspection means internally consistent—not authentic or approved.
+
+```sh
+npm run studio:verify -- --file=/absolute/path/to/export.json
+```
+
+![Review Inspector checking an exported synthetic review offline, with separate recorded/current outcomes and explicit unauthenticated status](assets/review-inspector.png)
+
+The [Inspector guide](docs/REVIEW_INSPECTOR.md) explains offline operation, file bounds, replay semantics and adversarial tests. This add-on requires the post-release update on `main`; the original `v2.0.0` tag and its historical verification record remain intact.
+
 ## Open, check or restart local Studio
 
 The [local-launch update](docs/LOCAL_LAUNCH.md) makes repeat starts safe to understand. These commands require the launcher update after the original `v2.0.0` tag; the application and checkpoint format remain 2.0.0.
@@ -87,6 +99,7 @@ Leave the original server terminal open. Ctrl+C in that terminal stops it. The l
 | Typed composition | [`recipe.js`](public/studio/core/recipe.js) | Cycles, duplicate steps, required dependencies, unknown capabilities and budgets |
 | Bounded orchestration | [`runtime.js`](public/studio/core/runtime.js) | Concurrency, retry accounting, deadlines, late results, cancellation and persistence failure |
 | Evidence / compatibility | [`evidence.js`](public/studio/core/evidence.js), [`policy.js`](public/studio/core/policy.js) | Exact targets, missing/partial/stale evidence, narrowing and schema mismatch |
+| Offline review inspection | [`inspection.js`](public/studio/core/inspection.js) | Rehashed projection drift, policy/artifact replay, stale evidence, local-only file handling and no-upload browser checks |
 | Durable local state | [`store.mjs`](src/studio/store.mjs), [`service.mjs`](src/studio/service.mjs) | Real SQLite reopen, stale-writer fencing, simultaneous starts and interrupted-process recovery |
 | MCP boundary | [`datahub-mcp-client.mjs`](src/datahub-mcp-client.mjs) | Response IDs, protocol/tool errors, deadlines, byte limits and read-only capabilities |
 | Browser checkpoints | [`storage.js`](public/studio/storage.js) | Corruption preservation, quota failure, cross-tab conflicts and bounded history |

@@ -368,6 +368,53 @@
               SQL draft ↓
             </button>
           </div>
+          <section
+            id="review-inspector"
+            class="panel inspection-panel"
+            aria-labelledby="inspection-title"
+          >
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">VERIFY WHAT YOU CARRY FORWARD</p>
+                <h3 id="inspection-title">Review Inspector</h3>
+              </div>
+              <span id="inspection-badge" class="badge">NO INPUT</span>
+            </div>
+            <p class="muted">
+              Check an exported review without uploading it. Reproduce deterministic conclusions
+              from the evidence inside the file, then distinguish the recorded decision from its
+              current freshness. Files are never imported as runnable state.
+            </p>
+            <label for="inspection-file">Exported run JSON · at most 4 MB</label>
+            <input
+              id="inspection-file"
+              type="file"
+              accept=".json,application/json"
+              aria-describedby="inspection-privacy"
+            />
+            <p id="inspection-privacy" class="field-help">
+              Read in this browser only. No network request, tool call, checkpoint write or
+              execution. Internal consistency is not proof of authenticity.
+            </p>
+            <div class="artifact-actions">
+              <button id="inspect-current" class="button secondary" type="button" disabled>
+                Inspect current review
+              </button>
+              <button id="inspection-download" class="button subtle" type="button" disabled>
+                Export inspection summary ↓
+              </button>
+              <button id="inspection-clear" class="button subtle" type="button">
+                Clear inspection
+              </button>
+            </div>
+            <div
+              id="inspection-result"
+              data-state="empty"
+              role="status"
+              aria-live="polite"
+              aria-atomic="false"
+            ></div>
+          </section>
           <div class="evidence-grid">
             <section class="panel">
               <div class="panel-heading">
