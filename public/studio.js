@@ -1,3 +1,5 @@
+import { inspectReview } from './studio/core/inspection.js';
+import { mountInspector } from './studio/inspection-view.js';
 import {
   STUDIO_VERSION,
   StudioError,
@@ -42,6 +44,7 @@ let metadata = null,
 let history = [],
   selectedId = 'rename',
   editing = false;
+mountInspector({ current: () => current, busy: () => busy });
 const local = () => metadata?.runtime === 'durable-local';
 const errorText = (error) =>
   error instanceof StudioError
@@ -50,6 +53,7 @@ const errorText = (error) =>
       ? 'The operation was cancelled.'
       : 'The operation could not finish. Existing evidence has been preserved.';
 function controls() {
+  $('inspect-current').disabled = busy || !current;
   const complete = current?.status === 'completed',
     ready =
       complete &&
@@ -363,22 +367,27 @@ $('pipeline-graph').addEventListener('keydown', (event) => {
 });
 $('compare-additive').addEventListener('click', () => compare('additive'));
 $('compare-strict').addEventListener('click', () => compare('strict'));
-$('download-run').addEventListener(
-  'click',
-  safeAction(async () => {
-    if (!current || current.status !== 'completed') return;
-    await verifyRun(current);
-    download(current, `lineageguard-${current.id.slice(0, 8)}.json`);
-  }),
-);
-$('download-markdown').addEventListener('click', () => {
-  if (current?.result)
-    download(current.result.artifacts.markdown, 'lineageguard-review.md', 'text/markdown');
-});
-$('download-sql').addEventListener('click', () => {
-  if (current?.result)
-    download(current.result.artifacts.sql, 'lineageguard-review-draft.sql', 'text/plain');
-});
+for (const [id, key, name, type] of [
+  ['download-run', null, null, 'application/json'],
+  ['download-markdown', 'markdown', 'lineageguard-review.md', 'text/markdown'],
+  ['download-sql', 'sql', 'lineageguard-review-draft.sql', 'text/plain'],
+]) {
+  $(id).addEventListener(
+    'click',
+    safeAction(async () => {
+      const selected = current;
+      if (!selected || selected.status !== 'completed' || busy) return;
+      await inspectReview(selected);
+      // Changing input while verification is in flight must not export an old review.
+      if (current !== selected || busy) return;
+      download(
+        key ? selected.result.artifacts[key] : selected,
+        name || `lineageguard-${selected.id.slice(0, 8)}.json`,
+        type,
+      );
+    }),
+  );
+}
 $('acknowledge-button').addEventListener(
   'click',
   safeAction(async () => {

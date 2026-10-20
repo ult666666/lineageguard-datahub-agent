@@ -33,3 +33,10 @@ Keep secret scanning, push protection, private vulnerability reporting, dependen
 Report security issues privately through the repository's Security tab. Include the affected version, expected and observed behavior, and a minimal synthetic reproduction. Never post tokens, private schemas, catalog exports or personal data in a public issue.
 
 This threat model describes implemented and explicitly limited controls. It is not a penetration-test certificate, enterprise deployment approval or guarantee of perfect security.
+
+
+## Portable Review Inspector boundary
+
+The post-release Inspector accepts bounded UTF-8 JSON as data, not code or a runnable checkpoint. Duplicate keys, malformed/oversized inputs, wrong evidence bindings, changed output projections and nonreproducible drafts are refused. Its browser component uses text nodes and does not upload, fetch tools or write checkpoint history. Clearing or changing a selection invalidates an older in-flight result. The CLI refuses links and special files and reports safe error codes rather than supplied contents or paths.
+
+No claim of authenticated evidence is introduced. An attacker able to reconstruct an entire self-consistent package can also reconstruct unkeyed hashes. The Inspector does not sign reviews, verify external identity, independently establish source truth or grant approvals. Policy replay reuses Studio's implementation and supplied timestamps. It adds a corruption/consistency boundary, not a substitute for trusted catalog capture, independent policy validation or authenticated organizational review.

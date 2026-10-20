@@ -95,6 +95,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         assert.equal(await verifyRun(exported), true);
         assert.equal(exported.result.policy.executionAuthorized, false);
         results.push(`${mode}: verified export`);
+        results.push(
+          ...(await require('./inspection-browser.cjs')(page, { file, evidence, mode })),
+        );
+        if (previewOnly) {
+          await require('./inspection-export-browser.cjs')(page, base);
+          results.push('browser-session: rehashed inconsistent export is refused');
+        }
         await page.locator('[data-view="compare"]').first().click();
         await page.locator('#compare-additive').click();
         await page.waitForFunction(

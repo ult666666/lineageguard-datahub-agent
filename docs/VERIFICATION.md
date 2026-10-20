@@ -1,5 +1,13 @@
 # Studio 2.0 verification
 
+## Review Inspector follow-up — 20 October 2026
+
+The Inspector adds 19 core/CLI tests to the launcher-era 101-test suite: **120 Node tests passed**. The browser suite now passes **31 journeys** across browser-session and durable-local modes. It verifies inspection with networking disabled, zero initiated requests and unchanged checkpoint storage; refusal of tampering/oversize data; no stale report after a new file or Clear; responsive layout; and refusal to export a rehashed inconsistent SQL draft. The original **19 evaluation assertions**, MCP smoke and formatter pass. The exact public inventory now contains **21 files plus its manifest**, explicitly including both Inspector modules. These layers overlap and are not summed as independent tests.
+
+A source-level baseline demonstrated that the old checksum verifier accepted a result projection changed after recomputing the outer checksum. A real browser regression then downloaded the inconsistent draft with the old export check; the new semantic export check refused it. Core tests also change policy, evidence target/mode/digest and regenerated artifacts. A time-window regression proves policy can be consistent at an internal freshness transition even when neither endpoint matches. CLI tests preserve input bytes and refuse links, special files and oversized input. Browser tests first found a narrow-screen min-content overflow, traced to the existing table minimum; the scoped Inspector layout correction passes the same 390/768/1440 checks.
+
+The shared Inspector has no network, catalog, model, store-write or resume capability. It is replay consistency using the same deterministic functions, not independent source validation or authentication. The report explicitly sets `sourceAuthenticated=false`, `executionAuthorized=false`, `toolCalls=0` and `resumableImport=false`. See [REVIEW_INSPECTOR.md](REVIEW_INSPECTOR.md). The original engine, policy, API, SQLite service/store and checkpoint schema are unchanged. Hosted acceptance and the user's local installation are separate final gates recorded after publication; no independent external reviewer is claimed.
+
 ## Local launcher follow-up — 20 October 2026
 
 The post-release launcher change preserves application/policy version 2.0.0 and every public runtime asset. It adds 17 focused launch checks to the preserved 84-test application suite: **101 Node tests passed**. The same 24 browser journeys, 19 evaluation assertions, original MCP smoke, formatting, exact 19-file static payload and 17 hosted acceptance sections were rerun successfully. These are overlapping layers, not a summed count of independent tests.

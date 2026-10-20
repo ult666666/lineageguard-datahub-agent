@@ -146,6 +146,14 @@ const hash = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
     assert.equal(await verifyRun(exported), true);
     assert.equal(exported.result.policy.executionAuthorized, false);
     record('published JSON export passes the source verifier; no execution authority');
+    for (const name of await require('./inspection-browser.cjs')(page, {
+      file: exportPath,
+      evidence: output,
+      mode: 'hosted-browser',
+    }))
+      record(name);
+    await require('./inspection-export-browser.cjs')(page, ORIGIN);
+    record('semantic export guard refuses a rehashed inconsistent synthetic draft');
     await page.locator('[data-view="compare"]').first().click();
     await page.locator('#compare-additive').click();
     await page.waitForFunction(

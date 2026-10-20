@@ -73,6 +73,12 @@ Evidence readiness is independent: missing, stale, future-dated or incomplete re
 
 The artifacts use validated identifiers and types. Unsupported or blocked operations are omitted or commented. SQL remains a dialect-specific review draft, not a verified migration or atomic rollback transaction. A local acknowledgement binds the current review but sets `executionAuthorized=false` and labels its identity `local-unverified`.
 
+## Portable review inspection
+
+The Review Inspector is separate from checkpoint admission and execution. It takes bounded JSON bytes or a copied review object, checks existing integrity bindings, validates completed evidence, reproduces compatibility/policy/artifacts, and checks the final result projection. Its browser surface does not upload or save the file, and the CLI never opens SQLite. Current policy is evaluated against embedded evidence at the displayed inspection time, not against a newly fetched source.
+
+Because policy freshness is time-dependent, recorded-policy replay tests its declared start/end and each relevant freshness transition within that window. This is consistency with declared evidence and timestamps, not proof of a real-world event history. The report explicitly denies source authentication, execution authorization and resumable import. Standard Studio artifact exports now pass through this semantic check too. See [REVIEW_INSPECTOR.md](REVIEW_INSPECTOR.md) for the full boundary and reproducible commands.
+
 ## DataHub integration profile
 
 The MCP client implements the explicitly tested 2025-11-25 handshake profile, including initialization, session identifiers and tool execution. It binds JSON-RPC response IDs, distinguishes protocol errors from tool errors, enforces deadlines and response sizes, refuses redirects and constrains tools to an explicit read-only list. MCP 2026-07-28 has a different stateless lifecycle and is not claimed compatible.

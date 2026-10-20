@@ -37,3 +37,10 @@ Finish in **Architecture** and follow the source, verification and threat-model 
 “I used a schema-change review problem to build a bounded orchestration system: a typed DAG compiler, a shared browser/Node interpreter, source-bound evidence, failure and cancellation semantics, and a local SQLite coordinator with revision and lease fencing. I can show the failure cases and the tests that caught them. AI assisted implementation, while the product decisions and execution boundaries remained explicit.”
 
 Do not claim enterprise adoption, an autonomous LLM team, production tenant validation or authenticated approvals that the project does not implement.
+
+
+## Follow-up demonstration: verify an exported review
+
+In Review package, inspect the current review, then export JSON and select it in Review Inspector. The Inspector verifies consistency locally, including while the loaded browser is offline. Show the recorded decision next to the current assessment of the same embedded evidence. Explain that it never reruns the source tools and that a stale but internally consistent report is not fresh evidence.
+
+For the failure path, modify a copy of the exported JSON and inspect that copy. The UI refuses it, clears the former successful result and leaves the active run/history unchanged. Export the inspection summary and point out `sourceAuthenticated=false`, `executionAuthorized=false` and `toolCalls=0`. A checksum alone is not a signature; the semantic replay also catches result/draft mismatches after an outer checksum is regenerated. Do not claim protection against wholesale fabrication of a self-consistent package.
