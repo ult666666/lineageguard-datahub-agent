@@ -11,3 +11,8 @@ dist
 build
 tmp
 *.log
+
+.lineageguard
+*.sqlite*
+test-results
+playwright-report

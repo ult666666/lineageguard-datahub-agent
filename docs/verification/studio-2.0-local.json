@@ -1,0 +1,176 @@
+{
+  "schema": "lineageguard.local-verification/2",
+  "observedAt": "2026-10-19T19:31:46.815584-07:00",
+  "baseCommit": "0ca61b69ce401ff5e0d87d78f8d3ddbf95da4585",
+  "runtime": "v24.18.0",
+  "tests": {
+    "node": 84,
+    "browserJourneys": 24,
+    "evaluationAssertions": 19,
+    "staticFiles": 19
+  },
+  "result": "pass",
+  "publication": "not implied by local checks",
+  "sourceHashes": [
+    {
+      "path": ".github/workflows/tests.yml",
+      "sha256": "76c0ee07dc2b988521a0083e261a747c26f6187b3874c21cd99ee303ced0247c"
+    },
+    {
+      "path": "api/studio.js",
+      "sha256": "add7121c2e6ca9bc3889d67856d2b5b58cdb422acbbc09fd931497eaac8f7200"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "fa84f54713e193f4262e6edc8b1cb0482184bd7716390b0aa175e2a0f72e777d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "568d1e276c310630e66d8f6f56b8f194204f1cdebd21145da7c71542c032c438"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "26f894c5683836a7579e21a30442903b094c91b029a896f5cf067fa68e4e0bbd"
+    },
+    {
+      "path": "public/studio/core/artifacts.js",
+      "sha256": "a894d36521c95181e6d55d082f952684bdf2232b40408cd3d7b5cb0c96bda213"
+    },
+    {
+      "path": "public/studio/core/comparison.js",
+      "sha256": "084f660ca1fd3b243309aa41a88e966ab9f5880ca0efbb1da476a6c02b035ecb"
+    },
+    {
+      "path": "public/studio/core/contract.js",
+      "sha256": "3f61f8b07e87d012c3bbdfbb8981456d8f9f2638fb1cc1de58d155ea8a460ad8"
+    },
+    {
+      "path": "public/studio/core/evaluations.js",
+      "sha256": "d33b42536f6ff740d2cb687dd53e612f9f5ac6bfb4427e05a7f02cac9129ac77"
+    },
+    {
+      "path": "public/studio/core/evidence.js",
+      "sha256": "80256591e5ba839bff86060a33820fd8f4afe1560946ab35a0ab551ae092ce24"
+    },
+    {
+      "path": "public/studio/core/fixtures.js",
+      "sha256": "eb03f99906d995ed29a0bb9dc458f67f23ed4078d14d52e78b6fa1925b07de9c"
+    },
+    {
+      "path": "public/studio/core/policy.js",
+      "sha256": "4833d74394aab9029ae886fe41ea1affa52b133ec163840cabffa167800400e1"
+    },
+    {
+      "path": "public/studio/core/recipe.js",
+      "sha256": "0b0475eb9a2155c22f287db9b9ed332c0342908ee9d1f054984a78117b3470f9"
+    },
+    {
+      "path": "public/studio/core/runtime.js",
+      "sha256": "db514f050a6c8a734b9b9525285045e08ba98b881c9868895ec3f2f24788bc60"
+    },
+    {
+      "path": "public/studio/mark.svg",
+      "sha256": "d6fa436455a0134e63f4494097eaf207232c05f4db90a8153608f5611904ea61"
+    },
+    {
+      "path": "public/studio/storage.js",
+      "sha256": "0edd1689e7a8bcaef47db3e7197815f5a67992cf871cfec066d1bc3bf71a2a28"
+    },
+    {
+      "path": "public/studio/transport.js",
+      "sha256": "d467419f4b8d983df2bf8bce76803176ddf213c08929516ed23ecc4dd06f537c"
+    },
+    {
+      "path": "public/studio/view.js",
+      "sha256": "f22acf04c15df5089a8aa175ee2f5bf39124e84efd54c4266789fba7bd4b9f90"
+    },
+    {
+      "path": "public/studio.css",
+      "sha256": "c3c4e7e2fa4557241d4d68814ea79f189c0d605aa77fb5bcff2c523521073550"
+    },
+    {
+      "path": "public/studio.js",
+      "sha256": "e053321f28ea34558f3cfa615f00025452b5aefd7b2718e9e3e414fa76d444fb"
+    },
+    {
+      "path": "scripts/build-studio.mjs",
+      "sha256": "67188e31081b1e91b5ce2e497567442d02415991fc23ffee3f9a1560ad157c67"
+    },
+    {
+      "path": "scripts/studio-browser.cjs",
+      "sha256": "a676373ba3b6f4d4f707978c2229665120f45f94054dda61748f9c88b7130fcd"
+    },
+    {
+      "path": "scripts/studio-review.mjs",
+      "sha256": "d5a373e2c815786c55e2326fc69765eac7e120d55f1bf3519b65d09aeb0b72f2"
+    },
+    {
+      "path": "scripts/studio-server.mjs",
+      "sha256": "1e8f0c3dd84f101696e499d137089f8ec96860fbce84d46ba838c20899e85b4d"
+    },
+    {
+      "path": "src/studio/datahub-snapshot.mjs",
+      "sha256": "698e29a5495b183c6da5f3ffacf6411b0e1a933b372edc94a0ceea8b015018cf"
+    },
+    {
+      "path": "src/studio/http.mjs",
+      "sha256": "379bc410ee475199eb20b83329e57bb6c75e69d4dadcc42c04ce323c0c74cf40"
+    },
+    {
+      "path": "src/studio/public-api.mjs",
+      "sha256": "6428799bf2a447784d9ae51d64a6d63289ebc339071a78d1fa833c38ffedbce5"
+    },
+    {
+      "path": "src/studio/service.mjs",
+      "sha256": "6a3f2b00e88c3a6ad2ea53a4c890de3abd5dc1e024a229465d64da44f1f9b88e"
+    },
+    {
+      "path": "src/studio/store.mjs",
+      "sha256": "de340ea37e634f6923f3f541fbf8c25b072e83c4868a0b477f46ce218e4d7eee"
+    },
+    {
+      "path": "test/studio/adversarial.test.mjs",
+      "sha256": "f09aac5789ebe4f50860be38b4aefb1bcb7fe5dc3ba2b47cc8b59ad7a7d59ecc"
+    },
+    {
+      "path": "test/studio/browser-storage.test.mjs",
+      "sha256": "79dd13429c432f9395acc67e28f16c36e4f86985999c80b65fe525c37afa479a"
+    },
+    {
+      "path": "test/studio/build.test.mjs",
+      "sha256": "ce561c541f464aff7239c40d56a90c63943d47ecf04800a1a7635e3f48f0e5dc"
+    },
+    {
+      "path": "test/studio/cli.test.mjs",
+      "sha256": "3519fe512afbf7c57e48c22382096783e09eb3f93fc65f5701cf2677c43c4073"
+    },
+    {
+      "path": "test/studio/core.test.mjs",
+      "sha256": "3974f34097c0b5f4dac03aefe290d06a559ef501a1c91dc07b4c6028272c69cb"
+    },
+    {
+      "path": "test/studio/datahub-snapshot.test.mjs",
+      "sha256": "415bec24f0e3dd8ead97d1a1dc99d92b0bc22ea6689dd43e2c72bb9721156163"
+    },
+    {
+      "path": "test/studio/http.test.mjs",
+      "sha256": "ee02589747fb626bd9afb4e1d6ba86d9aeb81661335d57d11e4d62ce971b255e"
+    },
+    {
+      "path": "test/studio/process-recovery.test.mjs",
+      "sha256": "89e1969f491e8d82a94902c041caedca0aa64229292ad480831e70b240ff84da"
+    },
+    {
+      "path": "test/studio/store.test.mjs",
+      "sha256": "b0be065c0edcf42d998e0f63c40af5a6ae2df3e8c1dda0b18f248f095dd41bd2"
+    }
+  ],
+  "boundaries": {
+    "paidInference": false,
+    "catalogWrites": false,
+    "sqlExecution": false,
+    "liveTenantTested": false,
+    "dockerTested": false,
+    "independentExternalAudit": false
+  }
+}

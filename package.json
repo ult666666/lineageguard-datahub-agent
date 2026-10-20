@@ -1,16 +1,27 @@
 {
   "name": "lineageguard-datahub-agent",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "A DataHub-context agent that reviews schema changes before they break downstream systems.",
+  "description": "Evidence-driven workflow orchestration: typed DAGs, bounded execution, SQLite recovery, policy readiness and reproducible evaluations.",
   "scripts": {
     "start": "node src/server.mjs",
     "test": "node --test",
     "demo": "node src/demo.mjs",
-    "mcp:smoke": "node scripts/mock-mcp-smoke.mjs"
+    "mcp:smoke": "node scripts/mock-mcp-smoke.mjs",
+    "studio:local": "node scripts/studio-server.mjs",
+    "studio:review": "node scripts/studio-review.mjs",
+    "studio:evaluate": "node scripts/studio-evaluate.mjs",
+    "test:browser": "node scripts/studio-browser.cjs",
+    "build": "node scripts/build-studio.mjs",
+    "verify": "npm test && npm run studio:evaluate && npm run build",
+    "format:check": "prettier --check public/studio public/studio.js public/studio.css public/index.html src/studio src/datahub-mcp-client.mjs src/catalog-adapter.mjs src/server.mjs api/studio.js test/studio test/mcp-boundary.test.mjs scripts/studio-browser.cjs scripts/studio-server.mjs scripts/studio-review.mjs scripts/studio-evaluate.mjs scripts/build-studio.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13.0 <25"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1",
+    "prettier": "3.9.10"
   }
 }
