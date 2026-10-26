@@ -75,6 +75,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         const select = async (id) => {
           await page.locator('#scenario-select').selectOption(id);
         };
+        results.push(
+          ...(await require('./saved-comparison-browser.cjs')(page, { evidence, mode })),
+        );
+        await page.locator('[data-view="overview"]').first().click();
         await select('rename');
         await page.locator('#run-button').click();
         await done('completed');

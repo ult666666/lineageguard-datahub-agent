@@ -1,4 +1,5 @@
 import { inspectReview } from './studio/core/inspection.js';
+import { mountSavedComparison } from './studio/saved-comparison-view.js';
 import { mountInspector } from './studio/inspection-view.js';
 import {
   STUDIO_VERSION,
@@ -45,6 +46,7 @@ let history = [],
   selectedId = 'rename',
   editing = false;
 mountInspector({ current: () => current, busy: () => busy });
+mountSavedComparison();
 const local = () => metadata?.runtime === 'durable-local';
 const errorText = (error) =>
   error instanceof StudioError

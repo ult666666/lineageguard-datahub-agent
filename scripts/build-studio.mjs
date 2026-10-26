@@ -22,6 +22,7 @@ export const PUBLIC_FILES = [
   'studio/core/runtime.js',
   'studio/mark.svg',
   'studio/inspection-view.js',
+  'studio/saved-comparison-view.js',
   'studio/storage.js',
   'studio/transport.js',
   'studio/view.js',
