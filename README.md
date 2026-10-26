@@ -72,6 +72,8 @@ This mode is not invoked by the hosted demo, tests or evaluations. Keep tenant e
 
 **Review package → Review Inspector** checks saved JSON without uploading it or importing a runnable checkpoint. It verifies hashes and evidence contracts, reproduces deterministic conclusions and draft artifacts, and separates the recorded decision from the embedded evidence's freshness at inspection time. The same guard protects JSON, Markdown and SQL-draft exports. Passing inspection means internally consistent—not authentic or approved.
 
+**Compare two saved exports offline:** `node scripts/studio-compare.mjs --left=/path/left.json --right=/path/right.json` requires both packages to pass the existing semantic Inspector before showing recorded policy/evidence differences. It keeps alternative requests explicit and inspection-time freshness separate from recorded decisions, with no import, tool calls, stores or execution authority. Follow the [synthetic standard/strict walkthrough and command contract](docs/REVIEW_COMPARISON.md).
+
 ```sh
 npm run studio:verify -- --file=/absolute/path/to/export.json
 ```
