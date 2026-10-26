@@ -129,6 +129,12 @@ const hash = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
         { timeout: 20000 },
       );
     const select = (id) => page.locator('#scenario-select').selectOption(id);
+    for (const name of await require('./saved-comparison-browser.cjs')(page, {
+      evidence: output,
+      mode: 'hosted-browser',
+    }))
+      record(name);
+    await page.locator('[data-view="overview"]').first().click();
     await select('rename');
     await page.locator('#run-button').click();
     await done('completed');

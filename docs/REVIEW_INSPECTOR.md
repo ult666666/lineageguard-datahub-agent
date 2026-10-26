@@ -10,6 +10,8 @@ The panel separates the recorded decision from **the current assessment of the e
 
 The loaded Inspector also works with the browser set offline. Loading Studio itself still needs the local or hosted application to be reachable; this is not an offline-installed PWA.
 
+For two completed saved reviews, use **Compare → Compare saved reviews** or the native command described in [Compare two saved reviews](REVIEW_COMPARISON.md). Both consumers run this same Inspector before comparing recorded results.
+
 ## Verify a file from the terminal
 
 Requires the Inspector update on current `main`; the original `v2.0.0` tag remains unchanged. No package installation, database or tenant is required for this command.
