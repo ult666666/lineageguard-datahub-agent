@@ -1,0 +1,18 @@
+# Validated saved-export comparison
+
+The existing browser compares newly executed alternatives; the Review Inspector/CLI checks one saved export. A reviewer holding two exported JSON files has no maintained offline consumer that requires both semantic inspections before displaying their recorded differences. Add that narrow native workflow, reusing current contracts rather than changing comparison or approval semantics.
+
+## Design
+
+- `compareReviewBytes(left, right, {now})` in `src/studio/review-comparison.mjs` takes owned bounded UTF-8 byte snapshots, runs the existing inspector on both at one inspection time, requires two completed reviews, then calls unchanged `compareRuns`. Return its exact recorded comparison plus both inspection reports/file hashes and explicit no-authentication/no-execution/no-tool/no-resume scope. Freshness reports assess embedded evidence now; recorded comparison decisions are not rewritten by current freshness. Errors identify left/right without disclosing file contents.
+- `npm run studio:compare -- --left=/path/left.json --right=/path/right.json [--json]` reads two existing regular unlinked files, max4,000,000 bytes each, and writes only stdout. Reuse the existing single-file CLI's safe reader extracted unchanged into `scripts/lib/review-file.mjs`. Reject symlink ancestors, hardlinks, directories/FIFOs, absent/empty/oversized files and changes during read. No source rewrites, output file option, store, adapter, network, database or execution capability.
+- Exit0 means two internally consistent completed exports could be compared, including different requests. Preserve all `sameRequest`, `sameRecipe`, `sameSourceRevision`, gap and recorded decision semantics. Different requests remain an explicitly labelled alternative-plan comparison, not an error or identical-input claim. Exit2 is argument/read/inspection/incomplete failure; sanitized errors show side/code only, never supplied strings or local paths. Help is exit0. Success output intentionally includes supplied change summaries/run IDs/bindings; users control where stdout is saved.
+- Documentation supplies a reproducible synthetic standard/strict pair using existing `studio:review`, and a second different-request example, plus interpretation, limits and commands. No new browser UI or static payload is needed. The portfolio's existing Lineage entry can link the maintained command/guide after shipping.
+
+## Approaches considered
+
+Extending the live comparison UI would duplicate its execution workflow and expand import/storage responsibilities. Shelling out to two inspectors would complicate robust report/data ownership and child processes. A small compositional native consumer keeps actual semantic validation and comparison in one process with a shared safe file boundary.
+
+## Verification
+
+Real synthetic runs, not mocked inspectors: same request/different policies, different requests, fixed-time stale current evidence versus recorded decisions, invalid/corrupt/rehashed semantic tampering on either side, duplicate members/invalid UTF-8/oversize, incomplete reviews and mutation while awaiting. Real CLI child processes verify text/JSON, same file both sides, argument rejection, left/right error attribution, links/special files, no input/cwd/store changes and no raw error content. Existing inspector CLI tests must remain green after reader extraction. Run full unit/evaluations/build/format and existing browser verification; independently review exact head, ship green CI and verify public source/portfolio route. Public examples/claims remain synthetic and truthful.
