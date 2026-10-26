@@ -9,12 +9,12 @@ From the repository root, create two **new** export paths with the existing fixt
 ```sh
 npm run studio:review -- --scenario=safe-add --profile=standard --output=./.lineageguard/comparison-standard.json
 npm run studio:review -- --scenario=safe-add --profile=strict --output=./.lineageguard/comparison-strict.json
-npm run studio:compare -- --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-strict.json
+node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-strict.json
 ```
 
 For these fictional inputs, the recorded standard decision is `proceed-with-checks` and strict is `review-required`. The request and source revision are the same; recipes differ. These are policy demonstration results, not organizational approval. Repeated execution creates different run IDs/timestamps, while the comparison's meaning remains the same.
 
-To consume one JSON object without npm's logging prefix, invoke the script directly (or use `npm --silent run studio:compare -- ... --json`):
+Use the direct Node entrypoint above for the sanitized stdout contract. Plain `npm run studio:compare` prints an argument banner, including supplied paths, before the script starts; do not use that unsilenced wrapper for private refusal receipts. The optional `npm --silent run studio:compare -- ... --json` wrapper suppresses the banner. To consume one JSON object directly:
 
 ```sh
 node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-strict.json --json
@@ -26,7 +26,7 @@ Different requests remain permitted and explicitly labelled **alternative-plan c
 
 ```sh
 npm run studio:review -- --scenario=rename --output=./.lineageguard/comparison-rename.json
-npm run studio:compare -- --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-rename.json
+node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-rename.json
 ```
 
 ## Read the result

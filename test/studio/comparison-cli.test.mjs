@@ -185,3 +185,29 @@ test('CLI rejects ambiguous/unsupported arguments and documents no execution aut
   assert.match(help.stdout, /recorded/i);
   assert.deepEqual(fs.readdirSync(dir), []);
 });
+
+test('the advertised entrypoint keeps refusal stdout parseable without leaking argument paths', (t) => {
+  const dir = temporary(t);
+  const help = call(['--help'], dir);
+  assert.equal(help.status, 0);
+  const prefix = help.stdout.match(/^Use: (.+) --left=/m)[1].split(' ');
+  assert(['npm', 'node'].includes(prefix[0]));
+  const root = fileURLToPath(new URL('../../', import.meta.url));
+  const candidate = path.join(dir, 'PRIVATE_PATH_CANARY.json');
+  const result = spawnSync(prefix[0], [...prefix.slice(1), ...options(candidate, candidate)], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 10000,
+    env: { ...process.env, HOME: dir },
+  });
+  assert.equal(result.status, 2, result.stderr);
+  assert(
+    !result.stdout.includes('PRIVATE_PATH_CANARY'),
+    'Advertised command echoed a supplied path',
+  );
+  assert(!result.stdout.includes(dir));
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.code, 'FILE_UNREADABLE');
+  assert.equal(report.side, 'left');
+  assert.deepEqual(fs.readdirSync(dir), []);
+});

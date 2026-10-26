@@ -33,7 +33,7 @@ try {
   }
   if (args.length === 1 && args[0] === '--help') {
     console.log(
-      'LineageGuard saved-review comparison\n\nUse: npm run studio:compare -- --left=/path/left.json --right=/path/right.json [--json]\nRead-only offline comparison: both existing UTF-8 exports must pass inspection and be completed. Each file is bounded to4,000,000 bytes. No tool calls, stores, uploads, writes, resume or SQL execution.\nRecorded decisions and current embedded-evidence assessments are separate. Different requests are labelled alternative plans.\nExit0 means internally consistent exports could be compared, not authenticity or approval; exit2 means refusal. JSON success reports include supplied summaries/run identities; choose stdout destinations accordingly.',
+      'LineageGuard saved-review comparison\n\nUse: node scripts/studio-compare.mjs --left=/path/left.json --right=/path/right.json [--json]\nRead-only offline comparison: both existing UTF-8 exports must pass inspection and be completed. Each file is bounded to4,000,000 bytes. No tool calls, stores, uploads, writes, resume or SQL execution.\nRecorded decisions and current embedded-evidence assessments are separate. Different requests are labelled alternative plans.\nExit0 means internally consistent exports could be compared, not authenticity or approval; exit2 means refusal. JSON success reports include supplied summaries/run identities; choose stdout destinations accordingly.',
     );
   } else {
     if (!paths.left || !paths.right) invalid();
