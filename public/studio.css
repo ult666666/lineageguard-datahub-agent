@@ -1470,3 +1470,26 @@ td.result-fail {
   table-layout: fixed;
   overflow-wrap: anywhere;
 }
+
+#saved-result {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  overflow-wrap: anywhere;
+}
+#saved-result h4 {
+  font-size: 15px;
+  margin-block: 0 12px;
+}
+.saved-inputs {
+  margin-block: 20px;
+}
+.saved-inputs input {
+  display: block;
+  margin-top: 8px;
+}
+.saved-side {
+  min-width: 0;
+}
+#saved-status {
+  min-height: 1.5em;
+}

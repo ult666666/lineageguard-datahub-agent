@@ -17,6 +17,28 @@ async function run(id = 'safe-add', profile = 'standard', options = {}) {
 }
 const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
+test('browser-safe entrypoint validates both exports with the native comparison contract', async () => {
+  const portable = await import('../../public/studio/core/review-comparison.js').catch((error) => {
+    if (error.code === 'ERR_MODULE_NOT_FOUND') return {};
+    throw error;
+  });
+  assert.equal(
+    typeof portable.compareReviewBytes,
+    'function',
+    'Browser-safe comparison entrypoint must exist',
+  );
+  const left = encode(await run()),
+    right = encode(await run('safe-add', 'strict'));
+  const report = await portable.compareReviewBytes(left, right);
+  assert.equal(report.comparison.left.decision, 'proceed-with-checks');
+  assert.equal(report.comparison.right.decision, 'review-required');
+  assert.equal(report.executionAuthorized, false);
+  await assert.rejects(portable.compareReviewBytes(left, new Uint8Array([0xc3, 0x28])), {
+    code: 'INVALID_JSON',
+    side: 'right',
+  });
+});
+
 test('two inspected exports preserve recorded standard/strict comparison and file identities', async () => {
   const left = encode(await run()),
     right = encode(await run('safe-add', 'strict'));

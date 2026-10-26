@@ -472,6 +472,59 @@
               evidence revisions are called out instead of being hidden behind a headline metric.
             </p>
           </div>
+          <section
+            id="saved-comparison"
+            class="panel inspection-panel"
+            aria-labelledby="saved-title"
+          >
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">LOCAL FILES</p>
+                <h3 id="saved-title">Compare saved reviews</h3>
+              </div>
+              <span id="saved-badge" class="badge">NO COMPARISON</span>
+            </div>
+            <p class="muted">
+              Choose two completed exported reviews. Each file must be 1–4,000,000 bytes. Both are
+              checked locally before any comparison is shown. No upload, source lookup, import or
+              execution occurs.
+            </p>
+            <div class="inspection-grid saved-inputs">
+              <div>
+                <label for="saved-left-file">Left exported review JSON</label
+                ><input id="saved-left-file" type="file" accept=".json,application/json" />
+              </div>
+              <div>
+                <label for="saved-right-file">Right exported review JSON</label
+                ><input id="saved-right-file" type="file" accept=".json,application/json" />
+              </div>
+            </div>
+            <div class="artifact-actions">
+              <button id="saved-compare" class="button primary" type="button" disabled>
+                Compare saved exports
+              </button>
+              <button id="saved-download" class="button secondary" type="button" disabled>
+                Export comparison JSON ↓
+              </button>
+              <button id="saved-clear" class="button subtle" type="button">
+                Clear saved comparison
+              </button>
+            </div>
+            <p class="field-help">
+              The downloaded report includes supplied request summaries and run identifiers. Keep
+              private files and reports local. Internal consistency does not authenticate source
+              truth or approval.
+            </p>
+            <p id="saved-status" class="field-help" role="status" aria-live="polite"></p>
+            <div
+              id="saved-result"
+              role="region"
+              aria-label="Saved review comparison result"
+              aria-busy="false"
+              data-state="empty"
+            ></div>
+          </section>
+          <h3>Evaluate another plan from the current review</h3>
           <div class="artifact-actions">
             <button id="compare-additive" class="button primary" type="button" disabled>
               Evaluate an additive alternative</button
