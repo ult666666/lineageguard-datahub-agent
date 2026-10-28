@@ -1,78 +1,111 @@
-# Studio 2.0 verification
+# Verification
 
-## Review Inspector follow-up — 20 October 2026
+GitHub Actions runs these checks on every pull request and every push to `main`.
+The [workflow page](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml)
+shows the latest results. CI uses synthetic data only, clears the DataHub URL and
+token, and has no deploy or catalog step.
 
-The Inspector adds 19 core/CLI tests to the launcher-era 101-test suite: **120 Node tests passed**. The browser suite now passes **31 journeys** across browser-session and durable-local modes. It verifies inspection with networking disabled, zero initiated requests and unchanged checkpoint storage; refusal of tampering/oversize data; no stale report after a new file or Clear; responsive layout; and refusal to export a rehashed inconsistent SQL draft. The original **19 evaluation assertions**, MCP smoke and formatter pass. The exact public inventory now contains **21 files plus its manifest**, explicitly including both Inspector modules. These layers overlap and are not summed as independent tests.
+## What CI runs
 
-A source-level baseline demonstrated that the old checksum verifier accepted a result projection changed after recomputing the outer checksum. A real browser regression then downloaded the inconsistent draft with the old export check; the new semantic export check refused it. Core tests also change policy, evidence target/mode/digest and regenerated artifacts. A time-window regression proves policy can be consistent at an internal freshness transition even when neither endpoint matches. CLI tests preserve input bytes and refuse links, special files and oversized input. Browser tests first found a narrow-screen min-content overflow, traced to the existing table minimum; the scoped Inspector layout correction passes the same 390/768/1440 checks.
+[`tests.yml`](../.github/workflows/tests.yml) has two jobs:
 
-The shared Inspector has no network, catalog, model, store-write or resume capability. It is replay consistency using the same deterministic functions, not independent source validation or authentication. The report explicitly sets `sourceAuthenticated=false`, `executionAuthorized=false`, `toolCalls=0` and `resumableImport=false`. See [REVIEW_INSPECTOR.md](REVIEW_INSPECTOR.md). The original engine, policy, API, SQLite service/store and checkpoint schema are unchanged. Hosted acceptance and the user's local installation are separate final gates recorded after publication; no independent external reviewer is claimed.
+| Job | Steps |
+| --- | --- |
+| Offline tests (Node 22 and 24) | `npm test`: the full Node suite, including a real interrupted process and SQLite recovery. `npm run mcp:smoke`: a read-only MCP handshake against a loopback fixture. `npm run studio:evaluate`: the named synthetic evaluations. `npm run build` and `node scripts/build-studio.mjs --verify dist`: the exact public file list and its hashes. |
+| Studio browser workflows (Node 24) | `npm ci --ignore-scripts`, `npm run format:check`, then `npm run test:browser`: Chromium journeys in both the browser-session and durable-local modes, with external requests blocked. |
 
-## Local launcher follow-up — 20 October 2026
+The test job also sets up Python 3.13 for the preserved Codex-skill tests.
 
-The post-release launcher change preserves application/policy version 2.0.0 and every public runtime asset. It adds 17 focused launch checks to the preserved 84-test application suite: **101 Node tests passed**. The same 24 browser journeys, 19 evaluation assertions, original MCP smoke, formatting, exact 19-file static payload and 17 hosted acceptance sections were rerun successfully. These are overlapping layers, not a summed count of independent tests.
+## Run the same checks locally
 
-A real duplicate-start regression failed against the original CLI: it threw `EADDRINUSE` after attempting to initialize an unused store. The corrected CLI identifies the existing service through bounded read-only metadata. The regression leaves an actual paused run unchanged and does not create a database in the second working directory. Other cases cover unrelated/redirecting/oversized/unfinished responses, mode/version mismatch, explicit-store refusal, stopped status, invalid options, opener failure, an injected bind race and actual foreground restart with an exact preserved checkpoint. An inconclusive connection is not labeled occupied or free.
+```sh
+npm ci --ignore-scripts --no-audit --no-fund
+npm test
+npm run mcp:smoke
+npm run studio:evaluate
+npm run format:check
+npx playwright install chromium
+npm run test:browser
+npm run build
+node scripts/build-studio.mjs --verify dist
+```
 
-Status is not process authentication or a database integrity audit. No automatic listener termination, port change, database deletion, paid inference or migration was added. See [LOCAL_LAUNCH.md](LOCAL_LAUNCH.md). The original v2.0.0 tag and its historical 84-test release evidence are not rewritten; follow the launcher-update commit on main for the added commands. Final cloud CI and native-desktop observations are recorded separately after publication. Review comprises direct source inspection, demonstrated regressions and automated checks; an unavailable independent reviewer is not claimed.
+`npm run build` refuses to overwrite an existing `dist/`. `npm run verify:deployed`
+is an opt-in acceptance check of the published preview; CI does not run it. See the
+[delivery guide](RELEASE_2_0.md).
 
-## Publication verification — 20 October 2026
+## What the checks cover
 
-The application implementation merged through [PR #6](https://github.com/ult666666/lineageguard-datahub-agent/pull/6) at `a37c3bc5bc586bd8f7f49a6f6e4fbe856dbb9336`. A fresh checkout passed all 84 Node tests, the 24 browser journeys in both runtime modes, the 19 evaluation assertions, the original MCP smoke, formatting, and the exact 19-file static build. This rerun includes the real test-owned process interruption and SQLite recovery; it is not inferred from the public browser.
+### Durable recovery is exercised, not inferred
 
-The published origin returned Studio version 2.0.0 with browser-session mode and model inference, catalog writes and SQL execution all disabled. The new opt-in `npm run verify:deployed` command passed 17 acceptance sections, including every static asset and manifest byte, serverless compilation and refusal cases, the classic API, verified exports, real UI execution, input invalidation, comparison, browser reload/resume, source-outage recovery, cancellation, executed evaluations and three responsive widths. No external runtime request or JavaScript page error was observed. A deliberately changed expected manifest caused an assertion failure before any passing verification report; the original local build was restored afterward.
+`test/studio/process-recovery.test.mjs` starts a child process with a temporary
+SQLite directory, waits for a real committed checkpoint, interrupts that
+test-owned process and reopens the database. It checks that the stored run is
+still marked running rather than complete, refuses a premature lease claimant,
+and resumes after the old lease expires. The recovered run keeps its ID, gets a
+new generation, reuses only checked evidence and keeps correct call accounting.
 
-This is live verification of a synthetic demonstration, not live-tenant validation. The command records source commit, working-tree cleanliness, output hashes, timestamp and scope under `test-results/`. The final tagged release carries the clean-source verification record and source-package checksums separately from this documentation. Follow the [delivery guide](RELEASE_2_0.md) to reproduce it.
+This proves a bounded single-host recovery path. It does not establish distributed
+durability, resilience to disk corruption or authenticated multi-user coordination.
 
-The portfolio and profile updates are [portfolio PR #4](https://github.com/ult666666/ult666666.github.io/pull/4) and [profile PR #3](https://github.com/ult666666/ult666666/pull/3). Their source review preserves the concurrently updated fintech project and original project history. Portfolio verification is a separate suite: 37 Python tests, its real staged browser suite including 56 navigation checks, and the 28-file static inventory.
+### Browser journeys
 
-## Local implementation verification — 19 October 2026
+Each runtime mode runs a completed review, evidence inspection, a verified JSON
+export, an additive-plan comparison, input invalidation, missing usage, numeric
+narrowing, pause, reload and resume, a source outage and its restoration,
+cancellation, invalid input, the executed evaluations, and layouts at 390, 768 and
+1440 pixels. The Review Inspector and saved-review comparison journeys also run
+with networking disabled and check that nothing is uploaded and stored checkpoints
+do not change. This is targeted accessibility testing, not a WCAG audit.
 
-These results were executed against the Studio 2.0 candidate derived from public base `0ca61b69ce401ff5e0d87d78f8d3ddbf95da4585`. CI, hosted deployment and source publication are separate gates; their final commit and subsequent evidence belong to the release record, not an inferred local success.
+### Regressions reproduced before each fix
 
-| Layer | Executed result | Reproduce |
-| --- | --- | --- |
-| Full Node tests, including preserved classic tests | **84 passed; 0 failed** | `npm test` |
-| Actual browser workflows in browser-session and durable-local modes | **24 journey checks passed; no page errors** | `npm run test:browser` |
-| Named synthetic evaluation assertions | **19 passed; 0 failed** | `npm run studio:evaluate` |
-| Public static build | **19 allowlisted files plus the release manifest** | `npm run build` and `node scripts/build-studio.mjs --verify dist` |
-| Formatting | Current implementation passes the pinned formatter | `npm run format:check` |
-| Read-only MCP transport smoke | Successful initialization and two read tools against an ephemeral loopback fixture | `npm run mcp:smoke` |
+- **MCP client:** it accepted unrelated response IDs, ambiguous result envelopes,
+  unimplemented protocol negotiation and error-marked tool output, exposed remote
+  errors, and could substitute a different mock target.
+- **Store and requests:** a dangling database symlink, races in asynchronous run
+  admission, invalid decimal precision and scale, and an acknowledgement that did
+  not bind the exact result evidence. Batches with duplicate fields or conflicting
+  rename targets are now rejected before any artifact is generated.
+- **Local UI:** the resume check read the old paused checkpoint before the next
+  generation began.
+- **Local launcher:** a second `npm run studio:local` threw `EADDRINUSE` after
+  initializing an unused store. It now identifies the running service through
+  read-only metadata.
+- **Review Inspector:** the old checksum check accepted a result changed after the
+  outer checksum was recomputed, and a browser test downloaded that inconsistent
+  SQL draft. The semantic check now refuses it. Browser tests also found a
+  narrow-screen overflow, now fixed.
 
-The counts are separate, overlapping verification layers—not a summed claim of independent tests. The browser suite checks the actual UI in both modes, not screenshots alone. It runs with external requests blocked and uses fresh test-created storage. The source-bound [local record](verification/studio-2.0-local.json) identifies inputs and artifact hashes.
+### DataHub scope
 
-## Regressions demonstrated before repair
+The capture bridge is tested with injected structured results, not a real tenant.
+It binds the exact target identity, rejects error-marked data, keeps incomplete
+metadata incomplete and does not relabel 30-day counts as exact weekly usage.
+Unknown column paths stay unknown. The transport targets the MCP 2025-11-25
+profile; live-tenant compatibility and the MCP 2026-07-28 lifecycle are not
+claimed. The optional live CLI needs an explicit flag, a request file and local
+credentials, and no automated check runs it.
 
-The MCP client accepted unrelated response IDs, ambiguous result envelopes, unimplemented protocol negotiation and error-marked tool output. It exposed remote errors and could substitute a different mock target. Those behaviors have dedicated failing-baseline regressions and corrected tests.
+## Not covered
 
-Runtime tests cover actual parallelism, dependency ordering, retry accounting, source outages, cancellation, per-step deadlines, total budgets, checkpoint-write failure, source-revision changes, modified output digests and event-chain corruption. Recovery reuses only valid completed evidence. Changed requests cannot retain old acknowledgements.
+- A live DataHub tenant, model inference, catalog writes and SQL execution. None
+  is enabled or tested.
+- Running the Docker image.
+- An independent external code review, or security, accessibility or financial
+  audits.
 
-Additional adversarial tests first reproduced a dangling database symlink, asynchronous run-admission races, invalid decimal precision/scale and an acknowledgement that did not bind exact result evidence. The corrected store refuses dangling links, reserves capacity before asynchronous admission, and fences obsolete writers. The corrected acknowledgement binds run ID, generation and result digest, and rejects expired evidence.
+Build hashes detect byte changes; they are not signatures. The public build
+contains only the allowlisted static files. SQLite files, test output,
+`node_modules`, private metadata and credentials are excluded, and a DataHub capture
+can contain private metadata, so never commit one.
 
-A further request-boundary regression rejects batches with duplicate fields or conflicting rename targets before artifact generation.
+## History
 
-The local UI's resume check initially returned the prior paused checkpoint before the next generation began. The browser regression reproduced this; it now waits for the new generation before interpreting a terminal state.
-
-## Durable recovery is exercised, not inferred
-
-`test/studio/process-recovery.test.mjs` creates a child process and a temporary SQLite directory, waits for a real committed checkpoint, interrupts that test-owned process, and reopens the database. It verifies that the stored state remains running rather than falsely complete, refuses a premature lease claimant, then resumes after the prior lease expires. The recovered run has the same ID, a new generation, checked reused evidence and correct logical call accounting.
-
-This proves a bounded single-host recovery path. It does not establish distributed durability, resilience to disk corruption or authenticated multi-user coordination.
-
-## Browser coverage
-
-Each runtime mode exercises a completed review, evidence inspection, verified JSON export, actual additive-plan comparison, input invalidation, missing usage, numeric narrowing, pause/reload/resume, outage/restoration, cancellation, invalid input, executed evaluations and responsive layout at 390, 768 and 1440 pixels. Node activation and view selection use native buttons with explicit accessibility state. This is targeted accessibility testing, not a WCAG certification.
-
-Browser-session checkpoints remain in the current browser. Durable-local checkpoints belong to SQLite. No browser screenshot or API response is used to claim the public preview has a durable cloud worker.
-
-## DataHub scope
-
-The new immutable-capture bridge is tested with injected structured results, not a real tenant. It binds exact target identity, rejects error-marked data, preserves incomplete metadata and does not relabel 30-day counts as exact weekly usage. Flat reachable assets do not become invented direct lineage edges; unknown column paths remain unknown.
-
-The transport targets the explicit MCP 2025-11-25 profile. Live-tenant compatibility and the different MCP 2026-07-28 lifecycle are not claimed. The optional live CLI requires an explicit flag, a request file and locally configured credentials; it was not invoked during this build.
-
-## Release boundaries
-
-The public artifact contains only the reviewed static inventory. SQLite files, test outputs, node_modules, private metadata and credentials are excluded. Build hashes detect byte changes; they are not signatures. The optional catalog capture can contain private metadata and must not be committed.
-
-Docker image execution has not been verified in this release. No paid inference, autonomous LLM operation, catalog write or SQL execution has been tested or enabled. Independent external financial, security or accessibility audits are not claimed. Review consists of source inspection, reproduced regressions, executed local tests and the subsequent automated CI/security checks identified in the release.
+- **v2.0.0** merged through [PR #6](https://github.com/ult666666/lineageguard-datahub-agent/pull/6).
+  Its [tagged verification record](https://github.com/ult666666/lineageguard-datahub-agent/blob/v2.0.0/docs/VERIFICATION.md)
+  lists what was run for that release, and the [local record](verification/studio-2.0-local.json)
+  lists its inputs and artifact hashes.
+- **Added on `main` after v2.0.0:** the [local launcher](LOCAL_LAUNCH.md), the
+  [Review Inspector](REVIEW_INSPECTOR.md) and [saved-review comparison](REVIEW_COMPARISON.md).
+  Each guide describes its own checks.

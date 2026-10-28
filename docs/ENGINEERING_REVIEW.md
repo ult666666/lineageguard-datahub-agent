@@ -37,7 +37,7 @@ The complete suite currently has **23 distinct tests** across five files. The ma
 
 ## Product and collaboration boundaries
 
-Schema changes are reviewed, not executed. Migration SQL and catalog write-back remain proposals requiring an authorized human decision. The project's [README](../README.md#codex-collaboration) documents the owner's product decisions and AI-assisted implementation workflow; this guide does not imply unaided authorship or employment/client results.
+Schema changes are reviewed, not executed. Migration SQL and catalog write-back remain proposals requiring an authorized human decision. The project's [README](../README.md#design-tradeoffs-and-limits) states the owner's product decisions and how AI tools were used; this guide does not imply unaided authorship or employment/client results.
 
 ## Generated-SQL input contract
 

@@ -1,12 +1,15 @@
 # LineageGuard Studio
 
-**Compose a review. Understand every decision.**
+**Stop breaking schema changes before they reach production.**
 
 [![Tests](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml)
 
 [**Open Studio**](https://lineageguard-datahub-agent.vercel.app/) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md) · [Threat model](docs/THREAT_MODEL.md) · [Demo walkthrough](docs/DEMO_WALKTHROUGH.md)
 
-LineageGuard Studio is a data-change review orchestrator built by Charles Dai with AI-assisted implementation. It compiles a typed workflow, gathers read-only evidence, applies deterministic compatibility and readiness rules, and produces an inspectable review package. The graph is the executable workflow—not a decorative trace assembled after a result.
+A schema change can look harmless in one file and still break the tables, dashboards and models that read from it. LineageGuard Studio reviews a proposed change before it ships. It gathers read-only evidence about what depends on the changed data, applies deterministic compatibility and readiness rules, and produces a review package with the decision, the evidence behind it and a draft migration. Charles Dai built it with AI-assisted implementation.
+
+- **What runs:** a typed workflow engine and deterministic policy code, either in your browser (the public demo) or in a local Node service backed by SQLite. The workflow graph is the program that runs, not a trace drawn afterwards. No language model runs in the demo, the tests or the evaluations, and Studio never executes SQL or changes a catalog.
+- **What is optional:** a read-only capture from your own DataHub instance, which needs an explicit flag and your own credentials, and the portable Codex skill in [`skills/`](skills/lineageguard-schema-review), which lets an AI coding agent run a schema review with a deterministic Python scorer. The repository name comes from the original DataHub-context agent; see [Project history](#project-history).
 
 ![LineageGuard Studio executing a source-bound review with a typed workflow graph, evidence readiness and run trace](assets/studio-v2-desktop.png)
 
@@ -30,11 +33,11 @@ LineageGuard Studio is a data-change review orchestrator built by Charles Dai wi
 | Local Studio | The shared interpreter behind a loopback Node API | SQLite, with revision compare-and-swap and expiring writer leases | Not a distributed scheduler or multi-user authorization service |
 | Optional DataHub capture | Two explicitly requested read-only MCP calls, followed by analysis against an immutable capture | A private, user-selected JSON export | No live-tenant validation in this release; no guessed graph edges or weekly usage |
 
-There is **no SQL-execution or catalog-mutation capability** in the registry. A local acknowledgement is an unverified review note, not an organizational approval. Studio uses deterministic components; it does not pretend those components are an autonomous LLM team.
+There is **no SQL-execution or catalog-mutation capability** in the registry. A local acknowledgement is an unverified review note, not an organizational approval.
 
 ## Delivery
 
-The [2.0 delivery guide](docs/RELEASE_2_0.md) gives exact local-stack commands, the five-minute demonstration, and the explicit deployed acceptance check. The public preview and local SQLite service are different runtimes, not interchangeable deployment claims.
+The [2.0 delivery guide](docs/RELEASE_2_0.md) gives exact local-stack commands, the five-minute demonstration, and the explicit deployed acceptance check.
 
 ## Run locally
 
@@ -66,13 +69,19 @@ Existing output files are never overwritten. An optional live capture requires *
 npm run studio:review -- --live-datahub --request=./private-request.json --output=./.lineageguard/private-review.json
 ```
 
-This mode is not invoked by the hosted demo, tests or evaluations. Keep tenant exports private. The capture deliberately supports the tested **MCP 2025-11-25 handshake profile**, not the different 2026-07-28 stateless lifecycle. Unsupported schema fields, unverified column paths or missing exact weekly usage remain incomplete evidence. A capture is a one-shot review input; it is not a background tenant synchronization service.
+The hosted demo, tests and evaluations never use this mode. Keep tenant exports private. A capture is a one-shot review input, not a background sync: unsupported schema fields, unverified column paths and missing weekly usage stay marked as incomplete evidence. The [DataHub integration profile](docs/ARCHITECTURE.md#datahub-integration-profile) lists the supported MCP protocol version.
 
 ## Inspect a review after export
 
-**Review package → Review Inspector** checks saved JSON without uploading it or importing a runnable checkpoint. It verifies hashes and evidence contracts, reproduces deterministic conclusions and draft artifacts, and separates the recorded decision from the embedded evidence's freshness at inspection time. The same guard protects JSON, Markdown and SQL-draft exports. Passing inspection means internally consistent—not authentic or approved.
+**Review package → Review Inspector** checks saved JSON without uploading it or importing a runnable checkpoint. It verifies hashes and evidence contracts, reproduces deterministic conclusions and draft artifacts, and separates the recorded decision from the embedded evidence's freshness at inspection time. The same guard protects JSON, Markdown and SQL-draft exports. A passing inspection means the package is internally consistent, not that it is authentic or approved.
 
-**Compare two saved exports offline:** open **Compare → Compare saved reviews**, select left/right JSON and choose **Compare saved exports**. Both packages pass the shared semantic Inspector before any result appears; the report can be downloaded or cleared without changing the current review. The already-loaded page works offline. For a native command, `node scripts/studio-compare.mjs --left=/path/left.json --right=/path/right.json` requires both packages to pass the existing semantic Inspector before showing recorded policy/evidence differences. It keeps alternative requests explicit and inspection-time freshness separate from recorded decisions, with no import, tool calls, stores or execution authority. Follow the [synthetic standard/strict walkthrough and command contract](docs/REVIEW_COMPARISON.md).
+**Compare two saved exports offline:** open **Compare → Compare saved reviews**, select the left and right JSON files and choose **Compare saved exports**. Both packages must pass the Inspector before any result appears, and the report can be downloaded or cleared without changing the current review. The command-line version applies the same check:
+
+```sh
+node scripts/studio-compare.mjs --left=/path/left.json --right=/path/right.json
+```
+
+It shows recorded policy and evidence differences without importing, calling tools, writing to a store or executing anything. Follow the [synthetic standard/strict walkthrough and command contract](docs/REVIEW_COMPARISON.md).
 
 ```sh
 npm run studio:verify -- --file=/absolute/path/to/export.json
@@ -80,11 +89,11 @@ npm run studio:verify -- --file=/absolute/path/to/export.json
 
 ![Review Inspector checking an exported synthetic review offline, with separate recorded/current outcomes and explicit unauthenticated status](assets/review-inspector.png)
 
-The [Inspector guide](docs/REVIEW_INSPECTOR.md) explains offline operation, file bounds, replay semantics and adversarial tests. This add-on requires the post-release update on `main`; the original `v2.0.0` tag and its historical verification record remain intact.
+The [Inspector guide](docs/REVIEW_INSPECTOR.md) explains offline operation, file bounds, replay semantics and adversarial tests. The Inspector was added on `main` after the `v2.0.0` tag.
 
 ## Open, check or restart local Studio
 
-The [local-launch update](docs/LOCAL_LAUNCH.md) makes repeat starts safe to understand. These commands require the launcher update after the original `v2.0.0` tag; the application and checkpoint format remain 2.0.0.
+The [local-launch guide](docs/LOCAL_LAUNCH.md) explains what happens on a repeat start. These commands were added on `main` after the `v2.0.0` tag; the checkpoint format did not change.
 
 ```sh
 npm run studio:local   # Start if free; otherwise identify the compatible running service.
@@ -121,7 +130,7 @@ npm run build
 node scripts/build-studio.mjs --verify dist
 ```
 
-The build refuses an existing `dist/`; use a fresh checkout or remove only your own previous generated output after checking it. Browser tests exercise both runtime modes with synthetic data and block external requests. SQLite crash tests interrupt only a test-created child process in a temporary directory. See the [release evidence](docs/VERIFICATION.md) for actual counts, dates and limits.
+The build refuses an existing `dist/`; use a fresh checkout or remove only your own previous generated output after checking it. Browser tests exercise both runtime modes with synthetic data and block external requests. SQLite crash tests interrupt only a test-created child process in a temporary directory. See [Verification](docs/VERIFICATION.md) for what CI runs and what the checks cover.
 
 ## Design tradeoffs and limits
 
@@ -129,8 +138,8 @@ The runtime is intentionally domain-specific. Workflow JSON cannot execute arbit
 
 Snowflake-style SQL is a **review draft**, with unsupported/destructive operations withheld or commented. It is not an atomic migration or a tested production rollback plan. A favorable review still requires owning teams to validate actual consumers and platform behavior.
 
-The owner set the domain, budget, scope and approval boundaries. AI tools accelerated implementation and adversarial test design. This is an independent engineering project—not an enterprise adoption, customer engagement, investment strategy or claim of security certification.
+The owner set the domain, budget, scope and approval boundaries, and AI tools sped up implementation and adversarial test design. This is an independent engineering project, not a customer deployment or a security certification.
 
 ## Project history
 
-The original DataHub-context MVP and portable Codex skill are retained. Historical hackathon and demo provenance appears in [Classic project history](docs/CLASSIC_HISTORY.md); source code, recordings, submission documents and the Apache-2.0 license are preserved. Studio 2.0 is a subsequent engineering expansion, not a retroactive claim about the original submission.
+The original DataHub-context MVP and the portable Codex skill are retained. [Classic project history](docs/CLASSIC_HISTORY.md) covers the hackathon and demo provenance, and the original submission notes and demo scripts are in [`docs/history/`](docs/history/). Source code, recordings and the Apache-2.0 license are preserved. Studio 2.0 is a later engineering expansion, not a retroactive claim about the original submission.
