@@ -26,3 +26,6 @@ playwright-report/
 *.pem
 *.key
 *.p12
+
+# Local agent planning notes (not part of the project docs)
+docs/superpowers/
