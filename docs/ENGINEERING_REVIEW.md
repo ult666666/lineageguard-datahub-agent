@@ -24,7 +24,7 @@ npm test
 npm run mcp:smoke
 ```
 
-The complete suite currently has **23 distinct tests** across five files. The matrix replays the same tests on two Node versions; it does not double the number of unique tests.
+This guide was written for the original MVP, when the suite had 23 distinct tests across five files. The suite has grown since; [Verification](VERIFICATION.md) describes what runs now. The CI matrix replays the same tests on two Node versions; it does not double the number of unique tests.
 
 | Public test file | Evidence covered |
 | --- | --- |
