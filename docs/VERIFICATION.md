@@ -67,6 +67,31 @@ cancellation, invalid input, the executed evaluations, and layouts at 390, 768 a
 with networking disabled and check that nothing is uploaded and stored checkpoints
 do not change. This is targeted accessibility testing, not a WCAG audit.
 
+### Property and hostile-input tests
+
+[`properties.test.mjs`](../test/studio/properties.test.mjs) checks properties on
+generated inputs with a seeded generator and no extra dependencies. Each property runs
+250 cases per `npm test` (the type parser 500); a failure prints its seed, and
+`PROPERTY_SEED=<seed> PROPERTY_RUNS=1 npm test` replays it. The properties cover:
+
+- parsers: SQL types have one canonical form, request validation refuses only with
+  `StudioError` and is idempotent, canonical JSON ignores key order, the Inspector's
+  duplicate-key scanner has no false positives and finds re-spelled duplicates, and the
+  recipe compiler accepts exactly the acyclic graphs in topological order;
+- policy: batch order, letter case and free text (summaries, owner and asset names,
+  platform labels) never change a decision; adding a change or weakening any evidence
+  never makes one more permissive; type widening is reflexive and transitive;
+- outputs: an uncleared review never emits an executable SQL line, and the Markdown
+  brief keeps a hostile summary on its title line;
+- MCP transport: event-stream responses parse the same under any chunking, line ending
+  and interleaved notification, and a response to another request is refused.
+
+[`hostile-metadata.test.mjs`](../test/studio/hostile-metadata.test.mjs) feeds the
+DataHub capture instruction-like text, markup, overlong and non-text names, duplicate
+targets, prototype keys and oversized output, and checks the Markdown brief and SQL
+draft against hostile summaries and types. The skill scorer test checks that injected
+text changes neither the score nor the brief's single heading.
+
 ### Regressions reproduced before each fix
 
 - **MCP client:** it accepted unrelated response IDs, ambiguous result envelopes,
@@ -85,6 +110,20 @@ do not change. This is targeted accessibility testing, not a WCAG audit.
   outer checksum was recomputed, and a browser test downloaded that inconsistent
   SQL draft. The semantic check now refuses it. Browser tests also found a
   narrow-screen overflow, now fixed.
+- **Policy:** the labelled benchmark found that adding `ORDER_ID` next to an existing
+  `order_id` returned `proceed-with-checks`, and that a rename declaring a lossy type
+  went to review. Names now compare case-insensitively and a declared rename type is
+  judged as a type change.
+- **Type parser and SQL drafts:** a property test found that `sqlType` accepted a tab
+  or line break after the parameter comma, skipped the parameter checks
+  (`TEXT(58,\n42)` passed) and split a commented draft line, so `9);` appeared
+  uncommented in a blocked review. Only a space may follow the comma now.
+- **Review brief:** a multi-line summary could render a fake decision line and a link
+  above the real decision. The summary now stays on the title line with link syntax
+  escaped, and a target URN containing backticks gets a longer code fence.
+- **DataHub capture:** one display name over 160 characters, or an owner name that was
+  not text, failed the whole capture; display names are now shortened or treated as
+  unknown. A target returned twice used the first match; it is now refused.
 
 ### DataHub scope
 

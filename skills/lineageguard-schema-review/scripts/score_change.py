@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -166,12 +167,20 @@ def score_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def inline_code(text: str) -> str:
+    """Render catalog text as one inline code span that cannot break the Markdown."""
+    flat = " ".join(str(text).split())
+    longest = max((len(run) for run in re.findall(r"`+", flat)), default=0)
+    fence = "`" * (longest + 1)
+    return f"{fence} {flat} {fence}" if longest else f"{fence}{flat}{fence}"
+
+
 def to_markdown(report: dict[str, Any]) -> str:
     signals = report["signals"]
     lines = [
         f"# LineageGuard decision: {report['decision']}",
         "",
-        f"**Entity:** `{report['entity']}`  ",
+        f"**Entity:** {inline_code(report['entity'])}  ",
         f"**Change:** `{report['change_kind']}`  ",
         f"**Risk score:** {report['risk_score']}/100",
         "",

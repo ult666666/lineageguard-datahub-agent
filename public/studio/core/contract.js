@@ -133,11 +133,13 @@ export function identifier(x) {
   );
   return x;
 }
+// Only a space may follow the parameter comma. A tab or line break would survive
+// normalization, skip the parameter checks and split a commented SQL draft line.
 export function sqlType(x) {
   requireThat(
     typeof x === 'string' &&
       x.length <= 80 &&
-      /^(?:TINYINT|SMALLINT|INT|INTEGER|BIGINT|FLOAT|DOUBLE|DECIMAL|NUMBER|NUMERIC|CHAR|VARCHAR|STRING|TEXT|DATE|DATETIME|TIMESTAMP|TIME|BOOL|BOOLEAN)(?:\([1-9][0-9]{0,5}(?:,\s*[0-9]{1,3})?\))?$/i.test(
+      /^(?:TINYINT|SMALLINT|INT|INTEGER|BIGINT|FLOAT|DOUBLE|DECIMAL|NUMBER|NUMERIC|CHAR|VARCHAR|STRING|TEXT|DATE|DATETIME|TIMESTAMP|TIME|BOOL|BOOLEAN)(?:\([1-9][0-9]{0,5}(?:, *[0-9]{1,3})?\))?$/i.test(
         x,
       ),
     'INVALID_TYPE',
