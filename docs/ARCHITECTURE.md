@@ -67,7 +67,7 @@ A local process interruption leaves the last committed checkpoint. Recovery is e
 
 ## Evidence policy
 
-Compatibility is not an opaque composite score. Drops, required additions without validated backfill, numeric narrowing, unsupported conversions, source-schema mismatches and nullability tightening are blocking findings. Renames and supported widening require review. An optional additive field can proceed only with explicit validation checks and adequate evidence.
+Compatibility is not an opaque composite score. Drops, required additions without validated backfill, numeric narrowing, unsupported conversions, source-schema mismatches and nullability tightening are blocking findings. Renames and supported widening require review. Column names compare case-insensitively, because unquoted identifiers do on mainstream warehouses, and a rename that declares a type is also judged as a type change. The [labelled benchmark](EVALUATION.md) measures these rules against labels written from stated rules. An optional additive field can proceed only with explicit validation checks and adequate evidence.
 
 Evidence readiness is independent: missing, stale, future-dated or incomplete required observations and missing owners prevent readiness. The stricter policy uses a shorter freshness window and requires explicit column paths. A partial lineage response never proves zero consumers. The graph shows supplied relationships only; flat reachable-asset results are not relabeled as exact graph edges.
 

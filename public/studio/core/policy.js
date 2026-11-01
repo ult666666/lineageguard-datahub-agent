@@ -25,15 +25,32 @@ function narrowing(from, to) {
   // Unsupported conversions are never inferred lossless from a broad type family.
   return true;
 }
+/**
+ * Unquoted identifiers resolve case-insensitively on mainstream warehouses, so ORDER_ID
+ * and order_id name the same column. The lookup returns the field, undefined when no
+ * field matches, or null when two observed fields differ only by case (ambiguous).
+ */
+export function fieldIndex(fields) {
+  const index = new Map();
+  for (const f of fields) {
+    const key = f.name.toUpperCase();
+    index.set(key, index.has(key) ? null : f);
+  }
+  return (name) => index.get(name.toUpperCase());
+}
+const taken = (name, field) =>
+  field && field.name !== name
+    ? `${name} matches existing field ${field.name}`
+    : `${name} already exists`;
 export function assessCompatibility(request, schema) {
   const reasons = [];
-  const fields = new Map(schema.data.fields.map((f) => [f.name, f]));
+  const lookup = fieldIndex(schema.data.fields);
   const add = (code, level, detail) =>
     reasons.push({ code, level, detail, evidence: [schema.digest] });
   for (const c of request.changeRequest.changes) {
-    const field = fields.get(c.field);
+    const field = lookup(c.field);
     if (c.kind === 'add') {
-      if (field) add('FIELD_EXISTS', 'block', `${c.field} already exists`);
+      if (field !== undefined) add('FIELD_EXISTS', 'block', taken(c.field, field));
       else if (c.required)
         add(
           'REQUIRED_WITHOUT_BACKFILL',
@@ -42,8 +59,10 @@ export function assessCompatibility(request, schema) {
         );
       else
         add('ADDITIVE_CHANGE', 'low', `Optional ${c.field} does not remove an existing contract`);
-    } else if (!field) {
+    } else if (field === undefined) {
       add('SCHEMA_MISMATCH', 'block', `${c.field} was not found in the observed schema`);
+    } else if (field === null) {
+      add('SCHEMA_MISMATCH', 'block', `${c.field} matches more than one observed field`);
     } else if (c.kind === 'drop')
       add(
         'DESTRUCTIVE_CHANGE',
@@ -51,13 +70,30 @@ export function assessCompatibility(request, schema) {
         `Dropping ${c.field} is outside automatic review clearance`,
       );
     else if (c.kind === 'rename') {
-      if (fields.has(c.to)) add('FIELD_EXISTS', 'block', `${c.to} already exists`);
-      else
+      const existing = lookup(c.to);
+      if (existing !== undefined) add('FIELD_EXISTS', 'block', taken(c.to, existing));
+      else {
         add(
           'RENAME_CONTRACT',
           'review',
           `${c.field} → ${c.to} requires an additive compatibility window`,
         );
+        // A declared type for the new name is a type change too, judged like type_change.
+        if (Object.hasOwn(c, 'type') && normalize(c.type) !== normalize(field.type)) {
+          if (narrowing(field.type, c.type))
+            add(
+              'NARROWING_TYPE',
+              'block',
+              `${c.to} would change ${field.type} → ${c.type}, which is narrowing or not proven lossless`,
+            );
+          else
+            add(
+              'TYPE_WIDENING',
+              'review',
+              `${c.to} would change ${field.type} → ${c.type}; downstream validation is still required`,
+            );
+        }
+      }
     } else if (c.kind === 'type_change') {
       if (normalize(c.from) !== normalize(field.type))
         add('SCHEMA_MISMATCH', 'block', `${c.field} does not have the declared source type`);

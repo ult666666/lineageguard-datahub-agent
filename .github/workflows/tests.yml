@@ -41,6 +41,8 @@ jobs:
         run: npm run mcp:smoke
       - name: Execute named synthetic evaluations
         run: npm run studio:evaluate
+      - name: Labelled policy benchmark matches its pinned report
+        run: npm run studio:benchmark -- --check
       - name: Build and verify the exact public static payload
         run: npm run build && node scripts/build-studio.mjs --verify dist
   browser:

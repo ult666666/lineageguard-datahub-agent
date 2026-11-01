@@ -1,4 +1,5 @@
 import { identifier, sqlType } from './contract.js';
+import { fieldIndex } from './policy.js';
 const md = (value) =>
   String(value)
     .replace(/[<>]/g, (x) => (x === '<' ? '&lt;' : '&gt;'))
@@ -6,7 +7,7 @@ const md = (value) =>
 export function buildArtifacts(request, outputs, binding) {
   const p = outputs.policy,
     table = outputs.resolve.data.name;
-  const fields = new Map(outputs.schema.data.fields.map((f) => [f.name, f]));
+  const lookup = fieldIndex(outputs.schema.data.fields);
   const lines = [
     '-- LineageGuard Studio: review draft only. No SQL has been executed.',
     `-- Review binding: ${binding}`,
@@ -22,7 +23,7 @@ export function buildArtifacts(request, outputs, binding) {
       lines.push(`${prefix}ALTER TABLE ${table} ADD COLUMN ${field} ${sqlType(c.type)};`);
     else if (c.kind === 'rename') {
       const next = identifier(c.to),
-        type = sqlType(c.type || fields.get(c.field)?.type || 'VARCHAR');
+        type = sqlType(c.type || lookup(c.field)?.type || 'VARCHAR');
       lines.push(
         '-- Keep the original field until consumer migration is validated.',
         `${prefix}ALTER TABLE ${table} ADD COLUMN ${next} ${type};`,
