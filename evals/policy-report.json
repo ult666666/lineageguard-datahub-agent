@@ -1,0 +1,365 @@
+{
+  "schema": "lineageguard.policy-benchmark/1",
+  "policyVersion": "2.0.0",
+  "casesSha256": "8cceb5460ba6d6d4e5f742cc4e331c461c31669e3f91faecc58376ef85b08a1f",
+  "summary": {
+    "cases": 89,
+    "decisionsMatched": 85,
+    "decisionAccuracy": 0.9551,
+    "morePermissive": 0,
+    "stricter": 4,
+    "differentStop": 0,
+    "detailsMatched": 85,
+    "twins": 5,
+    "twinsHeld": 5
+  },
+  "decisions": {
+    "outcomes": [
+      "block",
+      "needs-evidence",
+      "failed",
+      "review-required",
+      "proceed-with-checks"
+    ],
+    "confusion": {
+      "block": {
+        "block": 32,
+        "needs-evidence": 0,
+        "failed": 0,
+        "review-required": 0,
+        "proceed-with-checks": 0
+      },
+      "needs-evidence": {
+        "block": 0,
+        "needs-evidence": 16,
+        "failed": 0,
+        "review-required": 0,
+        "proceed-with-checks": 0
+      },
+      "failed": {
+        "block": 0,
+        "needs-evidence": 0,
+        "failed": 7,
+        "review-required": 0,
+        "proceed-with-checks": 0
+      },
+      "review-required": {
+        "block": 4,
+        "needs-evidence": 0,
+        "failed": 0,
+        "review-required": 21,
+        "proceed-with-checks": 0
+      },
+      "proceed-with-checks": {
+        "block": 0,
+        "needs-evidence": 0,
+        "failed": 0,
+        "review-required": 0,
+        "proceed-with-checks": 9
+      }
+    },
+    "perOutcome": {
+      "block": {
+        "labelled": 32,
+        "predicted": 36,
+        "precision": 0.8889,
+        "recall": 1,
+        "f1": 0.9412
+      },
+      "needs-evidence": {
+        "labelled": 16,
+        "predicted": 16,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "failed": {
+        "labelled": 7,
+        "predicted": 7,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "review-required": {
+        "labelled": 25,
+        "predicted": 21,
+        "precision": 1,
+        "recall": 0.84,
+        "f1": 0.913
+      },
+      "proceed-with-checks": {
+        "labelled": 9,
+        "predicted": 9,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    }
+  },
+  "reasons": {
+    "micro": {
+      "labelled": 90,
+      "predicted": 90,
+      "precision": 0.9556,
+      "recall": 0.9556,
+      "f1": 0.9556
+    },
+    "perCode": {
+      "ADDITIVE_CHANGE": {
+        "labelled": 30,
+        "predicted": 30,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "DESTRUCTIVE_CHANGE": {
+        "labelled": 6,
+        "predicted": 6,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "FIELD_EXISTS": {
+        "labelled": 6,
+        "predicted": 6,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "NARROWING_TYPE": {
+        "labelled": 12,
+        "predicted": 16,
+        "precision": 0.75,
+        "recall": 1,
+        "f1": 0.8571
+      },
+      "NULLABILITY_REVIEW": {
+        "labelled": 3,
+        "predicted": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "NULLABILITY_TIGHTENING": {
+        "labelled": 2,
+        "predicted": 2,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "RENAME_CONTRACT": {
+        "labelled": 10,
+        "predicted": 10,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "REQUIRED_WITHOUT_BACKFILL": {
+        "labelled": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "SCHEMA_MISMATCH": {
+        "labelled": 5,
+        "predicted": 5,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "TYPE_WIDENING": {
+        "labelled": 15,
+        "predicted": 11,
+        "precision": 1,
+        "recall": 0.7333,
+        "f1": 0.8461
+      }
+    }
+  },
+  "gaps": {
+    "micro": {
+      "labelled": 25,
+      "predicted": 25,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    "perCode": {
+      "lineage:INCOMPLETE_EVIDENCE": {
+        "labelled": 4,
+        "predicted": 4,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "lineage:STALE_EVIDENCE": {
+        "labelled": 2,
+        "predicted": 2,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "ownership:MISSING_OWNER": {
+        "labelled": 3,
+        "predicted": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "ownership:STALE_EVIDENCE": {
+        "labelled": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "paths:INCOMPLETE_EVIDENCE": {
+        "labelled": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "paths:STALE_EVIDENCE": {
+        "labelled": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "resolve:STALE_EVIDENCE": {
+        "labelled": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "schema:INCOMPLETE_EVIDENCE": {
+        "labelled": 2,
+        "predicted": 2,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "schema:STALE_EVIDENCE": {
+        "labelled": 2,
+        "predicted": 2,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usage:INCOMPLETE_EVIDENCE": {
+        "labelled": 4,
+        "predicted": 4,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usage:STALE_EVIDENCE": {
+        "labelled": 4,
+        "predicted": 4,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    }
+  },
+  "disagreements": [
+    {"id":"int-to-wide-decimal","expected":"review-required","observed":"block","direction":"stricter"},
+    {"id":"timestamp-precision-widen","expected":"review-required","observed":"block","direction":"stricter"},
+    {"id":"float-to-double","expected":"review-required","observed":"block","direction":"stricter"},
+    {"id":"boolean-alias","expected":"review-required","observed":"block","direction":"stricter"}
+  ],
+  "results": [
+    {"id":"add-optional-column","group":"compatibility","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"add-column-required-omitted","group":"compatibility","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"add-required-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["REQUIRED_WITHOUT_BACKFILL"],"gaps":[]},"observed":{"decision":"block","reasons":["REQUIRED_WITHOUT_BACKFILL"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"add-existing-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"add-existing-column-uppercase","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"add-existing-column-mixed-case","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"drop-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"drop-unknown-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"drop-column-uppercase","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-to-free-name","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-onto-existing-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-onto-existing-column-uppercase","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-unknown-source","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-source-uppercase","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-same-declared-type","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-with-lossy-type","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE","RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE","RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-with-wider-type","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT","TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT","TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-int-to-bigint","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"narrow-bigint-to-int","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"narrow-bigint-to-smallint","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-declared-integer-synonym","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-decimal-precision","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"narrow-decimal-scale","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"narrow-decimal-integer-digits","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-decimal-digits-and-scale","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-number-numeric-synonyms","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-varchar","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"narrow-varchar","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"varchar-without-length","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"char-to-varchar","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"int-to-varchar","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"date-to-varchar","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"decimal-to-float","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"int-to-wide-decimal","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":false,"detailsMatch":false},
+    {"id":"timestamp-precision-widen","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":false,"detailsMatch":false},
+    {"id":"float-to-double","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":false,"detailsMatch":false},
+    {"id":"boolean-alias","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":[]},"decisionMatch":false,"detailsMatch":false},
+    {"id":"declared-source-type-mismatch","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"type-change-unknown-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"type-change-identity","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"widen-uppercase-column","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"tighten-nullability","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"relax-nullability","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["NULLABILITY_REVIEW"],"gaps":[]},"observed":{"decision":"review-required","reasons":["NULLABILITY_REVIEW"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"nullability-request-unchanged","group":"compatibility","profile":"standard","expected":{"decision":"review-required","reasons":["NULLABILITY_REVIEW"],"gaps":[]},"observed":{"decision":"review-required","reasons":["NULLABILITY_REVIEW"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"nullability-unknown-column","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"tighten-nullability-uppercase","group":"compatibility","profile":"standard","expected":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-two-additions","group":"batch","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE","ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE","ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-addition-with-drop","group":"batch","profile":"standard","expected":{"decision":"block","reasons":["ADDITIVE_CHANGE","DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["ADDITIVE_CHANGE","DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-addition-with-rename","group":"batch","profile":"standard","expected":{"decision":"review-required","reasons":["ADDITIVE_CHANGE","RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["ADDITIVE_CHANGE","RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-widening-with-relaxed-nullability","group":"batch","profile":"standard","expected":{"decision":"review-required","reasons":["NULLABILITY_REVIEW","TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"review-required","reasons":["NULLABILITY_REVIEW","TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-addition-colliding-by-case","group":"batch","profile":"standard","expected":{"decision":"block","reasons":["ADDITIVE_CHANGE","FIELD_EXISTS"],"gaps":[]},"observed":{"decision":"block","reasons":["ADDITIVE_CHANGE","FIELD_EXISTS"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"batch-widening-with-narrowing","group":"batch","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE","TYPE_WIDENING"],"gaps":[]},"observed":{"decision":"block","reasons":["NARROWING_TYPE","TYPE_WIDENING"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"usage-unknown","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"usage-zero-known","group":"evidence","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-partial","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-unknown","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-no-consumers","group":"evidence","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"schema-partial","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["schema:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["schema:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"schema-unknown","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["schema:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["schema:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"usage-stale-25h","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"evidence-23h-old","group":"evidence","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-10min-in-future","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-2min-in-future","group":"evidence","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"downstream-owner-missing","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"target-owner-missing","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"unassigned-asset-reported","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["ownership:MISSING_OWNER"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"block-with-missing-usage","group":"evidence","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"several-gaps","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:STALE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:STALE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"usage-unknown-and-stale","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE","usage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:INCOMPLETE_EVIDENCE","usage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"rename-with-partial-lineage","group":"evidence","profile":"standard","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-addition-ready","group":"strict","profile":"strict","expected":{"decision":"review-required","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"review-required","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-evidence-50min-old","group":"strict","profile":"strict","expected":{"decision":"review-required","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"review-required","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-evidence-70min-old","group":"strict","profile":"strict","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:STALE_EVIDENCE","ownership:STALE_EVIDENCE","paths:STALE_EVIDENCE","resolve:STALE_EVIDENCE","schema:STALE_EVIDENCE","usage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:STALE_EVIDENCE","ownership:STALE_EVIDENCE","paths:STALE_EVIDENCE","resolve:STALE_EVIDENCE","schema:STALE_EVIDENCE","usage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-usage-20h-old","group":"strict","profile":"strict","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["usage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-paths-unknown","group":"strict","profile":"strict","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["paths:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["paths:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-drop","group":"strict","profile":"strict","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"strict-rename-ready","group":"strict","profile":"strict","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-count-does-not-reconcile","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"schema-for-another-dataset","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"schema"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"schema"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-edge-to-unknown-node","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"duplicate-schema-field","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"schema"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"schema"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"usage-window-not-seven-days","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"usage"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"usage"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"unknown-usage-marked-complete","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"usage"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"usage"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"lineage-without-root","group":"contract","profile":"standard","expected":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"observed":{"decision":"failed","reasons":[],"gaps":[],"failedStep":"lineage"},"decisionMatch":true,"detailsMatch":true},
+    {"id":"owner-name-with-instructions","group":"adversarial","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"asset-name-with-markup","group":"adversarial","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"summary-with-instructions","group":"adversarial","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"platform-name-with-sql","group":"adversarial","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"target-owner-claims-approval","group":"adversarial","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true}
+  ]
+}

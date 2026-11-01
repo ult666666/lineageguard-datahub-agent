@@ -23,7 +23,10 @@ A schema change can look harmless in one file and still break the tables, dashbo
 
 **Compare and export.** Execute an additive alternative or a stricter policy and compare real results. Exports carry exact requests, recipe, policy, evidence, event chain and draft artifacts. A changed request invalidates old results and review notes.
 
-**Evaluate.** Rerun named synthetic scenarios against the same interpreter, with expected and observed outcomes visible. The evaluation page does not replay a prerecorded pass table.
+**Evaluate.** Rerun named synthetic scenarios against the same interpreter, with expected and observed outcomes visible. The evaluation page does not replay a prerecorded pass table. A separate labelled benchmark checks the policy's decisions (`npm run studio:benchmark`, method and results in [Evaluation](docs/EVALUATION.md)):
+<!-- policy-benchmark:headline:start -->
+89 labelled cases: 85 decisions match the label (95.5%), 0 are more permissive than the label and 4 are stricter.
+<!-- policy-benchmark:headline:end -->
 
 ## Two runtimes, explicitly separated
 
@@ -116,6 +119,7 @@ Leave the original server terminal open. Ctrl+C in that terminal stops it. The l
 | MCP boundary | [`datahub-mcp-client.mjs`](src/datahub-mcp-client.mjs) | Response IDs, protocol/tool errors, deadlines, byte limits and read-only capabilities |
 | Browser checkpoints | [`storage.js`](public/studio/storage.js) | Corruption preservation, quota failure, cross-tab conflicts and bounded history |
 | Reproducible evaluation | [`evaluations.js`](public/studio/core/evaluations.js) | Named actual outcomes, recovery identity and corrupted-history refusal |
+| Labelled policy benchmark | [`policy-benchmark.mjs`](src/studio/policy-benchmark.mjs), [`policy-cases.json`](evals/policy-cases.json) | Labelled decisions, reasons and gaps; per-outcome precision and recall; CI fails on any decision more permissive than its label |
 | Public release boundary | [`build-studio.mjs`](scripts/build-studio.mjs) | Exact static inventory, hashes, linked files, unexpected files and overwrite refusal |
 
 ## Verification commands
@@ -124,6 +128,7 @@ Leave the original server terminal open. Ctrl+C in that terminal stops it. The l
 npm ci --ignore-scripts --no-audit --no-fund
 npm test
 npm run studio:evaluate
+npm run studio:benchmark -- --check
 npx playwright install chromium
 npm run test:browser
 npm run build

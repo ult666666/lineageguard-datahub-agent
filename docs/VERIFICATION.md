@@ -11,7 +11,7 @@ token, and has no deploy or catalog step.
 
 | Job | Steps |
 | --- | --- |
-| Offline tests (Node 22 and 24) | `npm test`: the full Node suite, including a real interrupted process and SQLite recovery. `npm run mcp:smoke`: a read-only MCP handshake against a loopback fixture. `npm run studio:evaluate`: the named synthetic evaluations. `npm run build` and `node scripts/build-studio.mjs --verify dist`: the exact public file list and its hashes. |
+| Offline tests (Node 22 and 24) | `npm test`: the full Node suite, including a real interrupted process and SQLite recovery. `npm run mcp:smoke`: a read-only MCP handshake against a loopback fixture. `npm run studio:evaluate`: the named synthetic evaluations. `npm run studio:benchmark -- --check`: the labelled policy benchmark, which fails on any decision more permissive than its label or any drift from the pinned report. `npm run build` and `node scripts/build-studio.mjs --verify dist`: the exact public file list and its hashes. |
 | Studio browser workflows (Node 24) | `npm ci --ignore-scripts`, `npm run format:check`, then `npm run test:browser`: Chromium journeys in both the browser-session and durable-local modes, with external requests blocked. |
 
 The test job also sets up Python 3.13 for the preserved Codex-skill tests.
@@ -23,6 +23,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm test
 npm run mcp:smoke
 npm run studio:evaluate
+npm run studio:benchmark -- --check
 npm run format:check
 npx playwright install chromium
 npm run test:browser
@@ -35,6 +36,14 @@ is an opt-in acceptance check of the published preview; CI does not run it. See 
 [delivery guide](RELEASE_2_0.md).
 
 ## What the checks cover
+
+### Policy decisions are measured against labels
+
+[`evals/policy-cases.json`](../evals/policy-cases.json) holds labelled schema changes and
+evidence conditions. Each case runs through the real interpreter. The report pins
+per-outcome precision and recall, a confusion matrix and every disagreement. Its first
+run found five decisions more permissive than their labels; all were fixed. See
+[Evaluation](EVALUATION.md) for the labelling rules and current numbers.
 
 ### Durable recovery is exercised, not inferred
 
