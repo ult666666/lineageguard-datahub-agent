@@ -44,7 +44,8 @@ let metadata = null,
   evaluation = null;
 let history = [],
   selectedId = 'rename',
-  editing = false;
+  editing = false,
+  returnFocus = false;
 mountInspector({ current: () => current, busy: () => busy });
 mountSavedComparison();
 const local = () => metadata?.runtime === 'durable-local';
@@ -54,6 +55,23 @@ const errorText = (error) =>
     : error?.name === 'AbortError'
       ? 'The operation was cancelled.'
       : 'The operation could not finish. Existing evidence has been preserved.';
+// Starting a run disables its button, which would drop keyboard focus to <body>. While
+// the run works, focus moves to Cancel; when it settles, to the decision heading, which
+// brings the result into view. Focus only moves when it would otherwise be lost.
+const focusLost = () => {
+  const active = document.activeElement;
+  return !active || active === document.body || active.disabled === true;
+};
+function settleFocus(failed) {
+  const title = $('decision-title');
+  if (!failed && current)
+    $('run-announcement').textContent = `Review ${current.status}: ${title.textContent}.`;
+  if (returnFocus && focusLost()) {
+    title.focus({ preventScroll: true });
+    title.closest('section').scrollIntoView({ block: 'nearest' });
+  }
+  returnFocus = false;
+}
 function controls() {
   $('inspect-current').disabled = busy || !current;
   const complete = current?.status === 'completed',
@@ -64,8 +82,11 @@ function controls() {
       current.result.policy.decision !== 'block';
   $('configuration').disabled = busy || !metadata;
   $('run-button').disabled = busy || !valid || !metadata || !storageReady;
-  $('run-button').textContent = busy ? 'Running…' : '▶ Run review';
+  $('run-button').replaceChildren(
+    ...(busy ? ['Running…'] : [el('span', '▶', { 'aria-hidden': 'true' }), ' Run review']),
+  );
   $('cancel-button').disabled = !busy || !controller;
+  if (returnFocus && busy && controller && focusLost()) $('cancel-button').focus();
   $('resume-button').disabled =
     busy ||
     !current ||
@@ -218,13 +239,17 @@ async function runReview(resume = false) {
   if (busy) return;
   if (!resume && !valid) return;
   busy = true;
+  returnFocus = true;
+  let failed = false;
   message('');
+  $('run-announcement').textContent = resume ? 'Resuming the review.' : 'Review started.';
   controls();
   try {
     const result = await execute({ resume });
     await acceptRun(result);
     await refreshHistory();
   } catch (error) {
+    failed = true;
     message(errorText(error));
     if (error.code === 'CHECKPOINT_FAILED' || error.code === 'STORAGE_CONFLICT')
       storageReady = false;
@@ -232,6 +257,7 @@ async function runReview(resume = false) {
     busy = false;
     controller = null;
     controls();
+    settleFocus(failed);
   }
 }
 async function compare(kind) {

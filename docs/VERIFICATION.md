@@ -63,7 +63,9 @@ Each runtime mode runs a completed review, evidence inspection, a verified JSON
 export, an additive-plan comparison, input invalidation, missing usage, numeric
 narrowing, pause, reload and resume, a source outage and its restoration,
 cancellation, invalid input, the executed evaluations, and layouts at 390, 768 and
-1440 pixels. The Review Inspector and saved-review comparison journeys also run
+1440 pixels. After a run, keyboard focus must land on the decision heading (the Run
+button disables itself, which would otherwise drop focus to the page) and a status
+message must announce the result; one run is started from the keyboard. The Review Inspector and saved-review comparison journeys also run
 with networking disabled and check that nothing is uploaded and stored checkpoints
 do not change. This is targeted accessibility testing, not a WCAG audit.
 

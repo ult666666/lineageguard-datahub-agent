@@ -83,6 +83,14 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.locator('#run-button').click();
         await done('completed');
         assert.match(await page.locator('#decision-title').innerText(), /human review/i);
+        // The Run button disables itself; focus must land on the decision, not <body>.
+        await page.waitForFunction(() => document.activeElement?.id === 'decision-title');
+        assert.equal(
+          await page.locator('#run-announcement').textContent(),
+          'Review completed: Ready for a human review.',
+        );
+        const decision = await page.locator('.decision-panel').boundingBox();
+        assert.ok(decision.y >= 0 && decision.y + decision.height <= 1050, 'decision in view');
         results.push(`${mode}: real review`);
         assert.equal(await page.locator('[data-step-status="completed"]').count(), 8);
         await page.locator('[data-view="evidence"]').first().click();
@@ -127,10 +135,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         assert.match(await page.locator('#decision-title').innerText(), /evidence is required/i);
         results.push(`${mode}: uncertainty`);
         await select('narrowing');
-        await page.locator('#run-button').click();
+        await page.locator('#run-button').focus();
+        await page.keyboard.press('Enter');
         await done('completed');
         assert.match(await page.locator('#decision-title').innerText(), /blocked/i);
+        await page.waitForFunction(() => document.activeElement?.id === 'decision-title');
+        assert.match(
+          await page.locator('#run-announcement').textContent(),
+          /^Review completed: Change blocked/,
+        );
         results.push(`${mode}: numeric narrowing`);
+        results.push(`${mode}: keyboard run keeps focus and announces the decision`);
         await select('rename');
         await page.locator('#pause-toggle').check();
         await page.locator('#run-button').click();
