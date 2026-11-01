@@ -263,6 +263,7 @@ export function renderEvidence(run, preferred) {
   const lineage = run?.steps?.lineage?.output;
   const graph = $('lineage-graph');
   graph.replaceChildren();
+  graph.setAttribute('viewBox', '0 0 1040 370');
   if (!lineage) {
     graph.append(
       svg(
@@ -286,15 +287,20 @@ export function renderEvidence(run, preferred) {
   for (const n of data.nodes) if (!depth.has(n.id)) depth.set(n.id, 1);
   const maximum = Math.max(...depth.values()),
     positions = new Map();
-  for (let level = 0; level <= maximum; level++) {
-    const group = data.nodes.filter((n) => depth.get(n.id) === level);
+  const levels = Array.from({ length: maximum + 1 }, (_, level) =>
+    data.nodes.filter((n) => depth.get(n.id) === level),
+  );
+  // A dbt project can return many consumers at one depth: grow the canvas, never overlap.
+  const height = Math.max(370, Math.max(...levels.map((g) => g.length)) * 86 + 28);
+  graph.setAttribute('viewBox', `0 0 1040 ${height}`);
+  levels.forEach((group, level) =>
     group.forEach((n, i) =>
       positions.set(n.id, {
         x: 28 + (level * 780) / Math.max(1, maximum),
-        y: 185 - (group.length * 72 + (group.length - 1) * 14) / 2 + i * 86,
+        y: height / 2 - (group.length * 72 + (group.length - 1) * 14) / 2 + i * 86,
       }),
-    );
-  }
+    ),
+  );
   for (const edge of data.edges) {
     const a = positions.get(edge.from),
       b = positions.get(edge.to);
@@ -321,9 +327,12 @@ export function renderEvidence(run, preferred) {
     );
     graph.append(group);
   }
+  const checks = data.checks?.length
+    ? ` ${data.checks.length} quality checks read the target; they are listed in the lineage JSON and never clear a change.`
+    : '';
   set(
     'lineage-note',
-    `${data.nodes.length - 1} returned downstream assets / ${data.total} declared · ${lineage.coverage} coverage. Lines are supplied ${data.level}-level relationships. Inspect Paths separately for explicit column evidence.`,
+    `${data.nodes.length - 1} returned downstream assets / ${data.total} declared · ${lineage.coverage} coverage. Lines are supplied ${data.level}-level relationships. Inspect Paths separately for explicit column evidence.${checks}`,
   );
 }
 export function renderComparison(diff, left, right) {

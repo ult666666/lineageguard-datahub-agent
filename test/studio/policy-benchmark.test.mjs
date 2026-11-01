@@ -9,6 +9,7 @@ import {
   codeMetrics,
   decisionMetrics,
   direction,
+  dbtFixtureSha256,
   formatReport,
   loadCases,
   replaceBlock,
@@ -16,6 +17,7 @@ import {
 } from '../../src/studio/policy-benchmark.mjs';
 
 const cases = () => JSON.parse(fs.readFileSync(CASES_FILE, 'utf8'));
+const dbtCase = (file) => file.cases.find((c) => c.group === 'dbt');
 const row = (expected, observed, reasons = [[], []]) => ({
   expected: { decision: expected, reasons: reasons[0], gaps: [] },
   observed: { decision: observed, reasons: reasons[1], gaps: [] },
@@ -92,6 +94,13 @@ test('the case file is validated strictly so a typo cannot drop a check', () => 
     (f) => (f.cases[0].evidence = { coverage: { audit: 'partial' } }),
     (f) => (f.cases[0].evidence = { owners: [] }),
     (f) => (f.cases[0].rationale = ''),
+    (f) => (f.cases[0].dbt = { target: 'model.saas_warehouse.fct_mrr' }),
+    (f) => (dbtCase(f).group = 'compatibility'),
+    (f) => (dbtCase(f).evidence = { ageMinutes: { '*': 5 } }),
+    (f) => (dbtCase(f).dbt.target = 'exposure.saas_warehouse.saas_metrics_report'),
+    (f) => (dbtCase(f).dbt.catalog = 'yes'),
+    (f) => (dbtCase(f).dbt.ageMinutes = 1.5),
+    (f) => (dbtCase(f).dbt.columns = []),
   ];
   for (const mutate of broken) {
     const file = cases();
@@ -117,6 +126,26 @@ test('cases run through the interpreter, including evidence that breaks its cont
   const strict = await runCase(file.world, get('strict-evidence-70min-old'));
   assert.equal(strict.decision, 'needs-evidence');
   assert.equal(strict.gaps.length, 6);
+  // dbt cases run the committed manifest through the same interpreter.
+  assert.deepEqual(await runCase(file.world, get('dbt-tighten-tested-column')), {
+    decision: 'block',
+    reasons: ['NULLABILITY_TIGHTENING'],
+    gaps: [
+      'lineage:INCOMPLETE_EVIDENCE',
+      'schema:INCOMPLETE_EVIDENCE',
+      'usage:INCOMPLETE_EVIDENCE',
+    ],
+  });
+  const stale = await runCase(file.world, get('dbt-stale-manifest'));
+  assert.equal(stale.gaps.filter((g) => g.endsWith(':STALE_EVIDENCE')).length, 5);
+});
+
+test('no dbt case reaches review or clearance, and the report pins the fixture it read', () => {
+  const report = JSON.parse(fs.readFileSync(REPORT_FILE, 'utf8'));
+  const rows = report.results.filter((r) => r.group === 'dbt');
+  assert.equal(rows.length, 16);
+  for (const r of rows) assert.ok(['block', 'needs-evidence'].includes(r.observed.decision), r.id);
+  assert.equal(report.dbtFixtureSha256, dbtFixtureSha256());
 });
 
 test('the pinned report belongs to the committed cases and has no permissive misses', () => {

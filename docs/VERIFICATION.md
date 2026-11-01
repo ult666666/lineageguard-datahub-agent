@@ -61,7 +61,8 @@ durability, resilience to disk corruption or authenticated multi-user coordinati
 
 Each runtime mode runs a completed review, evidence inspection, a verified JSON
 export, an additive-plan comparison, input invalidation, missing usage, numeric
-narrowing, pause, reload and resume, a source outage and its restoration,
+narrowing, a review of the bundled dbt manifest (eight lineage nodes that fit the
+graph, owners, the quality-check note and open gaps, with no overflow at 390 pixels), pause, reload and resume, a source outage and its restoration,
 cancellation, invalid input, the executed evaluations, and layouts at 390, 768 and
 1440 pixels. After a run, keyboard focus must land on the decision heading (the Run
 button disables itself, which would otherwise drop focus to the page) and a status
@@ -87,6 +88,25 @@ generated inputs with a seeded generator and no extra dependencies. Each propert
   brief keeps a hostile summary on its title line;
 - MCP transport: event-stream responses parse the same under any chunking, line ending
   and interleaved notification, and a response to another request is refused.
+
+[`dbt-properties.test.mjs`](../test/studio/dbt-properties.test.mjs) generates random
+dbt manifests (sources, seeds, models, snapshots, exposures, data and unit tests, owners
+and catalogs) and checks that:
+
+- the returned lineage, its edges and its quality checks equal an independent walk of
+  `depends_on`, which does not use `child_map`;
+- a full review through the interpreter is never evidence-ready and ends in `block` or
+  `needs-evidence`, and replacing every owner name leaves it unchanged (100 cases, since
+  each runs two reviews);
+- removing or adding one entry in `child_map`, `parent_map` or `depends_on` is always
+  refused as `MANIFEST_INCONSISTENT`;
+- shuffling key order and dependency lists never changes the evidence revision.
+
+[`dbt-manifest.test.mjs`](../test/studio/dbt-manifest.test.mjs) runs the real fixture and
+refuses other schema versions and artifacts, missing maps, mismatched IDs, cycles, self
+edges, unknown nodes, prototype keys, accessors, unsafe relation names, ambiguous targets
+and oversized files (byte, resource and column limits). It checks that hostile owner and
+label text is bounded and changes no decision.
 
 [`hostile-metadata.test.mjs`](../test/studio/hostile-metadata.test.mjs) feeds the
 DataHub capture instruction-like text, markup, overlong and non-text names, duplicate
@@ -137,10 +157,23 @@ profile; live-tenant compatibility and the MCP 2026-07-28 lifecycle are not
 claimed. The optional live CLI needs an explicit flag, a request file and local
 credentials, and no automated check runs it.
 
+### dbt scope
+
+The dbt adapter is tested with one real manifest and catalog (dbt Core 1.12.6, DuckDB),
+trimmed and committed with its [provenance](../examples/dbt/README.md), plus generated
+manifests. `node scripts/trim-dbt-manifest.mjs --compare` showed that the trimmed files
+give the same evidence revision as the full ones for all 30 targets. Manifests from
+other dbt versions, adapters or dbt Cloud, and projects with model versions, contracts
+or semantic models, were not run. Mutating the adapter (unknown usage read as zero, a
+`not_null` test read as a constraint, the map check removed, exposures dropped, every
+gap cleared) failed between two and nine tests each, and the two mutations that change
+decisions also failed the benchmark check.
+
 ## Not covered
 
 - A live DataHub tenant, model inference, catalog writes and SQL execution. None
   is enabled or tested.
+- dbt manifests other than schema v12, and running dbt itself.
 - Running the Docker image.
 - An independent external code review, or security, accessibility or financial
   audits.
@@ -157,5 +190,6 @@ can contain private metadata, so never commit one.
   lists what was run for that release, and the [local record](verification/studio-2.0-local.json)
   lists its inputs and artifact hashes.
 - **Added on `main` after v2.0.0:** the [local launcher](LOCAL_LAUNCH.md), the
-  [Review Inspector](REVIEW_INSPECTOR.md) and [saved-review comparison](REVIEW_COMPARISON.md).
+  [Review Inspector](REVIEW_INSPECTOR.md), [saved-review comparison](REVIEW_COMPARISON.md)
+  and the [dbt manifest source](ARCHITECTURE.md#dbt-manifest-integration-profile).
   Each guide describes its own checks.

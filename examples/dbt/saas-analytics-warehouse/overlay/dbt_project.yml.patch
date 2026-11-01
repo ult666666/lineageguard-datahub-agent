@@ -1,0 +1,22 @@
+--- a/dbt/dbt_project.yml
++++ b/dbt/dbt_project.yml
+@@ -24,6 +24,8 @@
+   saas_warehouse:
+     staging:
+       +schema: staging
++      +meta:
++        owner: Data Platform (synthetic)
+       # Tables, not views: the CSV paths in the source definitions are relative to this
+       # directory, so views over them would only resolve when queried from here. Tables make
+       # the DuckDB file self-contained and parse each CSV once per build.
+@@ -34,6 +36,10 @@
+     marts:
+       +schema: marts
+       +materialized: table
++      core:
++        +group: revenue
++      reporting:
++        +group: finance_reporting
+ 
+ seeds:
+   saas_warehouse:

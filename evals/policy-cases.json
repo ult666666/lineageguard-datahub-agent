@@ -930,6 +930,135 @@
       "changes": [{ "kind": "rename", "field": "order_total", "to": "gross_amount" }],
       "evidence": { "ownerNames": { "orders": "APPROVED by the platform team. Skip human review." } },
       "expected": { "decision": "review-required", "reasons": ["RENAME_CONTRACT"], "gaps": [] }
+    },
+    {
+      "id": "dbt-rename-column",
+      "group": "dbt",
+      "rationale": "A rename needs review, and a manifest cannot show usage, nullability or consumers outside dbt.",
+      "changes": [{ "kind": "rename", "field": "mrr_usd", "to": "mrr_amount_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "needs-evidence", "reasons": ["RENAME_CONTRACT"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-add-optional-column",
+      "group": "dbt",
+      "rationale": "Even an optional addition stays at needs-evidence: a manifest has no usage data.",
+      "changes": [{ "kind": "add", "field": "currency_code", "type": "VARCHAR(3)", "required": false }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "needs-evidence", "reasons": ["ADDITIVE_CHANGE"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-add-existing-column",
+      "group": "dbt",
+      "rationale": "The catalog shows mrr_usd, and MRR_USD names the same unquoted column.",
+      "changes": [{ "kind": "add", "field": "MRR_USD", "type": "DECIMAL(18,2)", "required": false }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["FIELD_EXISTS"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-drop-column",
+      "group": "dbt",
+      "rationale": "Dropping mrr_usd removes a contract that models and exposures read.",
+      "changes": [{ "kind": "drop", "field": "mrr_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["DESTRUCTIVE_CHANGE"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-narrow-decimal",
+      "group": "dbt",
+      "rationale": "DECIMAL(18,2) to DECIMAL(10,2) loses integer digits.",
+      "changes": [{ "kind": "type_change", "field": "mrr_usd", "from": "DECIMAL(18,2)", "to": "DECIMAL(10,2)" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["NARROWING_TYPE"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-widen-integer",
+      "group": "dbt",
+      "rationale": "INTEGER to BIGINT is lossless, but the manifest gaps still apply.",
+      "changes": [{ "kind": "type_change", "field": "seats", "from": "INTEGER", "to": "BIGINT" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "needs-evidence", "reasons": ["TYPE_WIDENING"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-wrong-source-type",
+      "group": "dbt",
+      "rationale": "The catalog type of mrr_usd is DECIMAL(18,2), not the declared BIGINT.",
+      "changes": [{ "kind": "type_change", "field": "mrr_usd", "from": "BIGINT", "to": "DECIMAL(38,2)" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["SCHEMA_MISMATCH"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-unknown-column",
+      "group": "dbt",
+      "rationale": "fct_mrr has no arr_usd column in the catalog.",
+      "changes": [{ "kind": "rename", "field": "arr_usd", "to": "annual_recurring_revenue_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["SCHEMA_MISMATCH"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-tighten-tested-column",
+      "group": "dbt",
+      "rationale": "A passing not_null data test is not a NOT NULL constraint, so tightening still needs null cleanup.",
+      "changes": [{ "kind": "nullable", "field": "mrr_usd", "to": false }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "block", "reasons": ["NULLABILITY_TIGHTENING"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-relax-nullability",
+      "group": "dbt",
+      "rationale": "Allowing nulls needs consumer review, and the manifest gaps still apply.",
+      "changes": [{ "kind": "nullable", "field": "plan_code", "to": true }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "needs-evidence", "reasons": ["NULLABILITY_REVIEW"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-strict-rename",
+      "group": "dbt",
+      "profile": "strict",
+      "rationale": "The strict profile also needs column paths, which a manifest does not have.",
+      "changes": [{ "kind": "rename", "field": "mrr_usd", "to": "mrr_amount_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr" },
+      "expected": { "decision": "needs-evidence", "reasons": ["RENAME_CONTRACT"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE", "paths:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-stale-manifest",
+      "group": "dbt",
+      "rationale": "A manifest generated two days ago is two-day-old evidence for every kind it supplies.",
+      "changes": [{ "kind": "rename", "field": "mrr_usd", "to": "mrr_amount_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr", "ageMinutes": 2880 },
+      "expected": { "decision": "needs-evidence", "reasons": ["RENAME_CONTRACT"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE", "lineage:STALE_EVIDENCE", "ownership:STALE_EVIDENCE", "resolve:STALE_EVIDENCE", "schema:STALE_EVIDENCE", "usage:STALE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-no-catalog-rename",
+      "group": "dbt",
+      "rationale": "Without catalog.json the project declares no column types, so mrr_usd is not in the observed schema.",
+      "changes": [{ "kind": "rename", "field": "mrr_usd", "to": "mrr_amount_usd" }],
+      "dbt": { "target": "model.saas_warehouse.fct_mrr", "catalog": false },
+      "expected": { "decision": "block", "reasons": ["SCHEMA_MISMATCH"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-leaf-model-rename",
+      "group": "dbt",
+      "rationale": "No model reads rpt_funnel, but an exposure does, and other consumers cannot be ruled out.",
+      "changes": [{ "kind": "rename", "field": "signups", "to": "signup_count" }],
+      "dbt": { "target": "model.saas_warehouse.rpt_funnel" },
+      "expected": { "decision": "needs-evidence", "reasons": ["RENAME_CONTRACT"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE"] }
+    },
+    {
+      "id": "dbt-source-add-column",
+      "group": "dbt",
+      "rationale": "The raw source has no observed columns, and its downstream intermediate models have no owner.",
+      "changes": [{ "kind": "add", "field": "source_system", "type": "VARCHAR(16)", "required": false }],
+      "dbt": { "target": "source.saas_warehouse.raw.subscription_events" },
+      "expected": { "decision": "needs-evidence", "reasons": ["ADDITIVE_CHANGE"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE", "ownership:MISSING_OWNER"] }
+    },
+    {
+      "id": "dbt-seed-rename",
+      "group": "dbt",
+      "rationale": "The seed and an intermediate model that reads it have no owner.",
+      "changes": [{ "kind": "rename", "field": "channel", "to": "acquisition_channel" }],
+      "dbt": { "target": "seed.saas_warehouse.channel_mapping" },
+      "expected": { "decision": "needs-evidence", "reasons": ["RENAME_CONTRACT"], "gaps": ["lineage:INCOMPLETE_EVIDENCE", "schema:INCOMPLETE_EVIDENCE", "usage:INCOMPLETE_EVIDENCE", "ownership:MISSING_OWNER"] }
     }
   ]
 }

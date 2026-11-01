@@ -1,15 +1,16 @@
 {
   "schema": "lineageguard.policy-benchmark/1",
   "policyVersion": "2.0.0",
-  "casesSha256": "8cceb5460ba6d6d4e5f742cc4e331c461c31669e3f91faecc58376ef85b08a1f",
+  "casesSha256": "06668b2e1e90564601e3e458502237c433d8328f702d77164c4d254260b5813f",
+  "dbtFixtureSha256": "01cf8cf961a4a88a1cdaeda224e0ba4563801a2fa4a570fcf6afecff389c7422",
   "summary": {
-    "cases": 89,
-    "decisionsMatched": 85,
-    "decisionAccuracy": 0.9551,
+    "cases": 105,
+    "decisionsMatched": 101,
+    "decisionAccuracy": 0.9619,
     "morePermissive": 0,
     "stricter": 4,
     "differentStop": 0,
-    "detailsMatched": 85,
+    "detailsMatched": 101,
     "twins": 5,
     "twinsHeld": 5
   },
@@ -23,7 +24,7 @@
     ],
     "confusion": {
       "block": {
-        "block": 32,
+        "block": 39,
         "needs-evidence": 0,
         "failed": 0,
         "review-required": 0,
@@ -31,7 +32,7 @@
       },
       "needs-evidence": {
         "block": 0,
-        "needs-evidence": 16,
+        "needs-evidence": 25,
         "failed": 0,
         "review-required": 0,
         "proceed-with-checks": 0
@@ -60,15 +61,15 @@
     },
     "perOutcome": {
       "block": {
-        "labelled": 32,
-        "predicted": 36,
-        "precision": 0.8889,
+        "labelled": 39,
+        "predicted": 43,
+        "precision": 0.907,
         "recall": 1,
-        "f1": 0.9412
+        "f1": 0.9512
       },
       "needs-evidence": {
-        "labelled": 16,
-        "predicted": 16,
+        "labelled": 25,
+        "predicted": 25,
         "precision": 1,
         "recall": 1,
         "f1": 1
@@ -98,58 +99,58 @@
   },
   "reasons": {
     "micro": {
-      "labelled": 90,
-      "predicted": 90,
-      "precision": 0.9556,
-      "recall": 0.9556,
-      "f1": 0.9556
+      "labelled": 106,
+      "predicted": 106,
+      "precision": 0.9623,
+      "recall": 0.9623,
+      "f1": 0.9623
     },
     "perCode": {
       "ADDITIVE_CHANGE": {
-        "labelled": 30,
-        "predicted": 30,
+        "labelled": 32,
+        "predicted": 32,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "DESTRUCTIVE_CHANGE": {
-        "labelled": 6,
-        "predicted": 6,
+        "labelled": 7,
+        "predicted": 7,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "FIELD_EXISTS": {
-        "labelled": 6,
-        "predicted": 6,
+        "labelled": 7,
+        "predicted": 7,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "NARROWING_TYPE": {
-        "labelled": 12,
-        "predicted": 16,
-        "precision": 0.75,
+        "labelled": 13,
+        "predicted": 17,
+        "precision": 0.7647,
         "recall": 1,
-        "f1": 0.8571
+        "f1": 0.8667
       },
       "NULLABILITY_REVIEW": {
+        "labelled": 4,
+        "predicted": 4,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "NULLABILITY_TIGHTENING": {
         "labelled": 3,
         "predicted": 3,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
-      "NULLABILITY_TIGHTENING": {
-        "labelled": 2,
-        "predicted": 2,
-        "precision": 1,
-        "recall": 1,
-        "f1": 1
-      },
       "RENAME_CONTRACT": {
-        "labelled": 10,
-        "predicted": 10,
+        "labelled": 15,
+        "predicted": 15,
         "precision": 1,
         "recall": 1,
         "f1": 1
@@ -162,61 +163,61 @@
         "f1": 1
       },
       "SCHEMA_MISMATCH": {
-        "labelled": 5,
-        "predicted": 5,
+        "labelled": 8,
+        "predicted": 8,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "TYPE_WIDENING": {
-        "labelled": 15,
-        "predicted": 11,
+        "labelled": 16,
+        "predicted": 12,
         "precision": 1,
-        "recall": 0.7333,
-        "f1": 0.8461
+        "recall": 0.75,
+        "f1": 0.8571
       }
     }
   },
   "gaps": {
     "micro": {
-      "labelled": 25,
-      "predicted": 25,
+      "labelled": 81,
+      "predicted": 81,
       "precision": 1,
       "recall": 1,
       "f1": 1
     },
     "perCode": {
       "lineage:INCOMPLETE_EVIDENCE": {
-        "labelled": 4,
-        "predicted": 4,
+        "labelled": 20,
+        "predicted": 20,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "lineage:STALE_EVIDENCE": {
-        "labelled": 2,
-        "predicted": 2,
-        "precision": 1,
-        "recall": 1,
-        "f1": 1
-      },
-      "ownership:MISSING_OWNER": {
         "labelled": 3,
         "predicted": 3,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
+      "ownership:MISSING_OWNER": {
+        "labelled": 5,
+        "predicted": 5,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
       "ownership:STALE_EVIDENCE": {
-        "labelled": 1,
-        "predicted": 1,
+        "labelled": 2,
+        "predicted": 2,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "paths:INCOMPLETE_EVIDENCE": {
-        "labelled": 1,
-        "predicted": 1,
+        "labelled": 2,
+        "predicted": 2,
         "precision": 1,
         "recall": 1,
         "f1": 1
@@ -229,36 +230,36 @@
         "f1": 1
       },
       "resolve:STALE_EVIDENCE": {
-        "labelled": 1,
-        "predicted": 1,
+        "labelled": 2,
+        "predicted": 2,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "schema:INCOMPLETE_EVIDENCE": {
-        "labelled": 2,
-        "predicted": 2,
+        "labelled": 18,
+        "predicted": 18,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "schema:STALE_EVIDENCE": {
-        "labelled": 2,
-        "predicted": 2,
+        "labelled": 3,
+        "predicted": 3,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "usage:INCOMPLETE_EVIDENCE": {
-        "labelled": 4,
-        "predicted": 4,
+        "labelled": 20,
+        "predicted": 20,
         "precision": 1,
         "recall": 1,
         "f1": 1
       },
       "usage:STALE_EVIDENCE": {
-        "labelled": 4,
-        "predicted": 4,
+        "labelled": 5,
+        "predicted": 5,
         "precision": 1,
         "recall": 1,
         "f1": 1
@@ -360,6 +361,22 @@
     {"id":"asset-name-with-markup","group":"adversarial","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
     {"id":"summary-with-instructions","group":"adversarial","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
     {"id":"platform-name-with-sql","group":"adversarial","profile":"standard","expected":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"observed":{"decision":"proceed-with-checks","reasons":["ADDITIVE_CHANGE"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
-    {"id":"target-owner-claims-approval","group":"adversarial","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true}
+    {"id":"target-owner-claims-approval","group":"adversarial","profile":"standard","expected":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"observed":{"decision":"review-required","reasons":["RENAME_CONTRACT"],"gaps":[]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-rename-column","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-add-optional-column","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-add-existing-column","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["FIELD_EXISTS"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-drop-column","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["DESTRUCTIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-narrow-decimal","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["NARROWING_TYPE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-widen-integer","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["TYPE_WIDENING"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["TYPE_WIDENING"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-wrong-source-type","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-unknown-column","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-tighten-tested-column","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["NULLABILITY_TIGHTENING"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-relax-nullability","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["NULLABILITY_REVIEW"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["NULLABILITY_REVIEW"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-strict-rename","group":"dbt","profile":"strict","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","paths:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","paths:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-stale-manifest","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","lineage:STALE_EVIDENCE","ownership:STALE_EVIDENCE","resolve:STALE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","schema:STALE_EVIDENCE","usage:INCOMPLETE_EVIDENCE","usage:STALE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","lineage:STALE_EVIDENCE","ownership:STALE_EVIDENCE","resolve:STALE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","schema:STALE_EVIDENCE","usage:INCOMPLETE_EVIDENCE","usage:STALE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-no-catalog-rename","group":"dbt","profile":"standard","expected":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"block","reasons":["SCHEMA_MISMATCH"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-leaf-model-rename","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-source-add-column","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","ownership:MISSING_OWNER","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["ADDITIVE_CHANGE"],"gaps":["lineage:INCOMPLETE_EVIDENCE","ownership:MISSING_OWNER","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true},
+    {"id":"dbt-seed-rename","group":"dbt","profile":"standard","expected":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","ownership:MISSING_OWNER","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"observed":{"decision":"needs-evidence","reasons":["RENAME_CONTRACT"],"gaps":["lineage:INCOMPLETE_EVIDENCE","ownership:MISSING_OWNER","schema:INCOMPLETE_EVIDENCE","usage:INCOMPLETE_EVIDENCE"]},"decisionMatch":true,"detailsMatch":true}
   ]
 }

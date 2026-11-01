@@ -1,0 +1,7 @@
+{
+  "datasetUrn": "urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.marts.fct_mrr,PROD)",
+  "changeRequest": {
+    "summary": "Rename fct_mrr.mrr_usd to mrr_amount_usd",
+    "changes": [{ "kind": "rename", "field": "mrr_usd", "to": "mrr_amount_usd" }]
+  }
+}

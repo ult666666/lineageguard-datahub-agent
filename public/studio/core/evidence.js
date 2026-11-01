@@ -1,6 +1,19 @@
 import { snapshot, exact, requireThat, identifier, sqlType, hash } from './contract.js';
 const list = (x, max = 250) => Array.isArray(x) && x.length <= max;
 const bounded = (x, max = 2048) => typeof x === 'string' && x.length > 0 && x.length <= max;
+export const SOURCE_MODES = ['synthetic-fixture', 'datahub-mcp', 'dbt-manifest'];
+// notebook, analysis, application and metric come from dbt exposures and semantic nodes.
+export const NODE_TYPES = [
+  'dataset',
+  'dashboard',
+  'pipeline',
+  'model',
+  'chart',
+  'notebook',
+  'analysis',
+  'application',
+  'metric',
+];
 export async function validateEvidence(raw, kind, request, revision) {
   const e = snapshot(raw, { maxBytes: 200000, maxNodes: 8000, maxDepth: 14 });
   exact(e, ['kind', 'target', 'observedAt', 'source', 'coverage', 'data']);
@@ -11,7 +24,7 @@ export async function validateEvidence(raw, kind, request, revision) {
   );
   exact(e.source, ['mode', 'revision']);
   requireThat(
-    ['synthetic-fixture', 'datahub-mcp'].includes(e.source.mode) && e.source.revision === revision,
+    SOURCE_MODES.includes(e.source.mode) && e.source.revision === revision,
     'INVALID_EVIDENCE',
     'Evidence source revision mismatch',
   );
@@ -46,7 +59,9 @@ export async function validateEvidence(raw, kind, request, revision) {
       names.add(field.name);
     }
   } else if (kind === 'lineage') {
-    exact(d, ['nodes', 'edges', 'total', 'level']);
+    // checks lists quality checks, such as dbt data tests, that read the target. It is
+    // descriptive only: the policy never reads it, so a passing test cannot clear a change.
+    exact(d, ['nodes', 'edges', 'total', 'level'], ['checks']);
     requireThat(
       list(d.nodes) &&
         list(d.edges, 500) &&
@@ -63,7 +78,7 @@ export async function validateEvidence(raw, kind, request, revision) {
           !ids.has(n.id) &&
           bounded(n.urn) &&
           bounded(n.name, 160) &&
-          ['dataset', 'dashboard', 'pipeline', 'model', 'chart'].includes(n.type) &&
+          NODE_TYPES.includes(n.type) &&
           (n.owner === null || bounded(n.owner, 160)),
         'INVALID_EVIDENCE',
       );
@@ -87,6 +102,24 @@ export async function validateEvidence(raw, kind, request, revision) {
         'INVALID_EVIDENCE',
         'Complete lineage count does not reconcile',
       );
+    if (Object.hasOwn(d, 'checks')) {
+      requireThat(list(d.checks), 'INVALID_EVIDENCE');
+      const seen = new Set();
+      for (const c of d.checks) {
+        exact(c, ['id', 'name', 'type', 'column', 'attachedTo', 'severity']);
+        requireThat(
+          bounded(c.id, 1100) &&
+            !seen.has(c.id) &&
+            bounded(c.name, 160) &&
+            bounded(c.type, 161) &&
+            (c.column === null || bounded(c.column, 256)) &&
+            (c.attachedTo === null || bounded(c.attachedTo, 1100)) &&
+            [null, 'error', 'warn'].includes(c.severity),
+          'INVALID_EVIDENCE',
+        );
+        seen.add(c.id);
+      }
+    }
   } else if (kind === 'usage') {
     exact(d, ['weeklyQueries', 'windowDays']);
     requireThat(

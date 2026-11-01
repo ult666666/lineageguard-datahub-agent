@@ -1,6 +1,16 @@
 import { snapshot, requireThat, StudioError } from './contract.js';
+import { captureDbtManifest, parseDbtCatalog, parseDbtManifest } from './dbt-manifest.js';
 export const FIXTURE_REVISION = 'orders-lab-2.0.0';
 export const TARGET = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,prod.analytics.orders,PROD)';
+// A trimmed manifest and catalog from the saas-analytics-warehouse dbt project. Provenance:
+// examples/dbt/README.md. Both runtimes read these static files locally; the synthetic
+// tool API never serves them.
+export const DBT_FIXTURE = Object.freeze({
+  manifest: '/studio/dbt/saas-analytics-warehouse/manifest.json',
+  catalog: '/studio/dbt/saas-analytics-warehouse/catalog.json',
+  target: 'urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.marts.fct_mrr,PROD)',
+});
+export const DBT_SCENARIO = 'dbt-manifest';
 const CATALOG = {
   name: 'prod.analytics.orders',
   platform: 'snowflake',
@@ -121,6 +131,14 @@ export const SCENARIOS = [
     evidence: 'complete',
     fault: 'transient',
   },
+  {
+    id: DBT_SCENARIO,
+    label: 'dbt manifest: column rename',
+    detail:
+      'A real dbt manifest lists downstream models, exposures and owners. It has no usage data, nullability or outside consumers, and it ages, so evidence stays incomplete.',
+    change: 'dbt-rename',
+    evidence: 'dbt-manifest',
+  },
 ];
 export function scenario(id) {
   const row = SCENARIOS.find((s) => s.id === id);
@@ -130,17 +148,37 @@ export function scenario(id) {
       ? { kind: 'add', field: 'campaign_id', type: 'VARCHAR(64)', required: false }
       : row.change === 'narrow'
         ? { kind: 'type_change', field: 'order_id', from: 'BIGINT', to: 'SMALLINT' }
-        : { kind: 'rename', field: 'order_total', to: 'gross_amount', type: 'DECIMAL(12,2)' };
+        : row.change === 'dbt-rename'
+          ? { kind: 'rename', field: 'mrr_usd', to: 'mrr_amount_usd' }
+          : { kind: 'rename', field: 'order_total', to: 'gross_amount', type: 'DECIMAL(12,2)' };
   return {
     ...snapshot(row),
-    request: { datasetUrn: TARGET, changeRequest: { summary: row.label, changes: [change] } },
+    request: {
+      datasetUrn: row.change === 'dbt-rename' ? DBT_FIXTURE.target : TARGET,
+      changeRequest: { summary: row.label, changes: [change] },
+    },
   };
+}
+/**
+ * The dbt scenario reviews any model, seed, snapshot or source in the bundled manifest.
+ * The caller supplies the parsed files: the browser fetches them, Node reads them.
+ */
+export async function createDbtScenarioAdapter(manifest, catalog, target = DBT_FIXTURE.target) {
+  const adapter = await captureDbtManifest(parseDbtManifest(manifest), target, {
+    catalog: parseDbtCatalog(catalog),
+  });
+  return { ...adapter, scenarioId: DBT_SCENARIO };
 }
 export function createFixtureAdapter(
   id,
   { delayMs = 0, restored = false, now = () => new Date().toISOString() } = {},
 ) {
   const spec = scenario(id);
+  requireThat(
+    spec.evidence !== 'dbt-manifest',
+    'CAPABILITY_DENIED',
+    'The dbt scenario reads its bundled manifest locally, not through synthetic tools',
+  );
   const revision = `${FIXTURE_REVISION}:${spec.evidence}`;
   let lineageCalls = 0;
   return {

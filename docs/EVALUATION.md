@@ -25,14 +25,14 @@ To accept a change on purpose, run `npm run studio:benchmark -- --write` and com
 ## Results
 
 <!-- policy-benchmark:results:start -->
-89 labelled cases: 85 decisions match the label (95.5%), 0 are more permissive than the label and 4 are stricter.
+105 labelled cases: 101 decisions match the label (96.2%), 0 are more permissive than the label and 4 are stricter.
 
 Reason codes: precision 0.96, recall 0.96. Evidence gaps: precision 1.00, recall 1.00. Adversarial twins with identical outcomes: 5 of 5.
 
 | Outcome | Labelled | Predicted | Precision | Recall | F1 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `block` | 32 | 36 | 0.89 | 1.00 | 0.94 |
-| `needs-evidence` | 16 | 16 | 1.00 | 1.00 | 1.00 |
+| `block` | 39 | 43 | 0.91 | 1.00 | 0.95 |
+| `needs-evidence` | 25 | 25 | 1.00 | 1.00 | 1.00 |
 | `failed` | 7 | 7 | 1.00 | 1.00 | 1.00 |
 | `review-required` | 25 | 21 | 1.00 | 0.84 | 0.91 |
 | `proceed-with-checks` | 9 | 9 | 1.00 | 1.00 | 1.00 |
@@ -41,8 +41,8 @@ Confusion matrix (rows: label, columns: policy output):
 
 | Label | `block` | `needs-evidence` | `failed` | `review-required` | `proceed-with-checks` |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `block` | 32 | 0 | 0 | 0 | 0 |
-| `needs-evidence` | 0 | 16 | 0 | 0 | 0 |
+| `block` | 39 | 0 | 0 | 0 | 0 |
+| `needs-evidence` | 0 | 25 | 0 | 0 | 0 |
 | `failed` | 0 | 0 | 7 | 0 | 0 |
 | `review-required` | 4 | 0 | 0 | 21 | 0 |
 | `proceed-with-checks` | 0 | 0 | 0 | 0 | 9 |
@@ -115,6 +115,16 @@ Evidence rules come from the documented policy: observations must be at most 24 
 (1 hour for the strict profile) and no more than 5 minutes in the future; the strict profile
 also requires column-level paths.
 
+**dbt cases** (group `dbt`) run against the committed manifest and catalog from the
+[saas-analytics-warehouse](../examples/dbt/README.md) dbt project instead of the shared
+world. Their labels apply the same rules to what a manifest can supply. A manifest has no
+query usage, so usage is unknown; it lists only consumers declared in the project, so
+lineage is partial; it does not record nullability, so the schema is partial (or unknown
+when no column has a type); and it has no column paths. The catalog's columns are the
+observed schema. A `not_null` data test is not a NOT NULL constraint. The benchmark sets
+the manifest's `generated_at` to one minute before the run (or `ageMinutes` before), as
+synthetic cases set their observation time, so results do not depend on when CI runs.
+
 ## What the first run found
 
 The first run used the policy on `main` at the time and these labels. It matched 78 of 89
@@ -142,6 +152,23 @@ that name an existing column with different letter case, or a rename that declar
 different type. A review exported before the fix that contains such a request no longer
 replays in the Review Inspector, which reports `COMPATIBILITY_REPLAY_MISMATCH`.
 
+## dbt manifest cases
+
+The 16 `dbt` cases were added with the dbt adapter. Their labels were written from the
+rules above before the first run, and that first run matched all 16 decisions, reasons
+and gaps. They cover renames, additions (including one that collides by letter case),
+drops, narrowing and widening, a wrong declared source type, an unknown column,
+tightening a column that only has a `not_null` test, relaxing nullability, the strict
+profile, a manifest generated two days earlier, a review without `catalog.json`, a model
+read only by an exposure, a source and a seed whose consumers lack owners. None of them
+may reach `review-required` or `proceed-with-checks`, and the report pins the fixture's
+digest (`dbtFixtureSha256`), so a changed fixture shows up as a report diff.
+
+Mutating the adapter shows the cases can fail: reading the unknown usage as zero queries
+changes every dbt case's gaps, and treating a `not_null` test as a constraint makes
+`dbt-tighten-tested-column` more permissive than its label, so
+`npm run studio:benchmark -- --check` exits 1 in both cases.
+
 ## Accepted disagreements
 
 Four lossless conversions are still blocked: `INT → DECIMAL(19,0)`,
@@ -152,7 +179,9 @@ that choice stays visible: precision for `block` is below 1 while recall stays a
 
 ## Limits
 
-- The cases are synthetic and use one table, one lineage graph and one owner model.
+- The synthetic cases use one table, one lineage graph and one owner model. The dbt cases
+  use one real manifest from a small synthetic project (21 models, 8 sources, one seed),
+  with exposures and owners added by a documented overlay.
 - The same author wrote the rules, the labels and the policy fixes. The rules are written
   down so that others can challenge individual labels.
 - The benchmark measures agreement with the rules above. It does not predict production
@@ -164,6 +193,7 @@ that choice stays visible: precision for `block` is below 1 while recall stays a
 
 Add an entry to `evals/policy-cases.json` with an `id`, a `group`, a one-sentence
 `rationale`, the `changes`, optional `evidence` overrides and the `expected` decision,
-reasons and gaps. Write the label from the rules above before you run it. Then run
+reasons and gaps. A `dbt` case replaces `evidence` with `"dbt": { "target": "<unique_id>" }`
+and may set `"catalog": false` or `"ageMinutes"`. Write the label from the rules above before you run it. Then run
 `npm run studio:benchmark`, investigate any disagreement, and use `--write` to pin the
 result. The loader rejects unknown fields, codes and node names, so a typo fails loudly.

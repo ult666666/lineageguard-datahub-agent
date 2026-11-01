@@ -47,11 +47,13 @@ flowchart TB
     direction LR
     cli["studio:review<br/>--live-datahub"] -->|"2 read-only MCP calls"| dh[("Your DataHub")]
     cli --> cap["Immutable,<br/>hash-bound capture"]
+    dbt["studio:review<br/>--dbt-manifest"] -->|"1 local file read"| files[("manifest.json<br/>catalog.json")]
+    dbt --> cap
   end
   hosted ~~~ durable ~~~ optional
 ```
 
-Both runtimes execute the same modules in `public/studio/core`. The hosted demo keeps checkpoints in the browser; the local service keeps them in SQLite. The optional CLI reads DataHub once and then reviews the frozen capture with the same interpreter. Exported reviews can be checked offline by the Review Inspector, which never calls a tool.
+Both runtimes execute the same modules in `public/studio/core`. The hosted demo keeps checkpoints in the browser; the local service keeps them in SQLite. The optional CLI reads DataHub, or a dbt manifest, once and then reviews the frozen capture with the same interpreter. The Studio's dbt scenario reads a bundled static manifest locally in both runtimes; the synthetic tool API refuses it. Exported reviews can be checked offline by the Review Inspector, which never calls a tool.
 
 ## Identity and data contracts
 
@@ -106,6 +108,34 @@ Because policy freshness is time-dependent, recorded-policy replay tests its dec
 The MCP client implements the explicitly tested 2025-11-25 handshake profile, including initialization, session identifiers and tool execution. It binds JSON-RPC response IDs, skips requests and notifications the server starts on the response stream (it declares no client capabilities and answers none of them), distinguishes protocol errors from tool errors, enforces deadlines and response sizes, refuses redirects and constrains tools to an explicit read-only list. MCP 2026-07-28 has a different stateless lifecycle and is not claimed compatible.
 
 The optional Studio CLI captures `get_entities` and `get_lineage` once, then runs against an immutable hash-bound capture. It does not hide repeated live reads inside the DAG. Only recognized scalar schema metadata and exact seven-day usage become complete evidence; 30-day usage is not automatically relabeled as exact weekly activity. Unknown column paths stay unknown. This bridge is tested with injected structured tool results. No real tenant was connected or validated for the Studio release.
+
+## dbt manifest integration profile
+
+[`dbt-manifest.js`](../public/studio/core/dbt-manifest.js) turns a dbt
+[`manifest.json`](https://docs.getdbt.com/reference/artifacts/manifest-json) and an optional
+[`catalog.json`](https://docs.getdbt.com/reference/artifacts/catalog-json) into the same immutable, hash-bound capture as the DataHub bridge. It is a pure module, so the CLI, the local service and the browser share it. It never runs dbt, connects to a warehouse or parses SQL.
+
+**Parse and verify.** Only `metadata.dbt_schema_version` manifest v12 (dbt Core 1.8 and later) and catalog v1 are accepted; any other version, or another artifact such as `run_results.json`, is refused with a message that names what was found. Every resource must carry its own `unique_id`, a `resource_type` that matches the ID prefix and a name. Reads use own data properties only, so accessors and prototype keys are never consulted. The adapter then checks that the three descriptions of the graph agree: `parent_map[x]` must equal `x.depends_on.nodes` for every resource, and `child_map` must be exactly the inverse of `parent_map`. A topological sort must consume every node, because dbt refuses cyclic projects. Any disagreement, unknown ID, self edge or cycle refuses the file as `MANIFEST_INCONSISTENT`. Bounds: 128 MB per file, 250,000 resources, 4,000,000 map edges and 5,000 columns per relation.
+
+**Resolve the target.** A request names a relation as `urn:li:dataset:(urn:li:dataPlatform:dbt,<database>.<schema>.<alias>,PROD)`. The relation must match exactly one model, seed, snapshot or source, compared case-insensitively. Ephemeral models have no relation and cannot be targets. Relation parts must be simple unquoted identifiers, because the relation becomes the table name in the SQL draft.
+
+**Map the evidence.**
+
+| Evidence | From the manifest | Coverage |
+| --- | --- | --- |
+| Resolve | The relation and `metadata.adapter_type` | Complete |
+| Schema | `catalog.json` columns and types when the catalog has the target, otherwise `data_type` declarations; names or types outside the Studio vocabulary are left out | Partial, or unknown with no typed columns: nullability is not recorded, so every column is treated as nullable |
+| Lineage | A breadth-first walk of the verified `child_map`, with `depends_on` edges between returned nodes. Models, seeds, snapshots and sources are datasets; exposures keep their type (`ml` becomes `model`); metrics, semantic models and saved queries are metrics. At most 200 nodes and 500 edges | Always partial: it lists consumers declared in this project only |
+| Quality checks | Data tests and unit tests in the target's `child_map`, with test type, column and severity, as `lineage.data.checks` | Descriptive only; the policy never reads them |
+| Usage | Nothing: dbt artifacts carry no query history | Unknown |
+| Ownership | `meta.owner` on the node, then the owner of its group; exposures use `owner.name` or `owner.email` | Complete over the returned nodes; a node without an owner is a `MISSING_OWNER` gap |
+| Column paths | Nothing: a manifest has no column-level lineage | Unknown |
+
+The observation time of every kind is the manifest's `generated_at` (the catalog's for schema from the catalog), so a manifest generated two days ago is two-day-old evidence and fails the freshness rule. The revision hashes the profile, the manifest metadata, the target and every evidence body, so it does not depend on JSON formatting or key order.
+
+**Why no gap can become clearance.** Usage is always unknown and lineage always partial, so `evidenceReady` is never true and the decision is `block` or `needs-evidence`. A `not_null` data test checks current rows; it is not a NOT NULL constraint, so it never marks a column non-nullable, and a request to tighten nullability stays blocked. Zero downstream dbt nodes is not zero consumers. Dropping the catalog removes observed columns, so a change can turn from `block` (the column exists) into `needs-evidence` (the column is not visible), but it can never clear.
+
+**Trade-offs.** The adapter does not infer column lineage from compiled SQL: `select *` and macros read columns without naming them, and a partial guess would look like evidence. It does not use model contracts as observed nullability, because a manifest does not show that the contracted build ran. dbt Core writes the manifest without the warehouse, while the catalog needs a built warehouse; the catalog is optional so a review can still run from `dbt parse` alone, with weaker schema evidence.
 
 ## Repository and deployment boundaries
 

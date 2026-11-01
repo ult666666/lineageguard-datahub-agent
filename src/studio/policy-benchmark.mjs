@@ -9,6 +9,13 @@ import {
 } from '../../public/studio/core/contract.js';
 import { makeRecipe } from '../../public/studio/core/recipe.js';
 import { createRun, executeRun } from '../../public/studio/core/runtime.js';
+import {
+  captureDbtManifest,
+  listDbtTargets,
+  parseDbtCatalog,
+  parseDbtManifest,
+} from '../../public/studio/core/dbt-manifest.js';
+import { readDbtFixture } from './dbt-fixture.mjs';
 
 export const CASES_FILE = new URL('../../evals/policy-cases.json', import.meta.url);
 export const REPORT_FILE = new URL('../../evals/policy-report.json', import.meta.url);
@@ -28,7 +35,7 @@ const STRICTNESS = {
   'review-required': 1,
   'proceed-with-checks': 0,
 };
-const GROUPS = ['compatibility', 'batch', 'evidence', 'strict', 'contract', 'adversarial'];
+const GROUPS = ['compatibility', 'batch', 'evidence', 'strict', 'contract', 'adversarial', 'dbt'];
 const KINDS = ['resolve', 'schema', 'lineage', 'usage', 'ownership', 'paths'];
 const REASONS = [
   'ADDITIVE_CHANGE',
@@ -87,7 +94,7 @@ export function loadCases(raw) {
     exact(
       c,
       ['id', 'group', 'rationale', 'changes', 'expected'],
-      ['profile', 'summary', 'evidence', 'twin'],
+      ['profile', 'summary', 'evidence', 'twin', 'dbt'],
     );
     if (typeof c.id !== 'string' || !/^[a-z0-9-]{3,60}$/.test(c.id) || ids.has(c.id))
       invalid(c.id, 'id must be unique lowercase kebab-case');
@@ -114,6 +121,22 @@ export function loadCases(raw) {
       invalid(c.id, 'failedStep is required exactly when the decision is failed');
     if (e.decision === 'failed' && !KINDS.includes(e.failedStep))
       invalid(c.id, 'failedStep must be an evidence step');
+    // dbt cases read the committed saas-analytics-warehouse manifest instead of the world.
+    if ((c.group === 'dbt') !== (c.dbt !== undefined))
+      invalid(c.id, 'the dbt group and a dbt source go together');
+    if (c.dbt !== undefined) {
+      exact(c.dbt, ['target'], ['catalog', 'ageMinutes']);
+      if (c.evidence !== undefined) invalid(c.id, 'dbt cases take no world evidence overrides');
+      if (typeof c.dbt.target !== 'string' || !/^(model|seed|snapshot|source)\./.test(c.dbt.target))
+        invalid(c.id, 'dbt target must be a model, seed, snapshot or source unique_id');
+      if (c.dbt.catalog !== undefined && typeof c.dbt.catalog !== 'boolean')
+        invalid(c.id, 'dbt catalog must be true or false');
+      if (
+        c.dbt.ageMinutes !== undefined &&
+        !(Number.isInteger(c.dbt.ageMinutes) && c.dbt.ageMinutes >= 0 && c.dbt.ageMinutes <= 100000)
+      )
+        invalid(c.id, 'dbt ageMinutes must be a whole number of minutes');
+    }
     if (c.evidence !== undefined) {
       exact(c.evidence, [], OVERRIDES);
       for (const id of [
@@ -194,11 +217,41 @@ export function createCaseAdapter(world, spec) {
   };
 }
 
+let dbtFiles = null;
+/** The digest of the dbt fixture the dbt cases read, pinned in the report. */
+export function dbtFixtureSha256() {
+  dbtFiles ??= readDbtFixture();
+  return createHash('sha256')
+    .update(canonical(dbtFiles.manifest))
+    .update(canonical(dbtFiles.catalog))
+    .digest('hex');
+}
+/**
+ * The real manifest, observed ageMinutes before the read (1 by default), as synthetic cases
+ * use ageMinutes. The policy sees what a manifest supplies and nothing more.
+ */
+export async function createDbtCaseAdapter(spec) {
+  dbtFiles ??= readDbtFixture();
+  const { manifest, catalog } = structuredClone(dbtFiles);
+  const at = new Date(Date.now() - (spec.dbt.ageMinutes ?? 1) * 60_000).toISOString();
+  manifest.metadata.generated_at = at;
+  catalog.metadata.generated_at = at;
+  const index = parseDbtManifest(manifest);
+  const target = listDbtTargets(index).find((t) => t.uniqueId === spec.dbt.target);
+  requireThat(target, 'INVALID_CASES', `Case ${spec.id}: unknown dbt target`);
+  const adapter = await captureDbtManifest(index, target.urn, {
+    catalog: spec.dbt.catalog === false ? null : parseDbtCatalog(catalog),
+  });
+  return { adapter, urn: target.urn };
+}
+
 /** Execute one case through the same interpreter, evidence contracts and policy as Studio. */
 export async function runCase(world, spec) {
-  const adapter = createCaseAdapter(world, spec);
+  const { adapter, urn } = spec.dbt
+    ? await createDbtCaseAdapter(spec)
+    : { adapter: createCaseAdapter(world, spec), urn: world.target };
   const request = {
-    datasetUrn: world.target,
+    datasetUrn: urn,
     changeRequest: {
       summary: spec.summary ?? `Benchmark case ${spec.id}`,
       changes: spec.changes,
@@ -301,6 +354,7 @@ export function summarize(file, rows) {
     schema: 'lineageguard.policy-benchmark/1',
     policyVersion: POLICY_VERSION,
     casesSha256: createHash('sha256').update(canonical(file)).digest('hex'),
+    ...(file.cases.some((c) => c.dbt) ? { dbtFixtureSha256: dbtFixtureSha256() } : {}),
     summary: {
       cases: rows.length,
       decisionsMatched: matched,

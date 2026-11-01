@@ -10,7 +10,7 @@ import {
 } from './contract.js';
 import { compileRecipe, REGISTRY } from './recipe.js';
 import { verifyRun } from './runtime.js';
-import { validateEvidence, evidenceFreshness } from './evidence.js';
+import { validateEvidence, evidenceFreshness, SOURCE_MODES } from './evidence.js';
 import { assessCompatibility, evaluatePolicy } from './policy.js';
 import { buildArtifacts } from './artifacts.js';
 
@@ -135,7 +135,7 @@ export async function inspectReview(raw, { now = Date.now() } = {}) {
   ]);
   await verifyRun(run);
   requireThat(
-    ['synthetic-fixture', 'datahub-mcp'].includes(run.sourceMode),
+    SOURCE_MODES.includes(run.sourceMode),
     'EVIDENCE_BINDING_MISMATCH',
     'Unsupported source mode',
   );
