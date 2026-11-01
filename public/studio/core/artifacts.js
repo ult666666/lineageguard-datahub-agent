@@ -4,6 +4,17 @@ const md = (value) =>
   String(value)
     .replace(/[<>]/g, (x) => (x === '<' ? '&lt;' : '&gt;'))
     .replaceAll('\r', '');
+// The summary is requester free text. Keep it on the title line and escape what could
+// open a link, so it cannot add a section or a second decision line to the brief.
+const title = (value) =>
+  md(String(value).replace(/[\\[\]]/g, '\\$&')).replace(/\s*[\n\u2028\u2029]\s*/g, ' ');
+// A code span needs a fence longer than any backtick run inside it.
+const code = (value) => {
+  const text = md(value),
+    longest = Math.max(0, ...(text.match(/`+/g) || []).map((run) => run.length)),
+    fence = '`'.repeat(longest + 1);
+  return longest ? `${fence} ${text} ${fence}` : `${fence}${text}${fence}`;
+};
 export function buildArtifacts(request, outputs, binding) {
   const p = outputs.policy,
     table = outputs.resolve.data.name;
@@ -50,6 +61,6 @@ export function buildArtifacts(request, outputs, binding) {
     'Design and rehearse platform-specific recovery; this draft is not a rollback plan.',
     'Refresh evidence and request a new review when any bound input changes.',
   ];
-  const markdown = `# ${md(request.changeRequest.summary)}\n\n**${p.decision.toUpperCase()}** · evidence ${p.evidenceReady ? 'complete and current' : 'not ready'}\n\nTarget: \`${md(request.datasetUrn)}\`\n\n## Reasons\n${p.reasons.map((r) => `- ${md(r.detail)} (${r.code})`).join('\n')}\n\n## Evidence gaps\n${p.gaps.length ? p.gaps.map((g) => `- ${md(g.detail)}`).join('\n') : 'None detected within this bounded evidence scope.'}\n\n## Validation checklist\n${checklist.map((c) => `- [ ] ${c}`).join('\n')}\n\n## Reproducibility\nBinding: \`${binding}\`\nPolicy: ${p.version}\nEvidence: ${p.evidenceIds.map((id) => '`' + id + '`').join(', ')}\n\nThis is an AI-assisted engineering tool with deterministic runtime decisions. No model inference, catalog write or SQL execution occurred. A local acknowledgement is not authenticated organizational approval.\n`;
+  const markdown = `# ${title(request.changeRequest.summary)}\n\n**${p.decision.toUpperCase()}** · evidence ${p.evidenceReady ? 'complete and current' : 'not ready'}\n\nTarget: ${code(request.datasetUrn)}\n\n## Reasons\n${p.reasons.map((r) => `- ${md(r.detail)} (${r.code})`).join('\n')}\n\n## Evidence gaps\n${p.gaps.length ? p.gaps.map((g) => `- ${md(g.detail)}`).join('\n') : 'None detected within this bounded evidence scope.'}\n\n## Validation checklist\n${checklist.map((c) => `- [ ] ${c}`).join('\n')}\n\n## Reproducibility\nBinding: \`${binding}\`\nPolicy: ${p.version}\nEvidence: ${p.evidenceIds.map((id) => '`' + id + '`').join(', ')}\n\nThis is an AI-assisted engineering tool with deterministic runtime decisions. No model inference, catalog write or SQL execution occurred. A local acknowledgement is not authenticated organizational approval.\n`;
   return { sql: lines.join('\n') + '\n', markdown, checklist, executionAuthorized: false };
 }

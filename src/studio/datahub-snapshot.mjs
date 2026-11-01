@@ -8,10 +8,18 @@ import {
 } from '../../public/studio/core/contract.js';
 import { extractToolJson } from '../datahub-mcp-client.mjs';
 import { validateEvidence } from '../../public/studio/core/evidence.js';
-const ownerName = (e) =>
-  e?.ownership?.owners?.[0]?.owner?.properties?.displayName ||
-  e?.ownership?.owners?.[0]?.owner?.name ||
-  null;
+// Display text never decides a review. Overlong names are shortened and non-text names
+// are ignored, so one odd catalog label cannot fail the whole capture. URNs stay exact.
+const clip = (value, max) => {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  if (value.length <= max) return value;
+  const cut = value.slice(0, max - 1);
+  return (/[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut) + '…';
+};
+const ownerName = (e) => {
+  const owner = e?.ownership?.owners?.[0]?.owner;
+  return clip(owner?.properties?.displayName, 160) ?? clip(owner?.name, 160);
+};
 const type = (e) => {
   const value = String(e.type || 'dataset')
     .toLowerCase()
@@ -49,10 +57,15 @@ export async function captureDataHubSnapshot(
   ]);
   const rawEntity = snapshot(extractToolJson(entityResult), { maxBytes: 500000 }),
     rawLineage = snapshot(extractToolJson(lineageResult), { maxBytes: 500000 });
-  const entity = (Array.isArray(rawEntity) ? rawEntity : [rawEntity]).find(
-    (e) => e?.urn === target && !e.error,
+  const matches = (Array.isArray(rawEntity) ? rawEntity : [rawEntity]).filter(
+    (e) => e?.urn === target,
   );
-  requireThat(entity, 'TARGET_MISMATCH', 'Requested target was not returned by DataHub');
+  requireThat(
+    matches.length === 1 && !matches[0].error,
+    'TARGET_MISMATCH',
+    'Requested target was not returned exactly once by DataHub',
+  );
+  const entity = matches[0];
   const name = entity.name || entity.properties?.name;
   requireThat(
     typeof name === 'string' && name.length <= 515,
@@ -89,7 +102,7 @@ export async function captureDataHubSnapshot(
     ...unique.map((e, i) => ({
       id: 'asset-' + i,
       urn: e.urn,
-      name: e.name || e.properties?.name || e.urn.slice(-100),
+      name: clip(e.name, 160) ?? clip(e.properties?.name, 160) ?? e.urn.slice(-100),
       type: type(e),
       owner: ownerName(e),
     })),
@@ -122,7 +135,7 @@ export async function captureDataHubSnapshot(
   add('resolve', 'complete', {
     urn: target,
     name,
-    platform: typeof entity.platform?.name === 'string' ? entity.platform.name : 'DataHub',
+    platform: clip(entity.platform?.name, 80) ?? 'DataHub',
   });
   add('schema', schemaCoverage, { fields });
   // Flat search results establish returned reachable assets, not their exact edge paths.

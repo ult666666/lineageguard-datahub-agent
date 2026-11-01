@@ -119,6 +119,7 @@ Leave the original server terminal open. Ctrl+C in that terminal stops it. The l
 | MCP boundary | [`datahub-mcp-client.mjs`](src/datahub-mcp-client.mjs) | Response IDs, protocol/tool errors, deadlines, byte limits and read-only capabilities |
 | Browser checkpoints | [`storage.js`](public/studio/storage.js) | Corruption preservation, quota failure, cross-tab conflicts and bounded history |
 | Reproducible evaluation | [`evaluations.js`](public/studio/core/evaluations.js) | Named actual outcomes, recovery identity and corrupted-history refusal |
+| Property and hostile-input tests | [`properties.test.mjs`](test/studio/properties.test.mjs), [`hostile-metadata.test.mjs`](test/studio/hostile-metadata.test.mjs) | Seeded generators for type, request, JSON and event-stream parsing, the compiler, policy invariants and SQL/Markdown output; hostile catalog text |
 | Labelled policy benchmark | [`policy-benchmark.mjs`](src/studio/policy-benchmark.mjs), [`policy-cases.json`](evals/policy-cases.json) | Labelled decisions, reasons and gaps; per-outcome precision and recall; CI fails on any decision more permissive than its label |
 | Public release boundary | [`build-studio.mjs`](scripts/build-studio.mjs) | Exact static inventory, hashes, linked files, unexpected files and overwrite refusal |
 
