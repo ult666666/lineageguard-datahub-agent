@@ -12,6 +12,32 @@ test('MCP rejects a response belonging to another request', async () => {
   const c = client(async () => json({ jsonrpc: '2.0', id: 999, result: { ok: true } }));
   await assert.rejects(c.request('ping'), /identity|ID/i);
 });
+const stream = (...packets) =>
+  new Response(packets.map((p) => `event: message\ndata: ${JSON.stringify(p)}\n\n`).join(''), {
+    headers: { 'content-type': 'text/event-stream' },
+  });
+test('MCP skips requests the server starts on the response stream', async () => {
+  // The server's ping reuses ID 1, the ID of the client's own first request.
+  const c = client(async () =>
+    stream(
+      { jsonrpc: '2.0', id: 1, method: 'ping' },
+      { jsonrpc: '2.0', method: 'notifications/progress', params: { progress: 1 } },
+      { jsonrpc: '2.0', id: 1, result: { ok: true } },
+    ),
+  );
+  assert.deepEqual(await c.request('ping'), { ok: true });
+});
+test('MCP refuses a stream with no response, only server requests', async () => {
+  for (const packet of [
+    { jsonrpc: '2.0', id: 1, method: 'ping' },
+    { jsonrpc: '2.0', id: 1, method: 'ping', result: { ok: true } },
+  ]) {
+    await assert.rejects(
+      client(async () => stream(packet)).request('ping'),
+      (error) => error.code === 'RESPONSE_ID',
+    );
+  }
+});
 test('MCP requires an exact JSON-RPC result envelope', async () => {
   for (const value of [
     { id: 1, result: {} },

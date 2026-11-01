@@ -66,7 +66,13 @@ function parseEnvelope(text, type, id) {
       cause,
     });
   }
-  const responses = packets.filter((p) => record(p) && Object.hasOwn(p, 'id'));
+  // A JSON-RPC response never carries a method. Requests and notifications the
+  // server starts on the same stream are skipped, whatever their ID: each side
+  // numbers its own requests. This client declares no capabilities and answers
+  // none of them; a server that waits for an answer runs into the deadline.
+  const responses = packets.filter(
+    (p) => record(p) && Object.hasOwn(p, 'id') && !Object.hasOwn(p, 'method'),
+  );
   if (responses.length !== 1 || responses[0].id !== id)
     throw new McpError('RESPONSE_ID', 'MCP response identity does not match request ID');
   const p = responses[0];
