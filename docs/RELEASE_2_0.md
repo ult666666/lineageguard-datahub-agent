@@ -73,7 +73,7 @@ After the exact application payload is deployed, the explicit command below veri
 npm run verify:deployed
 ```
 
-The verifier compares all 19 static files and the release manifest, exercises the serverless API and preserved classic API, then checks real browser execution, exports, changed-input invalidation, comparison, reload/resume, outage recovery, cancellation, evaluations and responsive layout. A report is written under `test-results/deployed-<timestamp>/` only after all checks pass. It records the source commit and whether the working tree was clean. A mismatched deployment fails instead of being called current.
+The verifier compares every file in the local release manifest, and the manifest itself, with the deployed bytes, exercises the serverless API and preserved classic API, then checks real browser execution, exports, changed-input invalidation, comparison, reload/resume, outage recovery, cancellation, evaluations and responsive layout. A report is written under `test-results/deployed-<timestamp>/` only after all checks pass. It records the source commit and whether the working tree was clean. A mismatched deployment fails instead of being called current.
 
 ## Explicit exclusions
 

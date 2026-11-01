@@ -6,30 +6,52 @@ A review is a reproducible decision artifact, not a command to mutate a system. 
 
 ## Component graph
 
-```text
-Request + recipe
-       │
-       ▼
-Strict data snapshot ──► DAG compiler ──► binding identity
-                                 │
-                                 ▼
-                         Resolve exact target
-                                 │
-                 ┌───────────────┼───────────────┐
-                 ▼               ▼               ▼
-              Schema          Lineage         Usage / owners
-                 │               │               │
-                 ▼               ▼               │
-           Compatibility   Optional paths        │
-                 └───────────────┼───────────────┘
-                                 ▼
-                     Evidence and risk policy
-                                 │
-                                 ▼
-                     Bound review-only artifacts
+```mermaid
+flowchart TD
+  input["Request + recipe"] --> snapshot["Strict data snapshot"]
+  snapshot --> compiler["DAG compiler"]
+  compiler --> binding["Binding identity"]
+  compiler --> resolve["Resolve exact target"]
+  resolve --> schema["Schema"]
+  resolve --> lineage["Lineage"]
+  resolve --> usage["Usage"]
+  resolve --> owners["Owners"]
+  schema --> compat["Compatibility rules"]
+  lineage -.->|strict profile| paths["Column paths"]
+  schema --> policy["Evidence and risk policy"]
+  lineage --> policy
+  usage --> policy
+  owners --> policy
+  compat --> policy
+  paths -.-> policy
+  policy --> artifacts["Bound review-only artifacts"]
 ```
 
 The compiler computes topological levels from actual dependencies. The visual graph is rendered from that compiled result. It rejects unknown operations, duplicate nodes, missing required evidence dependencies and cycles. The registry is fixed code, not dynamically supplied executable functions. Independent tool reads can run concurrently; deterministic analysis and policy wait for their declared inputs.
+
+## Where it runs
+
+```mermaid
+flowchart TB
+  subgraph hosted["Hosted demo"]
+    direction LR
+    ui1["Studio UI and interpreter<br/>in the browser"] -->|"synthetic reads"| fn["/api/studio<br/>serverless function"]
+    ui1 --> ls[("Browser storage<br/>checkpoints")]
+  end
+  subgraph durable["npm run studio:local"]
+    direction LR
+    ui2["Studio UI"] -->|"loopback API"| svc["Node run service,<br/>same interpreter"]
+    svc --> db[("SQLite: revision CAS<br/>and writer leases")]
+  end
+  subgraph optional["Optional CLI"]
+    direction LR
+    cli["studio:review<br/>--live-datahub"] -->|"2 read-only MCP calls"| dh[("Your DataHub")]
+    cli --> cap["Immutable,<br/>hash-bound capture"]
+  end
+  hosted ~~~ durable ~~~ optional
+```
+
+Both runtimes execute the same modules in `public/studio/core`. The hosted demo keeps checkpoints in the browser; the local service keeps them in SQLite. The optional CLI reads DataHub once and then reviews the frozen capture with the same interpreter. Exported reviews can be checked offline by the Review Inspector, which never calls a tool.
 
 ## Identity and data contracts
 

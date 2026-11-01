@@ -30,11 +30,15 @@ Open **Review package** and export the run JSON. It contains exact inputs, recip
 
 Open **Evaluations** and execute the suite. Inspect expected versus observed outcomes, including corrupted-history refusal and resumed identity. These are current executions against the same interpreter, not a prerecorded results table.
 
+In a terminal, `npm run studio:benchmark` measures the policy itself against the labelled cases in `evals/policy-cases.json` and prints per-outcome precision, recall and every disagreement. See [Evaluation](EVALUATION.md) for the labelling rules.
+
 Finish in **Architecture** and follow the source, verification and threat-model links. Explain the two runtime modes and the read-only DataHub integration profile. Live-tenant compatibility, multi-user authorization and production migration safety are explicitly outside the release evidence.
 
 ## Interview framing
 
 “I used a schema-change review problem to build a bounded orchestration system: a typed DAG compiler, a shared browser/Node interpreter, source-bound evidence, failure and cancellation semantics, and a local SQLite coordinator with revision and lease fencing. I can show the failure cases and the tests that caught them. AI assisted implementation, while the product decisions and execution boundaries remained explicit.”
+
+To discuss evaluation, point to [Evaluation](EVALUATION.md): the benchmark's first run found five decisions more permissive than their labels, traced to two policy bugs, and CI now fails if any decision is more permissive than its label.
 
 Do not claim enterprise adoption, an autonomous LLM team, production tenant validation or authenticated approvals that the project does not implement.
 
