@@ -659,6 +659,8 @@ function sseResponse(r, result, id = 1) {
       r.pick([
         `: keep-alive`,
         `event: message${eol}data: ${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/progress', params: { progress: i } })}`,
+        // A request the server starts, sometimes reusing the client's ID.
+        `event: message${eol}data: ${JSON.stringify({ jsonrpc: '2.0', id: r.int(1, 3), method: r.pick(['ping', 'roots/list']) })}`,
         `retry: 1000`,
       ]),
     );

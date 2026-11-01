@@ -103,7 +103,7 @@ Because policy freshness is time-dependent, recorded-policy replay tests its dec
 
 ## DataHub integration profile
 
-The MCP client implements the explicitly tested 2025-11-25 handshake profile, including initialization, session identifiers and tool execution. It binds JSON-RPC response IDs, distinguishes protocol errors from tool errors, enforces deadlines and response sizes, refuses redirects and constrains tools to an explicit read-only list. MCP 2026-07-28 has a different stateless lifecycle and is not claimed compatible.
+The MCP client implements the explicitly tested 2025-11-25 handshake profile, including initialization, session identifiers and tool execution. It binds JSON-RPC response IDs, skips requests and notifications the server starts on the response stream (it declares no client capabilities and answers none of them), distinguishes protocol errors from tool errors, enforces deadlines and response sizes, refuses redirects and constrains tools to an explicit read-only list. MCP 2026-07-28 has a different stateless lifecycle and is not claimed compatible.
 
 The optional Studio CLI captures `get_entities` and `get_lineage` once, then runs against an immutable hash-bound capture. It does not hide repeated live reads inside the DAG. Only recognized scalar schema metadata and exact seven-day usage become complete evidence; 30-day usage is not automatically relabeled as exact weekly activity. Unknown column paths stay unknown. This bridge is tested with injected structured tool results. No real tenant was connected or validated for the Studio release.
 
