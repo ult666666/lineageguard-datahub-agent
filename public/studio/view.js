@@ -6,6 +6,17 @@ const set = (id, value) => {
   const node = $(id);
   if (node) node.textContent = String(value);
 };
+// Text plus an optional color role (good, warn, bad); the text always carries the meaning.
+const tone = (id, value, kind) => {
+  set(id, value);
+  const node = $(id);
+  if (!node) return;
+  if (kind) node.dataset.tone = kind;
+  else delete node.dataset.tone;
+};
+const RISK_TONES = { blocked: 'bad', high: 'warn', low: 'good' };
+const capitalize = (text) => String(text).charAt(0).toUpperCase() + String(text).slice(1);
+const KIND_LABELS = { tool: 'Tool', deterministic: 'Deterministic', policy: 'Policy' };
 export function el(tag, text = '', attrs = {}) {
   const node = document.createElement(tag);
   if (text !== null) node.textContent = String(text);
@@ -78,6 +89,11 @@ export function renderWorkflow(recipe, run) {
       item = REGISTRY[id],
       step = run?.steps[id],
       status = step?.status || 'pending';
+    const kind = KIND_LABELS[item.kind] || capitalize(item.kind);
+    const meta = step?.reused
+      ? 'Reused, verified'
+      : capitalize(status) + (step?.endedAt ? ` · ${step.durationMs} ms` : '');
+    // The accessible name repeats the visible text in order, then says what Enter does.
     const group = svg('g', {
       class: 'graph-node',
       'data-node': id,
@@ -86,20 +102,18 @@ export function renderWorkflow(recipe, run) {
       transform: `translate(${x},${y})`,
       tabindex: 0,
       role: 'button',
-      'aria-label': `${item.label}: ${status}. Inspect stage output`,
+      'aria-label': `${kind}: ${item.label}, ${meta}. Inspect its output`,
     });
+    // SVG never renders the spaces between the text elements; they keep the words apart for
+    // tools that read the group's text.
     group.append(
-      svg('rect', { width: 177, height: 70, rx: 9 }),
-      svg('text', { x: 13, y: 18, class: 'node-kind' }, item.kind.toUpperCase()),
-      svg('text', { x: 13, y: 38, class: 'node-title' }, item.label),
-      svg('circle', { cx: 14, cy: 55, r: 2.5, class: 'state-dot' }),
-      svg(
-        'text',
-        { x: 22, y: 58, class: 'node-meta' },
-        step?.reused
-          ? 'REUSED · VERIFIED'
-          : status.toUpperCase() + (step?.endedAt ? ` · ${step.durationMs} ms` : ''),
-      ),
+      svg('rect', { width: 177, height: 70, rx: 6 }),
+      svg('text', { x: 14, y: 20, class: 'node-kind' }, kind),
+      ' ',
+      svg('text', { x: 14, y: 39, class: 'node-title' }, item.label),
+      ' ',
+      svg('circle', { cx: 17.5, cy: 54, r: 3.5, class: 'state-dot' }),
+      svg('text', { x: 27, y: 58, class: 'node-meta' }, meta),
     );
     fragment.append(group);
   }
@@ -114,62 +128,44 @@ export function renderRun(run, recipe) {
   const phase = run?.status || 'created';
   const status = $('run-status');
   status.dataset.status = phase;
-  status.textContent = phase === 'created' ? 'Ready' : phase;
+  status.textContent = phase === 'created' ? 'Ready' : capitalize(phase);
   set(
     'run-identity',
     run ? `${run.id.slice(0, 8)} · generation ${run.generation}` : 'No run created',
   );
   set('calls-value', `${run?.callsUsed || 0} / ${recipe.budget.maxCalls}`);
-  set('event-count', `${run?.events.length || 0} EVENTS`);
+  const events = run?.events.length || 0;
+  set('event-count', `${events} ${events === 1 ? 'event' : 'events'}`);
   const p = run?.status === 'completed' ? run.result?.policy : null;
   const fallback = {
-    created: [
-      'Not evaluated',
-      'Run a review to receive a decision. Missing data is never interpreted as low risk.',
-    ],
-    running: [
-      'Review in progress',
-      'Actual steps are running. No final decision has been published.',
-    ],
+    created: ['Not evaluated', 'Run a review to see the decision and the reasons behind it.'],
+    running: ['Review in progress', 'The decision appears when the policy step finishes.'],
     paused: [
       'Paused before policy',
-      'The checkpoint preserves completed evidence. Resume to evaluate policy and generate the review.',
+      'Completed evidence is saved. Resume to apply the policy and build the review package.',
     ],
     failed: [
-      'Review incomplete',
-      'An execution boundary stopped this run. Inspect the trace, correct the source condition and resume.',
+      'No decision: a step failed',
+      'Check the run trace. To recover, restore the source and resume the same run.',
     ],
-    cancelled: [
-      'Cancelled · no decision',
-      'No new steps will be dispatched. Completed, verified evidence remains in the checkpoint.',
-    ],
+    cancelled: ['No decision: cancelled', 'Completed evidence stays in the checkpoint.'],
   };
   set(
     'decision-title',
     p
       ? reviewIsCurrent(run)
         ? p.headline
-        : 'Historical review · refresh evidence'
+        : 'Stale review: refresh evidence'
       : (fallback[phase] || fallback.created)[0],
   );
-  set(
-    'decision-description',
-    p
-      ? p.method + '. This review does not authorize execution.'
-      : (fallback[phase] || fallback.created)[1],
-  );
-  set('risk-value', p ? p.riskLevel : '—');
-  set(
+  set('decision-description', p ? p.method + '.' : (fallback[phase] || fallback.created)[1]);
+  const current = p && reviewIsCurrent(run);
+  tone('risk-value', p ? capitalize(p.riskLevel) : '–', p && RISK_TONES[p.riskLevel]);
+  tone(
     'readiness-value',
-    p
-      ? !reviewIsCurrent(run)
-        ? 'Stale · rerun'
-        : p.evidenceReady
-          ? 'Ready for review'
-          : 'Needs evidence'
-      : '—',
+    p ? (!current ? 'Stale, rerun' : p.evidenceReady ? 'Ready for review' : 'Needs evidence') : '–',
+    p && (current && p.evidenceReady ? 'good' : 'warn'),
   );
-  set('decision-symbol', p ? (p.decision === 'block' ? '×' : p.evidenceReady ? '✓' : '!') : '◇');
   const reasons = $('policy-reasons');
   reasons.replaceChildren();
   if (p) {
@@ -208,20 +204,17 @@ export function renderRun(run, recipe) {
   }
   if (!run?.events.length)
     trace.append(
-      el('p', 'Step states and output digests appear here as work actually completes.', {
+      el('p', 'Step events and output digests appear here as steps finish.', {
         class: 'empty-copy',
       }),
     );
-  set('artifact-sql', p ? run.result.artifacts.sql : 'No draft generated for the current input.');
-  set(
-    'artifact-markdown',
-    p ? run.result.artifacts.markdown : 'No review generated for the current input.',
-  );
+  set('artifact-sql', p ? run.result.artifacts.sql : 'No draft for the current input.');
+  set('artifact-markdown', p ? run.result.artifacts.markdown : 'No brief for the current input.');
   set(
     'review-status',
     run?.review
-      ? `Local acknowledgement by ${run.review.reviewer}, bound to ${run.binding.slice(0, 12)}. No execution authorized.`
-      : 'Only an evidence-ready, nonblocked review can be acknowledged.',
+      ? `Acknowledged by ${run.review.reviewer} for run binding ${run.binding.slice(0, 12)}.`
+      : 'Available when the review is complete, current and not blocked.',
   );
   renderEvidence(run);
 }
@@ -263,7 +256,7 @@ export function renderEvidence(run, preferred) {
   const lineage = run?.steps?.lineage?.output;
   const graph = $('lineage-graph');
   graph.replaceChildren();
-  graph.setAttribute('viewBox', '0 0 1040 370');
+  graph.setAttribute('viewBox', '0 0 1040 260');
   if (!lineage) {
     graph.append(
       svg(
@@ -272,12 +265,16 @@ export function renderEvidence(run, preferred) {
         'No validated lineage result received.',
       ),
     );
-    set('lineage-coverage', 'NO EVIDENCE');
+    tone('lineage-coverage', 'No lineage yet');
     set('lineage-note', 'No catalog result has been received.');
     return;
   }
   const data = lineage.data;
-  set('lineage-coverage', lineage.coverage.toUpperCase());
+  tone(
+    'lineage-coverage',
+    `${capitalize(lineage.coverage)} coverage`,
+    lineage.coverage === 'complete' ? 'good' : 'warn',
+  );
   const root = data.nodes.find((n) => n.urn === run.request.datasetUrn),
     depth = new Map([[root.id, 0]]);
   for (let i = 0; i < data.nodes.length; i++)
@@ -291,7 +288,7 @@ export function renderEvidence(run, preferred) {
     data.nodes.filter((n) => depth.get(n.id) === level),
   );
   // A dbt project can return many consumers at one depth: grow the canvas, never overlap.
-  const height = Math.max(370, Math.max(...levels.map((g) => g.length)) * 86 + 28);
+  const height = Math.max(260, Math.max(...levels.map((g) => g.length)) * 86 + 28);
   graph.setAttribute('viewBox', `0 0 1040 ${height}`);
   levels.forEach((group, level) =>
     group.forEach((n, i) =>
@@ -316,50 +313,54 @@ export function renderEvidence(run, preferred) {
     const p = positions.get(n.id),
       group = svg('g', {
         'data-asset': n.id,
-        class: 'lineage-node',
+        class: 'lineage-node' + (n.id === root.id ? ' target' : ''),
         transform: `translate(${p.x},${p.y})`,
       });
     group.append(
-      svg('rect', { width: 202, height: 72, rx: 10 }),
-      svg('text', { x: 14, y: 18, class: 'asset-type' }, n.type.toUpperCase()),
+      svg('rect', { width: 202, height: 72, rx: 6 }),
+      svg(
+        'text',
+        { x: 14, y: 20, class: 'asset-type' },
+        capitalize(n.type) + (n.id === root.id ? ' · changed' : ''),
+      ),
       svg('text', { x: 14, y: 38 }, n.name.length > 26 ? n.name.slice(0, 24) + '…' : n.name),
       svg('text', { x: 14, y: 57, class: 'asset-owner' }, n.owner || 'Owner not recorded'),
     );
     graph.append(group);
   }
   const checks = data.checks?.length
-    ? ` ${data.checks.length} quality checks read the target; they are listed in the lineage JSON and never clear a change.`
+    ? ` ${data.checks.length} quality checks read this table. They are listed in the lineage JSON and never clear a change.`
     : '';
   set(
     'lineage-note',
-    `${data.nodes.length - 1} returned downstream assets / ${data.total} declared · ${lineage.coverage} coverage. Lines are supplied ${data.level}-level relationships. Inspect Paths separately for explicit column evidence.${checks}`,
+    `${data.nodes.length - 1} downstream assets returned of ${data.total} declared. Edges are ${data.level}-level relationships from the source.${checks}`,
   );
 }
-export function renderComparison(diff, left, right) {
+export function renderComparison(diff, left, right, note = '') {
   const out = $('comparison-result');
   out.replaceChildren();
   out.dataset.ready = 'true';
   const cards = el('div', null, { class: 'compare-cards' });
   for (const [label, run, side] of [
-    ['A / CURRENT REVIEW', left, diff.left],
-    ['B / ALTERNATIVE', right, diff.right],
+    ['Current review', left, diff.left],
+    ['Alternative', right, diff.right],
   ]) {
-    const panel = el('section', null, { class: 'panel' });
+    const panel = el('section', null, { class: 'panel compare-card' });
     panel.append(
-      el('p', label, { class: 'eyebrow' }),
-      el('h3', side.summary),
-      el('div', side.decision.replaceAll('-', ' '), { class: 'compare-decision' }),
+      el('h3', label),
+      el('p', side.summary, { class: 'compare-summary' }),
+      el('p', capitalize(side.decision.replaceAll('-', ' ')), { class: 'compare-decision' }),
     );
     panel.append(
       el(
         'p',
         `Evidence ${side.evidenceReady ? 'ready' : 'not ready'} · ${side.calls} evidence calls · ${side.policy} policy`,
-        { class: 'muted small' },
+        { class: 'muted' },
       ),
     );
     const details = el('details');
     details.append(
-      el('summary', 'Exact request and binding'),
+      el('summary', 'Request and binding'),
       el('pre', JSON.stringify({ request: run.request, binding: run.binding }, null, 2), {
         class: 'code-block',
       }),
@@ -369,18 +370,16 @@ export function renderComparison(diff, left, right) {
   }
   out.append(
     cards,
-    el(
-      'div',
-      diff.explanation +
-        ' Neither result authorizes a migration. An additive alternative still requires a separately reviewed consumer cutover.',
-      { class: 'comparison-note' },
-    ),
+    el('p', diff.explanation + (note ? ' ' + note : ''), { class: 'comparison-note' }),
   );
 }
 export function renderEvaluations(report) {
-  set('eval-summary', `${report.passed} / ${report.total} checks passed`);
+  set('eval-summary', `${report.passed} of ${report.total} checks passed`);
   $('eval-report').dataset.result = report.failed ? 'fail' : 'pass';
-  set('eval-scope', `${report.scope} Executed ${report.observedAt}; ${report.elapsedMs} ms.`);
+  set(
+    'eval-scope',
+    `Ran in ${report.elapsedMs} ms at ${report.observedAt.slice(11, 19)} UTC with policy ${report.policyVersion}.`,
+  );
   const body = $('eval-rows');
   body.replaceChildren();
   for (const row of report.checks) {
@@ -389,7 +388,7 @@ export function renderEvaluations(report) {
       el('td', row.name),
       el('td', String(row.expected)),
       el('td', String(row.actual)),
-      el('td', row.pass ? 'PASS' : 'FAIL', { class: row.pass ? 'result-pass' : 'result-fail' }),
+      el('td', row.pass ? 'Pass' : 'Fail', { class: row.pass ? 'result-pass' : 'result-fail' }),
     );
     body.append(tr);
   }
@@ -409,5 +408,5 @@ export function renderHistory(rows) {
     );
     root.append(button);
   }
-  if (!rows.length) root.append(el('p', 'No saved reviews yet.', { class: 'small muted' }));
+  if (!rows.length) root.append(el('p', 'No saved reviews yet.', { class: 'muted' }));
 }

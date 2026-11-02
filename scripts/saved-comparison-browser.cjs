@@ -48,11 +48,11 @@ module.exports = async function savedComparisonBrowser(page, { evidence, mode })
   };
   await page.locator('[data-view="compare"]').first().click();
   assert.equal(
-    await page.getByLabel('Left exported review JSON', { exact: true }).count(),
+    await page.getByLabel('Left review JSON', { exact: true }).count(),
     1,
     'Compare tab must accept the left saved review without a running workflow',
   );
-  assert.equal(await page.getByLabel('Right exported review JSON', { exact: true }).count(), 1);
+  assert.equal(await page.getByLabel('Right review JSON', { exact: true }).count(), 1);
   assert.equal(
     await page.locator('#compare-additive').isDisabled(),
     true,
@@ -119,7 +119,7 @@ module.exports = async function savedComparisonBrowser(page, { evidence, mode })
     assert.equal(stale.comparison.right.decision, 'review-required');
     assert.equal(stale.inspections.left.currentDecision, 'needs-evidence');
     assert.equal(stale.inspections.right.currentDecision, 'needs-evidence');
-    assert.match(await result.innerText(), /Current check.*embedded evidence only/);
+    assert.match(await result.innerText(), /Decision now, on the saved evidence/);
     assert.match(await result.innerText(), /needs-evidence/);
     await page.evaluate(() => {
       Date.now = window.__savedOriginalNow;

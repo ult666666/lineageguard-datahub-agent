@@ -5,11 +5,11 @@ The **Compare → Compare saved reviews** browser panel and native `studio:compa
 ## In the browser
 
 1. Open **Compare → Compare saved reviews** in the hosted or local Studio. A current review is not required.
-2. Select **Left exported review JSON** and **Right exported review JSON**, each 1–4,000,000 bytes. Selection alone does not start a comparison.
-3. Choose **Compare saved exports**. Both files must pass inspection and be completed reviews. A malformed right file produces a refusal, never a partial left result.
+2. Select **Left review JSON** and **Right review JSON**, each 1–4,000,000 bytes. Selection alone does not start a comparison.
+3. Choose **Compare files**. Both files must pass inspection and be completed reviews. A malformed right file produces a refusal, never a partial left result.
 4. Read the request/recipe/source-revision flags, recorded decisions and gap changes. Each side separately shows the current assessment of its embedded evidence at the shared displayed inspection time.
-5. **Export comparison JSON** downloads the same `lineageguard.review-comparison/1` report as the CLI. It includes supplied request summaries and run identifiers; keep private files and reports local. The interface renders supplied text literally.
-6. Changing either selection immediately discards the old result/download. **Clear saved comparison** also empties both file inputs. Neither changes the active workflow or saved checkpoints.
+5. **Download comparison** downloads the same `lineageguard.review-comparison/1` report as the CLI. It includes supplied request summaries and run identifiers; keep private files and reports local. The interface renders supplied text literally.
+6. Changing either selection immediately discards the old result/download. **Clear** also empties both file inputs. Neither changes the active workflow or saved checkpoints.
 
 The already-loaded panel works offline; loading Studio still needs its hosted/local application. There is no service worker or offline installation. Only one left-then-right file-read sequence can run. Clear or a selection change invalidates pending work immediately, but the browser's `File.arrayBuffer()` read itself is not abortable: a new comparison waits for that one sequence to settle. An obsolete left read never starts the obsolete right read. No files are uploaded, stored, imported or executed, in either browser-session or durable-local mode.
 

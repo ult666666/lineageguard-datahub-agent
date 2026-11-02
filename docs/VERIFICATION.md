@@ -5,6 +5,19 @@ The [workflow page](https://github.com/ult666666/lineageguard-datahub-agent/acti
 shows the latest results. CI uses synthetic data only, clears the DataHub URL and
 token, and has no deploy or catalog step.
 
+## Claims and their checks
+
+| Claim | Checked by |
+| --- | --- |
+| No decision is more permissive than its label, and results match the pinned report | `npm run studio:benchmark -- --check` |
+| Batch order, letter case and catalog free text never change a decision | [`properties.test.mjs`](../test/studio/properties.test.mjs) (seeded property tests) |
+| Hostile catalog text and summaries cannot change a review or break the brief and SQL draft | [`hostile-metadata.test.mjs`](../test/studio/hostile-metadata.test.mjs) |
+| A local run killed mid-review resumes with the same identity and no false success | [`process-recovery.test.mjs`](../test/studio/process-recovery.test.mjs) |
+| What a dbt manifest cannot show (usage, nullability, outside consumers, column paths) never clears a change | 16 benchmark cases on a real manifest, and [`dbt-properties.test.mjs`](../test/studio/dbt-properties.test.mjs) |
+| dbt lineage equals an independent walk of `depends_on`, and a tampered `child_map` is refused | [`dbt-properties.test.mjs`](../test/studio/dbt-properties.test.mjs), [`dbt-manifest.test.mjs`](../test/studio/dbt-manifest.test.mjs) |
+| Both runtimes work in Chromium, including by keyboard, with external requests blocked | `npm run test:browser` |
+| The public build contains only the listed files, each matching its recorded hash | `node scripts/build-studio.mjs --verify dist` |
+
 ## What CI runs
 
 [`tests.yml`](../.github/workflows/tests.yml) has two jobs:

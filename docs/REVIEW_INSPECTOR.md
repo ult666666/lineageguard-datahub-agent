@@ -4,7 +4,9 @@ A portable review should remain inspectable after leaving the running applicatio
 
 ## Try it in Studio
 
-Open **Review package → Review Inspector**. Select **Inspect current review**, or choose an exported run JSON file. The file is read in the current browser; it is not uploaded or written into run history. A downloaded inspection summary contains the run identity, hashes, check outcomes and evidence freshness—not the raw SQL, request summary, target URN, reviewer name or catalog payloads.
+Open **Review package → Review Inspector**. Select **Inspect current review**, or choose an exported run JSON file. The file is read in the current browser; it is not uploaded or written into run history. A downloaded inspection summary contains the run identity, hashes, check outcomes and evidence freshness. It leaves out the raw SQL, request summary, target URN, reviewer name and catalog payloads.
+
+![The Review Inspector after checking the current synthetic review: internally consistent, not authenticated, with the recorded decision next to the decision on the saved evidence](../assets/review-inspector.png)
 
 The panel separates the recorded decision from **the current assessment of the embedded evidence at the displayed inspection time**. An internally consistent old review can now need fresh evidence. A failed or paused checkpoint stays incomplete; inspection does not generate a favorable decision or resume it. Clear discards only the inspection view, not the active review or saved checkpoints. A file read already in flight cannot repopulate the view after Clear.
 
@@ -23,7 +25,7 @@ node scripts/studio-inspect.mjs --file=/absolute/path/to/export.json --json
 
 Exit **0** means internal consistency checks passed. It does **not** mean approved, authentic, safe to migrate, or even that its evidence is still current. Exit **2** means arguments, file reading or review validation were refused. Errors do not echo the input file's contents, private path or supplied error strings. The command reads a single regular, unlinked file and does not overwrite it, write SQLite, start a listener or contact a tool.
 
-Input is bounded to 4,000,000 bytes of UTF-8. Duplicate object members—including differently escaped spellings—are refused rather than silently taking the last value. Existing structural limits reject deep/oversized objects, accessors, hidden fields and poison keys. CLI file handling checks path links, regular-file identity, byte limits and before/after metadata; it rejects directories, symlinks and FIFOs. This is not protection against a hostile operating-system owner able to replace files or change the running process.
+Input is bounded to 4,000,000 bytes of UTF-8. Duplicate object members, including differently escaped spellings, are refused rather than silently taking the last value. Existing structural limits reject deep/oversized objects, accessors, hidden fields and poison keys. CLI file handling checks path links, regular-file identity, byte limits and before/after metadata; it rejects directories, symlinks and FIFOs. This is not protection against a hostile operating-system owner able to replace files or change the running process.
 
 ## What the Inspector verifies
 

@@ -83,9 +83,7 @@ function controls() {
       current.result.policy.decision !== 'block';
   $('configuration').disabled = busy || !metadata;
   $('run-button').disabled = busy || !valid || !metadata || !storageReady;
-  $('run-button').replaceChildren(
-    ...(busy ? ['Running…'] : [el('span', '▶', { 'aria-hidden': 'true' }), ' Run review']),
-  );
+  $('run-button').textContent = busy ? 'Running…' : 'Run review';
   $('cancel-button').disabled = !busy || !controller;
   if (returnFocus && busy && controller && focusLost()) $('cancel-button').focus();
   $('resume-button').disabled =
@@ -114,7 +112,7 @@ function invalidate() {
   controller = null;
   $('comparison-result').dataset.ready = 'false';
   $('comparison-result').replaceChildren(
-    el('section', 'Complete a new review for the changed inputs.', { class: 'panel empty-copy' }),
+    el('p', 'Run a review for the changed inputs first.', { class: 'empty-copy' }),
   );
 }
 function validate(invalidateResult = true) {
@@ -123,7 +121,7 @@ function validate(invalidateResult = true) {
     request = validateRequest(JSON.parse($('request-json').value));
     recipe = compileRecipe(JSON.parse($('recipe-json').value)).recipe;
     valid = true;
-    $('validation-message').textContent = 'Valid request · verified workflow dependencies';
+    $('validation-message').textContent = 'Request and workflow are valid.';
     $('validation-message').dataset.valid = 'true';
   } catch (error) {
     valid = false;
@@ -268,7 +266,7 @@ async function compare(kind) {
   if (busy || current?.status !== 'completed') return;
   const left = snapshot(current);
   busy = true;
-  message('Evaluating the comparison with the same bounded runtime…', false);
+  message('Running the alternative…', false);
   controls();
   try {
     const input = snapshot(left.request);
@@ -306,7 +304,14 @@ async function compare(kind) {
       'COMPARISON_INCOMPLETE',
       'The alternative did not complete; inspect its history rather than infer a comparison',
     );
-    renderComparison(compareRuns(left, right), left, right);
+    renderComparison(
+      compareRuns(left, right),
+      left,
+      right,
+      kind === 'additive'
+        ? 'Adding a column still needs a reviewed cutover for its consumers.'
+        : '',
+    );
     current = left;
     if (!local()) await checkpoints.save(left);
     await refreshHistory();
@@ -442,7 +447,7 @@ $('acknowledge-button').addEventListener(
       if (!local()) await checkpoints.save(run);
       await acceptRun(run);
       await refreshHistory();
-      message('The local review note is recorded. It does not authorize execution.', false);
+      message('Acknowledgement recorded.', false);
     } finally {
       busy = false;
       controls();
@@ -455,7 +460,7 @@ $('evaluate-button').addEventListener(
     if (busy) return;
     busy = true;
     controls();
-    $('eval-summary').textContent = 'Executing the scenario suite…';
+    $('eval-summary').textContent = 'Running evaluations…';
     try {
       evaluation = await api('/api/studio', { action: 'evaluate' });
       requireThat(
@@ -489,9 +494,7 @@ $('history-list').addEventListener('click', (event) => {
 window.addEventListener('storage', (event) => {
   if (event.key === 'lineageguard.studio.v2' && !local()) {
     storageReady = false;
-    message(
-      'Another tab changed local checkpoints. Reload to read the latest verified state before running.',
-    );
+    message('Another tab changed the saved runs. Reload to load the latest state before running.');
     controls();
   }
 });
@@ -504,13 +507,11 @@ try {
     'VERSION_MISMATCH',
     'The Studio UI and runtime versions differ. Reload the current release.',
   );
+  // The one place the app states what this deployment is and what it never does.
   $('runtime-mode').dataset.mode = metadata.runtime;
   $('runtime-mode').textContent = local()
-    ? 'LOCAL · SQLITE CHECKPOINTS'
-    : 'BROWSER SESSION · SYNTHETIC';
-  $('session-description').textContent = local()
-    ? 'Local durable runtime. Checkpoints are stored in SQLite on this computer. Synthetic evidence only; no catalog writes or SQL execution.'
-    : 'Public preview. The real workflow runs in this browser against synthetic read-only tools. Checkpoints stay here unless exported; no durable cloud queue or paid inference.';
+    ? 'Local service with synthetic metadata. Runs are checkpointed to SQLite on this computer; nothing is executed or written to a catalog.'
+    : 'Demo with synthetic metadata. Runs stay in this browser; nothing is executed or written to a catalog.';
   for (const row of metadata.scenarios)
     $('scenario-select').append(el('option', row.label, { value: row.id }));
   $('scenario-select').value = 'rename';
@@ -540,13 +541,15 @@ try {
   }
   if (current?.status === 'running')
     message(
-      'This checkpoint was captured during a run. No writer has been resumed automatically; inspect and explicitly resume.',
+      'This run was saved while it was running. Nothing resumes it automatically; select Resume run to continue.',
       false,
     );
   paint();
   showView('overview');
 } catch (error) {
   metadata = null;
+  if ($('runtime-mode').dataset.mode === 'loading')
+    $('runtime-mode').textContent = 'Studio could not reach its runtime. Reload to try again.';
   message(errorText(error));
   controls();
 }

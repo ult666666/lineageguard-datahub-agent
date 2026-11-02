@@ -36,12 +36,8 @@ export function mountSavedComparison() {
     result.setAttribute('aria-busy', String(state === 'checking'));
     result.replaceChildren(node('p', message, 'muted'));
     status.textContent = message;
-    badge.textContent = {
-      empty: 'NO COMPARISON',
-      checking: 'CHECKING LOCALLY',
-      error: 'REFUSED',
-      pass: 'CONSISTENCY CHECKED',
-    }[state];
+    badge.textContent = { empty: 'No comparison', checking: 'Checking', error: 'Refused' }[state];
+    badge.dataset.tone = { checking: 'info', error: 'bad' }[state] || '';
   }
   function show(value) {
     const diff = value.comparison;
@@ -54,58 +50,50 @@ export function mountSavedComparison() {
         node('h4', side === 'left' ? 'Left saved review' : 'Right saved review'),
         facts([
           ['Request summary', recorded.summary],
-          ['Run identifier', recorded.id],
+          ['Run ID', recorded.id],
           ['Recorded decision', recorded.decision],
           ['Recorded risk / evidence ready', recorded.riskLevel + ' / ' + recorded.evidenceReady],
           ['Recorded calls', recorded.calls],
           ['Recorded policy', recorded.policy],
-          ['Current check · embedded evidence only', inspected.currentDecision],
+          ['Decision now, on the saved evidence', inspected.currentDecision],
           [
-            'Evidence ready at inspection time',
-            inspected.evidenceReadyNow ? 'Yes, within supplied scope' : 'No',
+            'Evidence ready now',
+            inspected.evidenceReadyNow ? 'Yes, within the saved evidence' : 'No',
           ],
           ['File SHA-256', inspected.fileSha256],
         ]),
       );
       grid.append(section);
     }
-    const heading = node('h4', 'Internally consistent — not authenticated');
-    const scope = node('p', value.scope, 'field-help');
+    const heading = node('h4', 'Internally consistent, not authenticated');
     const comparability = facts([
-      ['Same request', diff.sameRequest ? 'Yes' : 'No · alternative plans'],
+      ['Same request', diff.sameRequest ? 'Yes' : 'No, alternative plans'],
       ['Same recipe', diff.sameRecipe ? 'Yes' : 'No'],
       ['Same source revision', diff.sameSourceRevision ? 'Yes' : 'No'],
-      ['Inspected at · both files', value.inspectedAt],
-      ['Added gaps · right versus left', diff.addedGaps.join(', ') || 'None'],
-      ['Removed gaps · right versus left', diff.removedGaps.join(', ') || 'None'],
-      ['New tool calls / execution authorized', '0 / false'],
+      ['Inspected at', value.inspectedAt],
+      ['Gaps only on the right', diff.addedGaps.join(', ') || 'None'],
+      ['Gaps only on the left', diff.removedGaps.join(', ') || 'None'],
     ]);
-    result.replaceChildren(
-      heading,
-      scope,
-      node('p', diff.explanation, 'field-help'),
-      comparability,
-      grid,
-    );
+    result.replaceChildren(heading, node('p', diff.explanation, 'field-help'), comparability, grid);
     result.dataset.state = 'pass';
     result.setAttribute('aria-busy', 'false');
-    status.textContent =
-      'Both exports checked locally. Comparison ready; source truth and approval are not authenticated.';
-    badge.textContent = 'CONSISTENCY CHECKED';
+    status.textContent = 'Comparison ready.';
+    badge.textContent = 'Consistent';
+    badge.dataset.tone = 'good';
     report = value;
     download.disabled = false;
   }
   for (const input of Object.values(inputs))
     input.addEventListener('change', () => {
       generation++;
-      reset('empty', 'Selection changed. Compare the selected exports to produce a new result.');
+      reset('empty', 'Selection changed. Select Compare files to see the new result.');
       controls();
     });
   get('saved-clear').addEventListener('click', () => {
     generation++;
     inputs.left.value = '';
     inputs.right.value = '';
-    reset('empty', 'Saved comparison cleared. Current review and saved checkpoints are unchanged.');
+    reset('empty', 'Cleared. The current review and saved runs are unchanged.');
     controls();
   });
   compare.addEventListener('click', async () => {
@@ -116,10 +104,7 @@ export function mountSavedComparison() {
     const ticket = ++generation;
     let reading = 'left';
     controls();
-    reset(
-      'checking',
-      'Reading and checking both exports locally. Nothing is uploaded or imported.',
-    );
+    reset('checking', 'Checking both files in this browser…');
     try {
       // Refuse either size before reading any file. Only one sequence can be active.
       for (const side of ['left', 'right'])
@@ -145,7 +130,7 @@ export function mountSavedComparison() {
       const side = error.side === 'left' || error.side === 'right' ? error.side : reading;
       reset(
         'error',
-        `Comparison refused (${code}, ${side} export). No partial comparison is available. Current review and saved checkpoints are unchanged.`,
+        `Comparison refused: ${code} in the ${side} file. No partial result is shown, and the current review is unchanged.`,
       );
     } finally {
       active = false;
@@ -165,9 +150,6 @@ export function mountSavedComparison() {
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  reset(
-    'empty',
-    'Select two exported review JSON files, then compare. No current review is required.',
-  );
+  reset('empty', 'Choose two saved review files, then select Compare files.');
   controls();
 }

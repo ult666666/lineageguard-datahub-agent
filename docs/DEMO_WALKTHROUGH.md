@@ -2,7 +2,7 @@
 
 ## 1. Show the executable workflow
 
-Open Studio and choose **Revenue field rename**. The default recipe gathers independent evidence in parallel. Expand **Inspect or edit the workflow**: the JSON, compiler and visible graph describe the same operations. Change the concurrency limit to one to demonstrate that execution scheduling is a real control, not a change to an animation.
+Open Studio and choose **Revenue field rename**. The default recipe gathers independent evidence in parallel. Expand **Edit workflow JSON**: the JSON, compiler and visible graph describe the same operations. Change the concurrency limit to one to demonstrate that execution scheduling is a real control, not a change to an animation.
 
 Run the review. Open a completed graph node to inspect its exact output. Show the source revision, observation time and digest. The result requires human review because renaming a consumed field changes a contract; there is no migration executor behind the button.
 
@@ -22,7 +22,7 @@ This is deterministic policy. It is not an LLM confidence score or an estimate o
 
 ## 4. Compare and carry the evidence
 
-Complete the rename scenario again, then open **Compare** and execute an additive alternative. The comparison explicitly says the requests differ. Keeping an existing field while adding another is a different plan, not an identical run with a more flattering score.
+Complete the rename scenario again, then open **Compare** and select **Try an additive alternative**. The comparison explicitly says the requests differ. Keeping an existing field while adding another is a different plan, not an identical run with a more flattering score.
 
 Open **Review package** and export the run JSON. It contains exact inputs, recipe, evidence, events and draft artifacts. The brief and SQL are review material. A local acknowledgement binds the exact run, generation and result evidence but never authorizes execution.
 
