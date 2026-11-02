@@ -18,6 +18,7 @@ import {
   reviewIsCurrent,
 } from './studio/core/runtime.js';
 import { compareRuns } from './studio/core/comparison.js';
+import { fieldIndex } from './studio/core/policy.js';
 import { BrowserCheckpoints } from './studio/storage.js';
 import { api, scenarioAdapter } from './studio/transport.js';
 import {
@@ -279,11 +280,15 @@ async function compare(kind) {
         0,
         128,
       );
+      // An undeclared type keeps the observed one, as the SQL draft does.
+      const observed = fieldIndex(left.result.evidence.schema?.data.fields ?? [])(original.field);
       input.changeRequest.changes = [
         {
           kind: 'add',
           field: name,
-          type: original.type || (original.kind === 'type_change' ? original.to : 'VARCHAR(64)'),
+          type:
+            original.type ||
+            (original.kind === 'type_change' ? original.to : observed?.type || 'VARCHAR(64)'),
           required: false,
         },
       ];

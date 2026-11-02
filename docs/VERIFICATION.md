@@ -62,7 +62,9 @@ durability, resilience to disk corruption or authenticated multi-user coordinati
 Each runtime mode runs a completed review, evidence inspection, a verified JSON
 export, an additive-plan comparison, input invalidation, missing usage, numeric
 narrowing, a review of the bundled dbt manifest (eight lineage nodes that fit the
-graph, owners, the quality-check note and open gaps, with no overflow at 390 pixels), pause, reload and resume, a source outage and its restoration,
+graph, owners, the quality-check note and open gaps, with no overflow at 390 pixels, and
+an additive alternative that keeps the observed column type; in browser-session mode the
+first load of the bundled files is dropped and the next run must succeed), pause, reload and resume, a source outage and its restoration,
 cancellation, invalid input, the executed evaluations, and layouts at 390, 768 and
 1440 pixels. After a run, keyboard focus must land on the decision heading (the Run
 button disables itself, which would otherwise drop focus to the page) and a status
@@ -146,6 +148,15 @@ text changes neither the score nor the brief's single heading.
 - **DataHub capture:** one display name over 160 characters, or an owner name that was
   not text, failed the whole capture; display names are now shortened or treated as
   unknown. A target returned twice used the first match; it is now refused.
+- **dbt adapter:** the owner lookup for a group named from another package scanned
+  every group for every node, so a 6.1 MB manifest with 20,000 models and 20,000
+  groups took 10.9 seconds to parse; groups are now indexed by name. A catalog
+  that listed one column name twice at one index let JSON key order choose the type:
+  one order gave `needs-evidence` and the other `block`. Such a catalog is now
+  refused. In the Studio, the additive alternative to the dbt rename added
+  `mrr_amount_usd` as `VARCHAR(64)` instead of the observed `DECIMAL(18,2)`, and one
+  dropped connection while loading the bundled files broke the dbt scenario until the
+  page was reloaded.
 
 ### DataHub scope
 

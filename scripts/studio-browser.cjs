@@ -149,8 +149,24 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         // A real dbt manifest: consumers, exposures and owners appear, and the gaps a
         // manifest always has keep the review at needs-evidence.
         await select('dbt-manifest');
+        if (previewOnly) {
+          // A dropped connection while the bundled files load is retried on the next run.
+          let dropped = false;
+          await page.route('**/studio/dbt/**', (route) => {
+            if (dropped) return route.fallback();
+            dropped = true;
+            return route.abort('internetdisconnected');
+          });
+          await page.locator('#run-button').click();
+          await page.waitForFunction(() =>
+            /could not finish/.test(document.querySelector('#global-message').textContent),
+          );
+          await page.unroute('**/studio/dbt/**');
+        }
         await page.locator('#run-button').click();
         await done('completed');
+        if (previewOnly)
+          results.push('browser-session: dbt files load again after a dropped connection');
         assert.match(
           await page.locator('#decision-title').innerText(),
           /evidence is required|refresh evidence/i,
@@ -186,8 +202,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
           `dbt lineage overflow ${mode}`,
         );
         await page.setViewportSize({ width: 1440, height: 1050 });
-        await page.locator('[data-view="overview"]').first().click();
         results.push(`${mode}: dbt manifest review shows consumers, owners and open gaps`);
+        // The rename declares no type, so the additive alternative keeps the observed one.
+        await page.locator('[data-view="compare"]').first().click();
+        await page.locator('#compare-additive').click();
+        await page.waitForFunction(
+          () => document.querySelector('#comparison-result').dataset.ready === 'true',
+        );
+        const alternative = await page.locator('#comparison-result').textContent();
+        assert.match(alternative, /"type": "DECIMAL\(18,2\)"/);
+        assert.doesNotMatch(alternative, /VARCHAR\(64\)/);
+        results.push(`${mode}: dbt additive alternative keeps the observed column type`);
+        await page.locator('[data-view="overview"]').first().click();
         await select('rename');
         await page.locator('#pause-toggle').check();
         await page.locator('#run-button').click();

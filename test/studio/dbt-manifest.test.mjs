@@ -259,6 +259,82 @@ test('owners come from meta.owner first, then the group owner, and exposures use
   assert.equal(index().get(stg.unique_id).owner, 'a@example.com, b@example.com');
 });
 
+test('a group named from another package resolves only when its name is unique', () => {
+  const { manifest } = fresh();
+  const stg = manifest.nodes['model.saas_warehouse.stg_plans'];
+  stg.config.meta = {};
+  stg.meta = {};
+  stg.group = 'finance_reporting';
+  stg.package_name = 'another_package';
+  const owner = () => parseDbtManifest(manifest).resources.get(stg.unique_id).owner;
+  assert.equal(owner(), 'Finance Reporting (synthetic)');
+  manifest.groups['group.third_package.finance_reporting'] = {
+    unique_id: 'group.third_package.finance_reporting',
+    name: 'finance_reporting',
+    package_name: 'third_package',
+    owner: { name: 'Another team' },
+  };
+  assert.equal(owner(), null, 'two groups share the name, so neither owner is guessed');
+  stg.group = 'missing_group';
+  assert.equal(owner(), null);
+});
+
+test('owner lookup stays linear when every model names a group from another package', () => {
+  // Scanning every group for every model took 10.9 seconds for this 6.1 MB file.
+  const size = 20_000;
+  const manifest = {
+    metadata: {
+      dbt_schema_version: 'https://schemas.getdbt.com/dbt/manifest/v12.json',
+      generated_at: new Date().toISOString(),
+    },
+    nodes: {},
+    sources: {},
+    groups: {},
+    parent_map: {},
+    child_map: {},
+  };
+  for (let i = 0; i < size; i++) {
+    const group = `group.lib.g${i}`,
+      id = `model.app.m${i}`;
+    manifest.groups[group] = {
+      unique_id: group,
+      name: `g${i}`,
+      package_name: 'lib',
+      owner: { name: `Team ${i}` },
+    };
+    manifest.nodes[id] = {
+      unique_id: id,
+      resource_type: 'model',
+      name: `m${i}`,
+      package_name: 'app',
+      group: `g${i}`,
+      config: { materialized: 'table' },
+      depends_on: { nodes: [] },
+    };
+  }
+  const started = performance.now();
+  const index = parseDbtManifest(manifest);
+  const elapsed = performance.now() - started;
+  assert.equal(index.resources.get('model.app.m7').owner, 'Team 7');
+  assert.ok(elapsed < 2000, `parsing ${size} models took ${Math.round(elapsed)} ms`);
+});
+
+test('a catalog table that lists a column name twice is refused, whatever the key order', () => {
+  // dbt keys catalog columns by name, so a repeated name means the file was edited. With
+  // both copies at one index, JSON key order used to choose the type the review saw.
+  const { catalog } = fresh();
+  const columns = catalog.nodes['model.saas_warehouse.fct_mrr'].columns;
+  const copy = { name: 'mrr_usd', type: 'DECIMAL(38,2)', index: columns.mrr_usd.index };
+  for (const order of [
+    { ...columns, mrr_usd_copy: copy },
+    { mrr_usd_copy: copy, ...columns },
+  ]) {
+    const edited = structuredClone(catalog);
+    edited.nodes['model.saas_warehouse.fct_mrr'].columns = order;
+    rejects(() => parseDbtCatalog(edited), 'INVALID_CATALOG');
+  }
+});
+
 test('only manifest schema v12 is read, and other artifacts are named in the refusal', () => {
   const { manifest, catalog } = fresh();
   for (const version of [11, 13, 20]) {
