@@ -1,6 +1,6 @@
 > **Studio 2.0:** the expanded runtime is documented in [Architecture](ARCHITECTURE.md), [Verification](VERIFICATION.md) and [Threat model](THREAT_MODEL.md). The original review guide below retains its historical scope.
 
-# LineageGuard — engineering review guide
+# LineageGuard engineering review guide
 
 Start with the [live demo](https://lineageguard-datahub-agent.vercel.app/), inspect the source below, and reproduce the checks. The hosted demo uses synthetic metadata; it is not evidence of validation against a customer's live DataHub tenant.
 
@@ -37,7 +37,7 @@ This guide was written for the original MVP, when the suite had 23 distinct test
 
 ## Product and collaboration boundaries
 
-Schema changes are reviewed, not executed. Migration SQL and catalog write-back remain proposals requiring an authorized human decision. The project's [README](../README.md#design-tradeoffs-and-limits) states the owner's product decisions and how AI tools were used; this guide does not imply unaided authorship or employment/client results.
+Schema changes are reviewed, not executed. Migration SQL and catalog write-back remain proposals requiring an authorized human decision. The project's [README](../README.md#project-history) states the owner's product decisions and how AI tools were used; this guide does not imply unaided authorship or employment/client results.
 
 ## Generated-SQL input contract
 

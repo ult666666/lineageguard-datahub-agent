@@ -22,23 +22,20 @@ export function mountInspector({ current, busy }) {
     result.dataset.state = state;
     result.replaceChildren(node('p', message, 'muted'));
     result.setAttribute('aria-busy', String(state === 'checking'));
-    badge.textContent = {
-      empty: 'NO INPUT',
-      checking: 'CHECKING LOCALLY',
-      error: 'REFUSED',
-      pass: 'CONSISTENCY CHECKED',
-    }[state];
+    badge.textContent = { empty: 'No file', checking: 'Checking', error: 'Refused' }[state];
+    badge.dataset.tone = { checking: 'info', error: 'bad' }[state] || '';
   }
   function show(value) {
     report = value;
     result.dataset.state = 'pass';
     result.setAttribute('aria-busy', 'false');
-    badge.textContent = 'CONSISTENCY CHECKED';
+    badge.textContent = 'Consistent';
+    badge.dataset.tone = 'good';
     download.disabled = false;
-    const heading = node('h4', 'Internally consistent — not authenticated');
+    const heading = node('h4', 'Internally consistent, not authenticated');
     const limits = node(
       'p',
-      'No tools or source systems were contacted. A self-consistent file can still contain invented evidence; this is not approval or permission to execute.',
+      'The decision and drafts match the evidence in the file. No source was contacted, and a consistent file can still contain invented evidence.',
       'field-help',
     );
     const facts = node('dl', undefined, 'inspection-facts');
@@ -47,19 +44,15 @@ export function mountInspector({ current, busy }) {
       ['Inspected at', value.inspectedAt],
       ['Recorded decision', value.recordedDecision || 'No completed review'],
       [
-        'Current check · embedded evidence only',
+        'Decision now, on the saved evidence',
         value.currentDecision || 'Not evaluated for an incomplete run',
       ],
       [
-        'Evidence readiness now',
-        value.evidenceReadyNow
-          ? 'Current within supplied evidence scope'
-          : 'Not ready; inspect evidence below',
+        'Evidence ready now',
+        value.evidenceReadyNow ? 'Yes, within the saved evidence' : 'No; see the evidence below',
       ],
-      ['Source authentication', 'Not authenticated'],
-      ['Tools called / execution authorized', '0 / false'],
-      ['Run identifier', value.runId],
-      ['File SHA-256', value.fileSha256 || 'Current in-memory review; no file selected'],
+      ['Run ID', value.runId],
+      ['File SHA-256', value.fileSha256 || 'Current review in memory; no file selected'],
     ])
       facts.append(node('dt', label), node('dd', detail));
     const grid = node('div', undefined, 'inspection-grid'),
@@ -90,7 +83,7 @@ export function mountInspector({ current, busy }) {
   }
   async function inspect(load) {
     const ticket = ++generation;
-    reset('checking', 'Reading and verifying locally. Nothing is uploaded or restored.');
+    reset('checking', 'Checking the file in this browser…');
     try {
       const value = await load();
       if (ticket === generation) show(value);
@@ -100,17 +93,14 @@ export function mountInspector({ current, busy }) {
         error instanceof StudioError && /^[A-Z_]+$/.test(error.code)
           ? error.code
           : 'INSPECTION_FAILED';
-      reset(
-        'error',
-        `Inspection refused (${code}). No file was uploaded, imported, resumed or executed. The current review is unchanged.`,
-      );
+      reset('error', `Inspection refused: ${code}. The current review is unchanged.`);
     }
   }
   fileInput.addEventListener('change', () => {
     const file = fileInput.files?.[0];
     if (!file) {
       generation++;
-      reset('empty', 'Select an exported run JSON, or inspect the current review.');
+      reset('empty', 'Choose a run JSON file, or inspect the current review.');
       return;
     }
     void inspect(async () => {
@@ -128,7 +118,7 @@ export function mountInspector({ current, busy }) {
   get('inspection-clear').addEventListener('click', () => {
     generation++;
     fileInput.value = '';
-    reset('empty', 'Inspection cleared. Your current run and saved checkpoints were not changed.');
+    reset('empty', 'Cleared. The current review and saved runs are unchanged.');
   });
   download.addEventListener('click', () => {
     if (!report) return;
@@ -142,8 +132,5 @@ export function mountInspector({ current, busy }) {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  reset(
-    'empty',
-    'Select an exported run JSON, or inspect the current review. No network, database write or resume will occur.',
-  );
+  reset('empty', 'Choose a run JSON file, or inspect the current review.');
 }

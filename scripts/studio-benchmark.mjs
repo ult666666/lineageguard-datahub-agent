@@ -6,6 +6,7 @@ import {
   formatReport,
   headline,
   loadCases,
+  readmeHeadline,
   renderMarkdown,
   replaceBlock,
   runBenchmark,
@@ -21,7 +22,7 @@ npm run studio:benchmark -- --write   Regenerate the report and the generated te
 
 The command exits with status 1 when any decision is more permissive than its label.`;
 const DOCS = [
-  [new URL('../README.md', import.meta.url), 'policy-benchmark:headline', headline],
+  [new URL('../README.md', import.meta.url), 'policy-benchmark:headline', readmeHeadline],
   [new URL('../docs/EVALUATION.md', import.meta.url), 'policy-benchmark:results', renderMarkdown],
 ];
 

@@ -3,163 +3,140 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#0b1118" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#151a20" media="(prefers-color-scheme: dark)" />
     <meta
       name="description"
-      content="LineageGuard Studio — compose data-change review workflows, inspect evidence, recover interrupted runs and evaluate deterministic policy decisions. An AI-assisted engineering project by Charles Dai."
+      content="Review a database schema change against the lineage it affects. A read-only demo on synthetic metadata, by Charles Dai."
     />
-    <meta property="og:title" content="LineageGuard Studio — Evidence before action" />
+    <meta property="og:title" content="LineageGuard Studio" />
     <meta
       property="og:description"
-      content="A working orchestration studio: typed workflows, evidence lineage, bounded execution, recovery and evaluations. Read-only by design."
+      content="Review a database schema change against the lineage it affects: a typed workflow, recorded evidence and a policy decision with its reasons."
     />
-    <title>LineageGuard Studio — Evidence before action</title>
+    <title>LineageGuard Studio</title>
     <link rel="stylesheet" href="/studio.css" />
     <link rel="icon" href="/studio/mark.svg" type="image/svg+xml" />
     <script type="module" src="/studio.js"></script>
   </head>
   <body>
-    <a href="#main" class="skip-link">Skip to workspace</a>
-    <aside class="sidebar">
-      <a class="brand" href="/" aria-label="LineageGuard Studio home"
-        ><span class="brand-mark">LG<span></span></span
-        ><span>LineageGuard<small>STUDIO / 2.0</small></span></a
-      >
-      <div class="sidebar-label">WORKSPACE</div>
-      <nav class="workspace-nav" role="tablist" aria-label="Studio views">
-        <button
-          type="button"
-          role="tab"
-          id="tab-overview"
-          data-view="overview"
-          aria-controls="view-overview"
-          aria-selected="true"
-        >
-          <span aria-hidden="true">◈</span>Composer
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-evidence"
-          data-view="evidence"
-          aria-controls="view-evidence"
-          aria-selected="false"
-        >
-          <span aria-hidden="true">◎</span>Evidence
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-artifacts"
-          data-view="artifacts"
-          aria-controls="view-artifacts"
-          aria-selected="false"
-        >
-          <span aria-hidden="true">▤</span>Review package
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-compare"
-          data-view="compare"
-          aria-controls="view-compare"
-          aria-selected="false"
-        >
-          <span aria-hidden="true">⇄</span>Compare
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-evaluations"
-          data-view="evaluations"
-          aria-controls="view-evaluations"
-          aria-selected="false"
-        >
-          <span aria-hidden="true">✓</span>Evaluations
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-architecture"
-          data-view="architecture"
-          aria-controls="view-architecture"
-          aria-selected="false"
-        >
-          <span aria-hidden="true">⌘</span>Architecture
-        </button>
-      </nav>
-      <div class="history">
-        <div class="sidebar-label">LOCAL REVIEW HISTORY</div>
-        <div id="history-list"><p class="small muted">No saved reviews yet.</p></div>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="app-header">
+      <div class="runtime-bar">
+        <p id="runtime-mode" class="runtime-note" data-mode="loading">Connecting to Studio…</p>
       </div>
-      <div class="sidebar-bottom">
-        <span class="readonly"><i></i> No execution capability</span>
-        <p>Tool reads. Deterministic rules.<br />Human judgment stays explicit.</p>
-        <a
-          href="https://github.com/ult666666/lineageguard-datahub-agent"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Source &amp; verification ↗</a
-        ><a href="/classic.html">Original demo ↗</a>
-      </div>
-    </aside>
-    <div class="app">
-      <header class="topbar">
-        <div class="breadcrumbs">
-          <span>Developer tools</span><b>/</b><strong>Data-change review</strong>
-        </div>
-        <span class="mode-pill" id="runtime-mode" data-mode="loading">Connecting to Studio</span>
-      </header>
-      <main id="main">
-        <div class="workspace-intro">
+      <div class="header-row">
+        <div class="product">
+          <img class="product-mark" src="/studio/mark.svg" alt="" width="30" height="30" />
           <div>
-            <p class="eyebrow">EVIDENCE BEFORE ACTION</p>
-            <h1 id="studio-title">
-              Compose a review.<br /><span>Understand every decision.</span>
-            </h1>
-            <p class="intro-copy">
-              A real workflow runtime for changes that affect more than one table.
-            </p>
-          </div>
-          <div class="intro-stamp">
-            <span>READ-ONLY WORKBENCH</span><strong>Build → inspect → recover</strong
-            ><small>Not a migration executor. Not a simulated LLM team.</small>
+            <h1 id="studio-title">LineageGuard Studio</h1>
+            <p class="product-subtitle">Review a schema change against the lineage it affects.</p>
           </div>
         </div>
-        <noscript
-          ><div class="notice">
-            Studio needs JavaScript to execute and inspect workflows.
-            <a href="https://github.com/ult666666/lineageguard-datahub-agent"
-              >Read the source and architecture</a
-            >
-            or <a href="/classic.html">open the original demo</a>. No analysis has run.
-          </div></noscript
-        >
-        <div id="global-message" class="notice" role="status" hidden></div>
-        <div class="session-banner">
-          <span class="pulse-dot"></span
-          ><span id="session-description">Loading the available read-only capabilities…</span>
+        <nav class="header-links" aria-label="Project">
+          <a
+            href="https://github.com/ult666666/lineageguard-datahub-agent/tree/main/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Docs</a
+          ><a
+            href="https://github.com/ult666666/lineageguard-datahub-agent"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Source</a
+          >
+        </nav>
+      </div>
+      <div class="tab-row">
+        <div class="workspace-nav" role="tablist" aria-label="Studio views">
+          <button
+            type="button"
+            role="tab"
+            id="tab-overview"
+            data-view="overview"
+            aria-controls="view-overview"
+            aria-selected="true"
+          >
+            Review
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-evidence"
+            data-view="evidence"
+            aria-controls="view-evidence"
+            aria-selected="false"
+          >
+            Evidence
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-artifacts"
+            data-view="artifacts"
+            aria-controls="view-artifacts"
+            aria-selected="false"
+          >
+            Review package
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-compare"
+            data-view="compare"
+            aria-controls="view-compare"
+            aria-selected="false"
+          >
+            Compare
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-evaluations"
+            data-view="evaluations"
+            aria-controls="view-evaluations"
+            aria-selected="false"
+          >
+            Evaluations
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-architecture"
+            data-view="architecture"
+            aria-controls="view-architecture"
+            aria-selected="false"
+          >
+            Architecture
+          </button>
         </div>
+      </div>
+    </header>
+    <main id="main">
+      <noscript
+        ><div class="notice">
+          Studio needs JavaScript to run reviews.
+          <a href="https://github.com/ult666666/lineageguard-datahub-agent">Read the source</a>
+          or <a href="/classic.html">open the original demo</a>.
+        </div></noscript
+      >
+      <div id="global-message" class="notice" role="status" hidden></div>
 
-        <section id="view-overview" class="view" role="tabpanel" aria-labelledby="tab-overview">
-          <div class="workspace-grid">
+      <section id="view-overview" class="view" role="tabpanel" aria-labelledby="tab-overview">
+        <div class="review-layout">
+          <div class="side-column">
             <section class="panel composer-panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">01 / COMPOSE</p>
-                  <h2>Review configuration</h2>
-                </div>
-                <span class="badge">TYPED DAG</span>
-              </div>
+              <h2 id="composer-title">Change request</h2>
               <fieldset id="configuration" disabled>
-                <label for="scenario-select">Synthetic scenario</label
+                <label for="scenario-select">Scenario</label
                 ><select id="scenario-select"></select>
                 <p class="field-help" id="scenario-description"></p>
-                <label for="profile-select">Review recipe</label
+                <label for="profile-select">Recipe</label
                 ><select id="profile-select">
-                  <option value="standard">Balanced · parallel evidence</option>
-                  <option value="strict">Evidence-first · explicit paths</option>
-                  <option value="sequential">Sequential · one step at a time</option>
+                  <option value="standard">Standard: parallel reads</option>
+                  <option value="strict">Strict: column paths, fresher evidence</option>
+                  <option value="sequential">Sequential: one read at a time</option>
                 </select>
                 <div class="control-pair">
                   <div>
@@ -171,9 +148,7 @@
                     ><input id="retries-input" type="number" min="0" max="2" value="1" />
                   </div>
                 </div>
-                <div class="editor-heading">
-                  <label for="request-json">Exact change request</label><span>JSON</span>
-                </div>
+                <label for="request-json">Request JSON</label>
                 <textarea
                   id="request-json"
                   spellcheck="false"
@@ -181,519 +156,489 @@
                   aria-describedby="validation-message"
                 ></textarea>
                 <details class="recipe-details">
-                  <summary>Inspect or edit the workflow</summary>
+                  <summary>Edit workflow JSON</summary>
                   <p class="field-help">
-                    Only registered steps are allowed. Invalid graphs, missing evidence dependencies
-                    and code-execution capabilities are rejected.
+                    Only registered steps are allowed, and the graph is checked before it runs.
                   </p>
                   <label class="sr-only" for="recipe-json">Workflow JSON</label
                   ><textarea id="recipe-json" rows="13" spellcheck="false"></textarea
-                  ><button type="button" class="button subtle full" id="compile-button">
+                  ><button type="button" class="button" id="compile-button">
                     Validate workflow
                   </button>
                 </details>
               </fieldset>
               <p id="validation-message" class="validation" role="status">Loading…</p>
-              <div class="method-note">
-                <b>Compose capabilities, not permissions.</b>
-                <p>
-                  Editing a recipe cannot add SQL execution, catalog mutation, external destinations
-                  or paid model calls.
-                </p>
-              </div>
-            </section>
-            <div class="execution-column">
-              <section class="panel canvas-panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">02 / ORCHESTRATE</p>
-                    <h2>Execution graph</h2>
-                  </div>
-                  <span class="status-pill" id="run-status" data-status="created">Ready</span>
-                </div>
-                <div class="graph-legend">
-                  <span><i class="legend-tool"></i>Evidence tool</span
-                  ><span><i class="legend-rule"></i>Deterministic rule</span
-                  ><span><i class="legend-policy"></i>Policy boundary</span>
-                </div>
-                <div
-                  class="graph-scroller"
-                  role="region"
-                  aria-label="Workflow graph; scroll horizontally on small screens"
-                  tabindex="0"
-                >
-                  <svg
-                    id="pipeline-graph"
-                    viewBox="0 0 1040 410"
-                    role="img"
-                    aria-label="Compiled workflow dependency graph"
-                  ></svg>
-                </div>
-                <div class="graph-footer">
-                  <span id="graph-summary">Compile a recipe to see its dependency graph.</span
-                  ><span id="run-identity">No run created</span>
-                </div>
-                <div class="run-controls">
-                  <div class="run-options">
-                    <label class="check"
-                      ><input type="checkbox" id="pause-toggle" />Pause before policy</label
-                    ><label class="check" id="restore-option" hidden
-                      ><input type="checkbox" id="restore-toggle" />Restore synthetic source</label
-                    >
-                  </div>
-                  <div class="button-row">
-                    <button class="button subtle" id="cancel-button" type="button" disabled>
-                      Cancel</button
-                    ><button class="button secondary" id="resume-button" type="button" disabled>
-                      Resume run</button
-                    ><button class="button primary" id="run-button" type="button" disabled>
-                      <span aria-hidden="true">▶</span> Run review
-                    </button>
-                  </div>
-                  <p id="run-announcement" class="sr-only" role="status" aria-live="polite"></p>
-                </div>
-              </section>
-              <section class="panel decision-panel">
-                <div class="decision-heading">
-                  <div>
-                    <p class="eyebrow">03 / DECIDE WITH EVIDENCE</p>
-                    <h2 id="decision-title" tabindex="-1">Not evaluated</h2>
-                  </div>
-                  <span class="decision-symbol" id="decision-symbol" aria-hidden="true">◇</span>
-                </div>
-                <p id="decision-description" class="muted">
-                  Run a review to receive a decision. Missing data is never interpreted as low risk.
-                </p>
-                <div class="decision-metrics">
-                  <div><span>Compatibility risk</span><strong id="risk-value">—</strong></div>
-                  <div><span>Evidence readiness</span><strong id="readiness-value">—</strong></div>
-                  <div><span>Evidence calls</span><strong id="calls-value">0 / 12</strong></div>
-                </div>
-                <div id="policy-reasons" class="reason-list"></div>
-              </section>
-              <section class="panel trace-panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">OBSERVABILITY</p>
-                    <h2>Run trace</h2>
-                  </div>
-                  <span class="badge" id="event-count">0 EVENTS</span>
-                </div>
-                <div id="trace-list" class="trace-list">
-                  <p class="empty-copy">
-                    Step states and output digests appear here as work actually completes.
-                  </p>
-                </div>
-              </section>
-            </div>
-          </div>
-          <div class="try-callout">
-            <span class="callout-number">TRY THE FAILURE PATH</span>
-            <p>
-              Choose <b>Evidence-source outage</b>. Run the review. Restore the synthetic source and
-              resume. Inspect what was reused—and what could not be trusted.
-            </p>
-          </div>
-        </section>
-
-        <section
-          id="view-evidence"
-          class="view"
-          role="tabpanel"
-          aria-labelledby="tab-evidence"
-          hidden
-        >
-          <div class="section-title">
-            <p class="eyebrow">GROUND EVERY CONCLUSION</p>
-            <h2>Evidence, not inference theater.</h2>
-            <p>
-              Source identity, coverage and time travel with each result. Graph edges are shown only
-              when the source actually provides them.
-            </p>
-          </div>
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>Returned lineage</h3>
-              <span class="badge" id="lineage-coverage">NO EVIDENCE</span>
-            </div>
-            <div class="graph-scroller">
-              <svg
-                id="lineage-graph"
-                viewBox="0 0 1040 370"
-                role="img"
-                aria-label="Returned evidence lineage"
-              ></svg>
-            </div>
-            <p class="panel-foot" id="lineage-note">No catalog result has been received.</p>
-          </section>
-          <div class="evidence-grid">
-            <section class="panel">
-              <div class="panel-heading"><h3>Evidence inspector</h3></div>
-              <label for="evidence-select">Completed step output</label
-              ><select id="evidence-select">
-                <option value="">No evidence yet</option>
-              </select>
-              <dl id="evidence-metadata" class="metadata-list"></dl>
-            </section>
-            <section class="panel">
-              <div class="panel-heading">
-                <h3>Exact output</h3>
-                <span class="badge">STRUCTURED DATA</span>
-              </div>
-              <pre id="evidence-json" class="code-block">Run a review to inspect its outputs.</pre>
-            </section>
-          </div>
-        </section>
-
-        <section
-          id="view-artifacts"
-          class="view"
-          role="tabpanel"
-          aria-labelledby="tab-artifacts"
-          hidden
-        >
-          <div class="section-title">
-            <p class="eyebrow">REVIEWABLE DELIVERABLES</p>
-            <h2>Carry the reasoning forward.</h2>
-            <p>
-              Export exact inputs, evidence, the event chain and draft artifacts. A checksum detects
-              changes; it is not a digital signature or approval.
-            </p>
-          </div>
-          <div class="artifact-actions">
-            <button id="download-run" class="button primary" type="button" disabled>
-              Export verified run JSON ↓</button
-            ><button id="download-markdown" class="button secondary" type="button" disabled>
-              Review brief ↓</button
-            ><button id="download-sql" class="button subtle" type="button" disabled>
-              SQL draft ↓
-            </button>
-          </div>
-          <section
-            id="review-inspector"
-            class="panel inspection-panel"
-            aria-labelledby="inspection-title"
-          >
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">VERIFY WHAT YOU CARRY FORWARD</p>
-                <h3 id="inspection-title">Review Inspector</h3>
-              </div>
-              <span id="inspection-badge" class="badge">NO INPUT</span>
-            </div>
-            <p class="muted">
-              Check an exported review without uploading it. Reproduce deterministic conclusions
-              from the evidence inside the file, then distinguish the recorded decision from its
-              current freshness. Files are never imported as runnable state.
-            </p>
-            <label for="inspection-file">Exported run JSON · at most 4 MB</label>
-            <input
-              id="inspection-file"
-              type="file"
-              accept=".json,application/json"
-              aria-describedby="inspection-privacy"
-            />
-            <p id="inspection-privacy" class="field-help">
-              Read in this browser only. No network request, tool call, checkpoint write or
-              execution. Internal consistency is not proof of authenticity.
-            </p>
-            <div class="artifact-actions">
-              <button id="inspect-current" class="button secondary" type="button" disabled>
-                Inspect current review
-              </button>
-              <button id="inspection-download" class="button subtle" type="button" disabled>
-                Export inspection summary ↓
-              </button>
-              <button id="inspection-clear" class="button subtle" type="button">
-                Clear inspection
-              </button>
-            </div>
-            <div
-              id="inspection-result"
-              data-state="empty"
-              role="status"
-              aria-live="polite"
-              aria-atomic="false"
-            ></div>
-          </section>
-          <div class="evidence-grid">
-            <section class="panel">
-              <div class="panel-heading">
-                <h3>Migration draft</h3>
-                <span class="badge warning">NOT EXECUTED</span>
-              </div>
-              <pre id="artifact-sql" class="code-block">No draft generated.</pre>
-            </section>
-            <section class="panel">
-              <div class="panel-heading"><h3>Review brief</h3></div>
-              <pre id="artifact-markdown" class="code-block">No review generated.</pre>
-            </section>
-          </div>
-          <section class="panel acknowledgement">
-            <div>
-              <p class="eyebrow">HUMAN REVIEW NOTE</p>
-              <h3>Acknowledge the exact review</h3>
-              <p class="muted">
-                This local, unverified identity records your review intent. It does not authorize
-                execution or impersonate organizational approval.
+              <p class="tip">
+                To see a failure, run <b>Evidence-source outage</b>, then restore the source and
+                resume.
               </p>
-            </div>
-            <div>
-              <label for="reviewer-name">Reviewer display name</label
-              ><input id="reviewer-name" maxlength="80" placeholder="Your name" /><label
-                for="review-note"
-                >Review note</label
-              ><input id="review-note" maxlength="500" placeholder="What did you verify?" /><button
-                id="acknowledge-button"
-                class="button secondary"
-                type="button"
-                disabled
+            </section>
+            <section class="panel history-panel">
+              <h2 id="history-title">Recent reviews</h2>
+              <div id="history-list"><p class="muted">No saved reviews yet.</p></div>
+            </section>
+          </div>
+
+          <div class="execution-column">
+            <section class="panel workflow-panel">
+              <div class="panel-header">
+                <h2 id="workflow-title">Workflow</h2>
+                <span class="status" id="run-status" data-status="created">Ready</span>
+              </div>
+              <div
+                class="graph-scroller"
+                role="region"
+                aria-label="Workflow graph; scroll horizontally on small screens"
+                tabindex="0"
               >
-                Record local acknowledgement
-              </button>
-              <p id="review-status" class="field-help">
-                Only an evidence-ready, nonblocked review can be acknowledged.
-              </p>
-            </div>
-          </section>
-        </section>
+                <svg
+                  id="pipeline-graph"
+                  viewBox="0 0 1040 410"
+                  role="img"
+                  aria-label="Compiled workflow dependency graph"
+                ></svg>
+              </div>
+              <div class="graph-footer">
+                <span id="graph-summary">Compile a recipe to see its dependency graph.</span
+                ><span id="run-identity">No run created</span>
+              </div>
+              <div class="run-controls">
+                <div class="run-options">
+                  <label class="check"
+                    ><input type="checkbox" id="pause-toggle" />Pause before policy</label
+                  ><label class="check" id="restore-option" hidden
+                    ><input type="checkbox" id="restore-toggle" />Restore synthetic source</label
+                  >
+                </div>
+                <div class="button-row">
+                  <button class="button" id="cancel-button" type="button" disabled>Cancel</button
+                  ><button class="button" id="resume-button" type="button" disabled>
+                    Resume run</button
+                  ><button class="button primary" id="run-button" type="button" disabled>
+                    Run review
+                  </button>
+                </div>
+                <p id="run-announcement" class="sr-only" role="status" aria-live="polite"></p>
+              </div>
+            </section>
 
-        <section
-          id="view-compare"
-          class="view"
-          role="tabpanel"
-          aria-labelledby="tab-compare"
-          hidden
-        >
-          <div class="section-title">
-            <p class="eyebrow">MAKE THE TRADEOFF EXPLICIT</p>
-            <h2>Compare plans, not just scores.</h2>
-            <p>
-              Rerun an additive alternative or a stricter evidence policy. Changed requests and
-              evidence revisions are called out instead of being hidden behind a headline metric.
-            </p>
+            <section class="panel decision-panel">
+              <p class="panel-label">Decision</p>
+              <h2 id="decision-title" tabindex="-1">Not evaluated</h2>
+              <p id="decision-description" class="muted">
+                Run a review to see the decision and the reasons behind it.
+              </p>
+              <dl class="decision-metrics">
+                <div>
+                  <dt>Compatibility risk</dt>
+                  <dd id="risk-value">–</dd>
+                </div>
+                <div>
+                  <dt>Evidence readiness</dt>
+                  <dd id="readiness-value">–</dd>
+                </div>
+                <div>
+                  <dt>Evidence calls</dt>
+                  <dd id="calls-value">0 / 12</dd>
+                </div>
+              </dl>
+              <div id="policy-reasons" class="reason-list"></div>
+            </section>
+
+            <section class="panel trace-panel">
+              <div class="panel-header">
+                <h2 id="trace-title">Run trace</h2>
+                <span class="count" id="event-count">0 events</span>
+              </div>
+              <div
+                id="trace-list"
+                class="trace-list"
+                role="region"
+                aria-label="Run trace events"
+                tabindex="0"
+              >
+                <p class="empty-copy">
+                  Step events and output digests appear here as steps finish.
+                </p>
+              </div>
+            </section>
           </div>
-          <section
-            id="saved-comparison"
-            class="panel inspection-panel"
-            aria-labelledby="saved-title"
-          >
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">LOCAL FILES</p>
-                <h3 id="saved-title">Compare saved reviews</h3>
-              </div>
-              <span id="saved-badge" class="badge">NO COMPARISON</span>
-            </div>
-            <p class="muted">
-              Choose two completed exported reviews. Each file must be 1–4,000,000 bytes. Both are
-              checked locally before any comparison is shown. No upload, source lookup, import or
-              execution occurs.
-            </p>
-            <div class="inspection-grid saved-inputs">
-              <div>
-                <label for="saved-left-file">Left exported review JSON</label
-                ><input id="saved-left-file" type="file" accept=".json,application/json" />
-              </div>
-              <div>
-                <label for="saved-right-file">Right exported review JSON</label
-                ><input id="saved-right-file" type="file" accept=".json,application/json" />
-              </div>
-            </div>
-            <div class="artifact-actions">
-              <button id="saved-compare" class="button primary" type="button" disabled>
-                Compare saved exports
-              </button>
-              <button id="saved-download" class="button secondary" type="button" disabled>
-                Export comparison JSON ↓
-              </button>
-              <button id="saved-clear" class="button subtle" type="button">
-                Clear saved comparison
-              </button>
-            </div>
-            <p class="field-help">
-              The downloaded report includes supplied request summaries and run identifiers. Keep
-              private files and reports local. Internal consistency does not authenticate source
-              truth or approval.
-            </p>
-            <p id="saved-status" class="field-help" role="status" aria-live="polite"></p>
-            <div
-              id="saved-result"
+        </div>
+      </section>
+
+      <section
+        id="view-evidence"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="tab-evidence"
+        hidden
+      >
+        <div class="view-heading">
+          <h2>Evidence</h2>
+          <p>
+            What each step returned, with its source, coverage and observation time. The graph shows
+            only the edges the source supplied.
+          </p>
+        </div>
+        <section class="panel">
+          <div class="panel-header">
+            <h3 id="lineage-title">Downstream lineage</h3>
+            <span class="status" id="lineage-coverage">No lineage yet</span>
+          </div>
+          <div class="graph-scroller">
+            <svg
+              id="lineage-graph"
+              viewBox="0 0 1040 260"
+              role="img"
+              aria-label="Returned evidence lineage"
+            ></svg>
+          </div>
+          <p class="panel-foot" id="lineage-note">No catalog result has been received.</p>
+        </section>
+        <div class="split evidence-split">
+          <section class="panel">
+            <h3 id="step-output-title">Step output</h3>
+            <label for="evidence-select">Completed step</label
+            ><select id="evidence-select">
+              <option value="">No evidence yet</option>
+            </select>
+            <dl id="evidence-metadata" class="metadata-list"></dl>
+          </section>
+          <section class="panel">
+            <h3 id="output-json-title">Output JSON</h3>
+            <pre
+              id="evidence-json"
+              class="code-block"
               role="region"
-              aria-label="Saved review comparison result"
-              aria-busy="false"
-              data-state="empty"
-            ></div>
-          </section>
-          <h3>Evaluate another plan from the current review</h3>
-          <div class="artifact-actions">
-            <button id="compare-additive" class="button primary" type="button" disabled>
-              Evaluate an additive alternative</button
-            ><button id="compare-strict" class="button secondary" type="button" disabled>
-              Evaluate stricter evidence policy
-            </button>
-          </div>
-          <div id="comparison-result" class="comparison" data-ready="false">
-            <section class="panel empty-copy">Complete a review in the Composer first.</section>
-          </div>
-        </section>
-
-        <section
-          id="view-evaluations"
-          class="view"
-          role="tabpanel"
-          aria-labelledby="tab-evaluations"
-          hidden
-        >
-          <div class="section-title">
-            <p class="eyebrow">PROVE THE FAILURE BOUNDARIES</p>
-            <h2>Evaluations you can rerun.</h2>
-            <p>
-              Named synthetic scenarios exercise the same interpreter and policy as the Studio.
-              Every pass below is computed from an expected outcome—not an animated demo statistic.
-            </p>
-          </div>
-          <div class="artifact-actions">
-            <button id="evaluate-button" class="button primary" type="button">
-              Run evaluation suite</button
-            ><button id="download-evaluations" class="button subtle" type="button" disabled>
-              Export evaluation report ↓
-            </button>
-          </div>
-          <section id="eval-report" class="panel" data-result="empty">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">DETERMINISTIC SCENARIOS</p>
-                <h3 id="eval-summary">Not run in this session</h3>
-              </div>
-              <span class="badge">POLICY 2.0</span>
-            </div>
-            <p id="eval-scope" class="muted">
-              This does not validate real DataHub tenants, AI model quality or production
-              migrations.
-            </p>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Scenario / invariant</th>
-                    <th scope="col">Expected</th>
-                    <th scope="col">Observed</th>
-                    <th scope="col">Result</th>
-                  </tr>
-                </thead>
-                <tbody id="eval-rows"></tbody>
-              </table>
-            </div>
-          </section>
-        </section>
-
-        <section
-          id="view-architecture"
-          class="view"
-          role="tabpanel"
-          aria-labelledby="tab-architecture"
-          hidden
-        >
-          <div class="section-title">
-            <p class="eyebrow">ENGINEERING THAT CAN BE INSPECTED</p>
-            <h2>Small components.<br />Explicit contracts.</h2>
-            <p>
-              A domain-specific orchestration system, not an unbounded general-purpose agent. Built
-              with AI assistance; the shipped runtime makes deterministic, inspectable decisions.
-            </p>
-          </div>
-          <div class="architecture-grid">
-            <article class="panel">
-              <span class="architecture-number">01</span>
-              <h3>Compile the graph</h3>
-              <p>
-                Validate registered operations, dependencies, cycles and budgets before the first
-                evidence call. A generated recipe gets no extra privileges.
-              </p>
-              <code>core/recipe.js</code>
-            </article>
-            <article class="panel">
-              <span class="architecture-number">02</span>
-              <h3>Execute with limits</h3>
-              <p>
-                Real concurrent reads, bounded retries, deadlines and cancellation. State and
-                hash-linked events are checkpointed before execution continues.
-              </p>
-              <code>core/runtime.js</code>
-            </article>
-            <article class="panel">
-              <span class="architecture-number">03</span>
-              <h3>Separate risk from evidence</h3>
-              <p>
-                Numeric narrowing is not a safe type-family match. Missing usage, truncated lineage
-                and stale observations prevent a favorable readiness judgment.
-              </p>
-              <code>core/policy.js</code>
-            </article>
-            <article class="panel">
-              <span class="architecture-number">04</span>
-              <h3>Fence stale writers</h3>
-              <p>
-                The local SQLite service uses revision compare-and-swap and expiring writer leases.
-                Restart and resume are tested; it is not a distributed scheduler.
-              </p>
-              <code>src/studio/store.mjs</code>
-            </article>
-          </div>
-          <section class="panel runtime-boundaries">
-            <h3>Two runtimes. No blurred claims.</h3>
-            <div class="evidence-grid">
-              <div>
-                <h4>Public browser-session preview</h4>
-                <p>
-                  Executes the shared DAG against same-origin synthetic tools. Checkpoints stay in
-                  this browser. There is no durable cloud queue, model inference, tenant connection
-                  or authenticated approval.
-                </p>
-              </div>
-              <div>
-                <h4>Local durable runtime</h4>
-                <p>
-                  Run <code>npm run studio:local</code> with Node 24 to add a loopback API, durable
-                  SQLite checkpoints and writer leases. The optional MCP client keeps its explicitly
-                  tested 2025-11-25 profile.
-                </p>
-              </div>
-            </div>
-            <p class="panel-foot">
-              Checksums detect corruption, not malicious same-origin edits. A local review
-              acknowledgement is not permission to change a catalog. No execution tool exists in the
-              registry.
-            </p>
-          </section>
-          <div class="artifact-actions">
-            <a
-              class="button primary"
-              href="https://github.com/ult666666/lineageguard-datahub-agent"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Inspect source ↗</a
-            ><a
-              class="button secondary"
-              href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/docs/ARCHITECTURE.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Architecture &amp; run semantics ↗</a
-            ><a
-              class="button subtle"
-              href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/docs/VERIFICATION.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Verification evidence ↗</a
+              tabindex="0"
+              aria-labelledby="output-json-title"
             >
+Run a review to inspect its outputs.</pre>
+          </section>
+        </div>
+      </section>
+
+      <section
+        id="view-artifacts"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="tab-artifacts"
+        hidden
+      >
+        <div class="view-heading">
+          <h2>Review package</h2>
+          <p>
+            Download the review as JSON, a Markdown brief or a SQL draft. A checksum in the JSON
+            detects later changes; it is not a signature.
+          </p>
+        </div>
+        <div class="button-row actions">
+          <button id="download-run" class="button primary" type="button" disabled>
+            Download run JSON</button
+          ><button id="download-markdown" class="button" type="button" disabled>
+            Download brief</button
+          ><button id="download-sql" class="button" type="button" disabled>
+            Download SQL draft
+          </button>
+        </div>
+        <div class="split">
+          <section class="panel">
+            <h3 id="sql-title">SQL draft</h3>
+            <pre
+              id="artifact-sql"
+              class="code-block"
+              role="region"
+              tabindex="0"
+              aria-labelledby="sql-title"
+            >
+No draft generated.</pre>
+          </section>
+          <section class="panel">
+            <h3 id="brief-title">Review brief</h3>
+            <pre
+              id="artifact-markdown"
+              class="code-block"
+              role="region"
+              tabindex="0"
+              aria-labelledby="brief-title"
+            >
+No review generated.</pre>
+          </section>
+        </div>
+        <section class="panel acknowledgement">
+          <div>
+            <h3 id="acknowledge-title">Acknowledge this review</h3>
+            <p class="muted">
+              Records your name and a note against this exact run. It is a local note, not an
+              approval.
+            </p>
+          </div>
+          <div>
+            <label for="reviewer-name">Your name</label
+            ><input id="reviewer-name" maxlength="80" autocomplete="name" /><label for="review-note"
+              >Note</label
+            ><input id="review-note" maxlength="500" placeholder="What did you check?" /><button
+              id="acknowledge-button"
+              class="button"
+              type="button"
+              disabled
+            >
+              Record acknowledgement
+            </button>
+            <p id="review-status" class="field-help">
+              Available when the review is complete, current and not blocked.
+            </p>
           </div>
         </section>
-        <footer class="workspace-footer">
-          <span>LINEAGEGUARD STUDIO · CHARLES DAI</span
-          ><span>Read-only by construction. Evidence before action.</span>
-        </footer>
-      </main>
-    </div>
+        <section
+          id="review-inspector"
+          class="panel inspection-panel"
+          aria-labelledby="inspection-title"
+        >
+          <div class="panel-header">
+            <h3 id="inspection-title">Review Inspector</h3>
+            <span id="inspection-badge" class="status">No file</span>
+          </div>
+          <p class="muted">
+            Check a saved review offline. The Inspector recomputes the decision and the drafts from
+            the evidence inside the file and reports any mismatch.
+          </p>
+          <label for="inspection-file">Run JSON, up to 4 MB</label>
+          <input
+            id="inspection-file"
+            type="file"
+            accept=".json,application/json"
+            aria-describedby="inspection-privacy"
+          />
+          <p id="inspection-privacy" class="field-help">
+            The file stays in this browser. A passing check shows the file is consistent, not that
+            it is authentic.
+          </p>
+          <div class="button-row">
+            <button id="inspect-current" class="button" type="button" disabled>
+              Inspect current review
+            </button>
+            <button id="inspection-download" class="button" type="button" disabled>
+              Download summary
+            </button>
+            <button id="inspection-clear" class="button subtle" type="button">Clear</button>
+          </div>
+          <div
+            id="inspection-result"
+            data-state="empty"
+            role="status"
+            aria-live="polite"
+            aria-atomic="false"
+          ></div>
+        </section>
+      </section>
+
+      <section id="view-compare" class="view" role="tabpanel" aria-labelledby="tab-compare" hidden>
+        <div class="view-heading">
+          <h2>Compare</h2>
+          <p>
+            Rerun the current review as an alternative plan, or compare two saved reviews. Changed
+            requests are labelled as different plans.
+          </p>
+        </div>
+        <section class="panel">
+          <h3 id="alternatives-title">Alternative plans</h3>
+          <p class="muted">Runs a second review with the same runtime and shows both results.</p>
+          <div class="button-row">
+            <button id="compare-additive" class="button primary" type="button" disabled>
+              Try an additive alternative</button
+            ><button id="compare-strict" class="button" type="button" disabled>
+              Try the strict policy
+            </button>
+          </div>
+        </section>
+        <div id="comparison-result" class="comparison" data-ready="false">
+          <p class="empty-copy">Run a review on the Review tab first.</p>
+        </div>
+        <section id="saved-comparison" class="panel inspection-panel" aria-labelledby="saved-title">
+          <div class="panel-header">
+            <h3 id="saved-title">Compare saved reviews</h3>
+            <span id="saved-badge" class="status">No comparison</span>
+          </div>
+          <p class="muted">
+            Choose two completed run JSON files, up to 4 MB each. Both pass through the Review
+            Inspector before any result appears, and neither leaves this browser.
+          </p>
+          <div class="split saved-inputs">
+            <div>
+              <label for="saved-left-file">Left review JSON</label
+              ><input id="saved-left-file" type="file" accept=".json,application/json" />
+            </div>
+            <div>
+              <label for="saved-right-file">Right review JSON</label
+              ><input id="saved-right-file" type="file" accept=".json,application/json" />
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="saved-compare" class="button primary" type="button" disabled>
+              Compare files
+            </button>
+            <button id="saved-download" class="button" type="button" disabled>
+              Download comparison
+            </button>
+            <button id="saved-clear" class="button subtle" type="button">Clear</button>
+          </div>
+          <p id="saved-status" class="sr-only" role="status" aria-live="polite"></p>
+          <div
+            id="saved-result"
+            role="region"
+            aria-label="Saved review comparison result"
+            aria-busy="false"
+            data-state="empty"
+          ></div>
+        </section>
+      </section>
+
+      <section
+        id="view-evaluations"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="tab-evaluations"
+        hidden
+      >
+        <div class="view-heading">
+          <h2>Evaluations</h2>
+          <p>
+            Runs named scenarios through the same runtime and policy as a review, and compares each
+            result with the expected outcome.
+          </p>
+        </div>
+        <div class="button-row actions">
+          <button id="evaluate-button" class="button primary" type="button">Run evaluations</button
+          ><button id="download-evaluations" class="button" type="button" disabled>
+            Download report
+          </button>
+        </div>
+        <section id="eval-report" class="panel" data-result="empty">
+          <h3 id="eval-summary">Not run yet</h3>
+          <p id="eval-scope" class="muted">
+            Covers decisions, retries, a source outage, pause and resume, and tampering.
+          </p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Check</th>
+                  <th scope="col">Expected</th>
+                  <th scope="col">Observed</th>
+                  <th scope="col">Result</th>
+                </tr>
+              </thead>
+              <tbody id="eval-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section
+        id="view-architecture"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="tab-architecture"
+        hidden
+      >
+        <div class="view-heading">
+          <h2>Architecture</h2>
+          <p>
+            A review is a small workflow graph. Studio compiles it, runs the evidence reads with
+            limits, and applies a fixed policy. The browser and the local service run the same
+            modules.
+          </p>
+        </div>
+        <div class="architecture-grid">
+          <article>
+            <h3>Compile the graph</h3>
+            <p>
+              Unknown steps, cycles, missing dependencies and budgets over the limits are refused
+              before the first read. A generated recipe gets no extra privileges.
+            </p>
+            <code>core/recipe.js</code>
+          </article>
+          <article>
+            <h3>Run with limits</h3>
+            <p>
+              Reads run concurrently with retries, deadlines and cancellation. Each state change is
+              checkpointed, with hash-linked events, before the run continues.
+            </p>
+            <code>core/runtime.js</code>
+          </article>
+          <article>
+            <h3>Keep risk and evidence apart</h3>
+            <p>
+              Numeric narrowing is blocked even within one type family. Missing usage, partial
+              lineage and stale observations keep a review from being ready.
+            </p>
+            <code>core/policy.js</code>
+          </article>
+          <article>
+            <h3>Fence stale writers</h3>
+            <p>
+              The local service stores runs in SQLite with revision compare-and-swap and expiring
+              writer leases. A run left by a stopped process can resume once its lease expires.
+            </p>
+            <code>src/studio/store.mjs</code>
+          </article>
+        </div>
+        <section class="panel runtimes">
+          <h3 id="runtimes-title">Runtimes</h3>
+          <div class="split">
+            <div>
+              <h4>Browser session</h4>
+              <p>
+                The hosted demo. The workflow runs in your browser against same-origin synthetic
+                reads, and checkpoints stay in browser storage. Export a run to keep a copy.
+              </p>
+            </div>
+            <div>
+              <h4>Local service</h4>
+              <p>
+                <code>npm run studio:local</code> adds a loopback API, SQLite checkpoints and writer
+                leases. The optional DataHub client uses MCP protocol version 2025-11-25.
+              </p>
+            </div>
+          </div>
+        </section>
+        <p class="links">
+          <a
+            href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/docs/ARCHITECTURE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Architecture notes</a
+          ><a
+            href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/docs/VERIFICATION.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >How it is tested</a
+          ><a
+            href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/docs/THREAT_MODEL.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Threat model</a
+          >
+        </p>
+        <p class="muted">Built by Charles Dai with AI coding assistants.</p>
+      </section>
+    </main>
+    <footer class="app-footer">
+      <div class="footer-row">
+        <span>LineageGuard Studio</span
+        ><a
+          href="https://github.com/ult666666/lineageguard-datahub-agent"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Source</a
+        ><a
+          href="https://github.com/ult666666/lineageguard-datahub-agent/blob/main/LICENSE"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Apache-2.0</a
+        ><a href="/classic.html">Original demo</a>
+      </div>
+    </footer>
   </body>
 </html>

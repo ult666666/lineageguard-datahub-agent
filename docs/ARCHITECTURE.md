@@ -55,6 +55,15 @@ flowchart TB
 
 Both runtimes execute the same modules in `public/studio/core`. The hosted demo keeps checkpoints in the browser; the local service keeps them in SQLite. The optional CLI reads DataHub, or a dbt manifest, once and then reviews the frozen capture with the same interpreter. The Studio's dbt scenario reads a bundled static manifest locally in both runtimes; the synthetic tool API refuses it. Exported reviews can be checked offline by the Review Inspector, which never calls a tool.
 
+| Surface | What runs | Where checkpoints live | What it does not claim |
+| --- | --- | --- | --- |
+| Public Studio | The shared browser DAG interpreter with same-origin synthetic tool calls | Current browser storage, unless exported | No durable cloud queue, live tenant, model inference or authenticated approval |
+| Local Studio | The shared interpreter behind a loopback Node API | SQLite, with revision compare-and-swap and expiring writer leases | Not a distributed scheduler or multi-user authorization service |
+| Optional DataHub capture | Two explicitly requested read-only MCP calls, followed by analysis against an immutable capture | A private, user-selected JSON export | No live-tenant validation in this release; no guessed graph edges or weekly usage |
+| Optional dbt manifest | Offline analysis of a local `manifest.json` and optional `catalog.json`, captured once into the same immutable evidence | A user-selected JSON export | No query usage, nullability, column lineage or consumers outside the project; those stay evidence gaps |
+
+The registry has no SQL-execution or catalog-mutation capability. A local acknowledgement is an unverified review note, not an organizational approval.
+
 ## Identity and data contracts
 
 `contract.js` snapshots bounded plain JSON without calling getters or `toJSON`. It rejects poison keys, cycles, symbols, hidden fields, unsupported numbers and extended/sparse arrays. The request validates simple SQL identifiers and an intentionally conservative scalar type subset. The recipe limits concurrency, retries, calls and deadlines.
@@ -78,6 +87,8 @@ The default recipe allows concurrency 3, 12 logical read calls and one retry per
 Resume preserves the run ID and increments its generation. It verifies the complete checkpoint, binding, event chain and output digests before dispatch. Source-revision changes require a new review. Previously running, failed or cancelled steps are reset. Completed tool outputs are reused only while current under the selected policy's freshness limit. Invalidated outputs invalidate their dependent steps transitively.
 
 The read-call budget is cumulative across generations. Resume is not a way to replenish a depleted budget. A restored synthetic source changes its availability, not its evidence revision; this makes outage recovery demonstrable without silently substituting a different data snapshot.
+
+In the UI, editing the request or the recipe discards the displayed result and any comparison built on it, so an old decision or review note never sits next to new inputs.
 
 The local UI waits for the new execution generation after a resume request. A `202 Accepted` response may precede its first durable state transition; returning the old paused checkpoint is not proof that the resumed generation finished. A browser regression reproduced and closed this race.
 
@@ -137,8 +148,34 @@ The observation time of every kind is the manifest's `generated_at` (the catalog
 
 **Trade-offs.** The adapter does not infer column lineage from compiled SQL: `select *` and macros read columns without naming them, and a partial guess would look like evidence. It does not use model contracts as observed nullability, because a manifest does not show that the contracted build ran. dbt Core writes the manifest without the warehouse, while the catalog needs a built warehouse; the catalog is optional so a review can still run from `dbt parse` alone, with weaker schema evidence.
 
+**Limits.** Because the adapter does not parse model SQL, it cannot say which downstream model reads a given column. Column types need `catalog.json` or `data_type` declarations, and types outside the Studio's scalar vocabulary (for example DuckDB `HUGEINT` or Snowflake `TIMESTAMP_NTZ`) are left out. Relation names must be simple unquoted identifiers, so a BigQuery project ID with a hyphen is refused. The Studio reviews only the bundled manifest; your own manifest goes through the [command line](COMMAND_LINE.md#dbt-manifest). Files are read whole, up to 128 MB each.
+
+## Trade-offs and limits
+
+The runtime is domain-specific on purpose. Workflow JSON cannot execute arbitrary JavaScript, shell commands or SQL, which keeps cancellation, reuse and policy review tractable. Hashes and the hash-linked event chain detect accidental changes; they are not signatures or a defense against a malicious same-origin or local owner. Browser persistence is not cloud durability. SQLite is a single-host store, and the stability of the native Node binding depends on the supported Node release.
+
+The Snowflake-style SQL is a review draft, with unsupported or destructive operations withheld or commented out. It is not an atomic migration or a tested production rollback plan. A favorable review still needs the owning teams to check their actual consumers and platform behavior.
+
 ## Repository and deployment boundaries
 
 The stateless hosted API accepts only bounded compile, synthetic read and evaluation operations. It does not expose the SQLite service, filesystem paths or arbitrary network URLs. The local durable API binds loopback and checks Host/Origin before writes. Static publishing uses an exact file inventory; tests, SQLite databases, credentials and private artifacts do not enter the site build.
 
 CI executes the core suite on Node 22 and 24, then the actual browser workflows and static-build checks on Node 24. CodeQL and secret scanning supplement these checks; none constitutes an absolute security guarantee. The original classic UI and portable skill remain available with explicitly historical scope.
+
+## Code map
+
+| Concern | Implementation | What the tests check |
+| --- | --- | --- |
+| Typed composition | [`recipe.js`](../public/studio/core/recipe.js) | Cycles, duplicate steps, required dependencies, unknown capabilities and budgets |
+| Bounded orchestration | [`runtime.js`](../public/studio/core/runtime.js) | Concurrency, retry accounting, deadlines, late results, cancellation and persistence failure |
+| Evidence and compatibility | [`evidence.js`](../public/studio/core/evidence.js), [`policy.js`](../public/studio/core/policy.js) | Exact targets, missing, partial or stale evidence, narrowing and schema mismatch |
+| Saved review comparison | [`review-comparison.js`](../public/studio/core/review-comparison.js) | Shared browser and CLI validation of both exports, alternative requests, recorded and current decisions, stale reads and no uploads |
+| Offline review inspection | [`inspection.js`](../public/studio/core/inspection.js) | Rehashed projection drift, policy and artifact replay, stale evidence, local-only file handling and no uploads |
+| Durable local state | [`store.mjs`](../src/studio/store.mjs), [`service.mjs`](../src/studio/service.mjs) | SQLite reopen, stale-writer fencing, simultaneous starts and interrupted-process recovery |
+| MCP boundary | [`datahub-mcp-client.mjs`](../src/datahub-mcp-client.mjs) | Response IDs, protocol and tool errors, deadlines, byte limits and read-only capabilities |
+| Browser checkpoints | [`storage.js`](../public/studio/storage.js) | Corruption preservation, quota failure, cross-tab conflicts and bounded history |
+| Reproducible evaluation | [`evaluations.js`](../public/studio/core/evaluations.js) | Named outcomes, recovery identity and corrupted-history refusal |
+| Property and hostile-input tests | [`properties.test.mjs`](../test/studio/properties.test.mjs), [`hostile-metadata.test.mjs`](../test/studio/hostile-metadata.test.mjs) | Seeded generators for type, request, JSON and event-stream parsing, the compiler, policy invariants and SQL and Markdown output; hostile catalog text |
+| Labelled policy benchmark | [`policy-benchmark.mjs`](../src/studio/policy-benchmark.mjs), [`policy-cases.json`](../evals/policy-cases.json) | Labelled decisions, reasons and gaps; per-outcome precision and recall; CI fails on any decision more permissive than its label |
+| dbt manifest evidence | [`dbt-manifest.js`](../public/studio/core/dbt-manifest.js), [`trim-dbt-manifest.mjs`](../scripts/trim-dbt-manifest.mjs) | Version refusal, map consistency, cycles, hostile and oversized files, owner precedence, a differential lineage property and a lossless-trim comparison |
+| Public release boundary | [`build-studio.mjs`](../scripts/build-studio.mjs) | Static inventory, hashes, linked files, unexpected files and overwrite refusal |

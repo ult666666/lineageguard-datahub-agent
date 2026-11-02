@@ -12,6 +12,7 @@ import {
   dbtFixtureSha256,
   formatReport,
   loadCases,
+  readmeHeadline,
   replaceBlock,
   runCase,
 } from '../../src/studio/policy-benchmark.mjs';
@@ -155,6 +156,16 @@ test('the pinned report belongs to the committed cases and has no permissive mis
   assert.equal(report.summary.morePermissive, 0);
   assert.equal(report.results.length, report.summary.cases);
   assert.equal(formatReport(report), fs.readFileSync(REPORT_FILE, 'utf8'));
+});
+
+test('the README line states the case count and every permissive miss', () => {
+  const line = (morePermissive) => readmeHeadline({ summary: { cases: 105, morePermissive } });
+  assert.equal(line(0), 'On 105 labelled cases, no decision is more permissive than its label.');
+  assert.equal(line(1), 'On 105 labelled cases, 1 decision is more permissive than its label.');
+  assert.equal(
+    line(3),
+    'On 105 labelled cases, 3 decisions are more permissive than their labels.',
+  );
 });
 
 test('generated document blocks are replaced only between one pair of markers', () => {

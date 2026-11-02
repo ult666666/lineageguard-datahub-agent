@@ -1,20 +1,16 @@
 # LineageGuard Studio
 
-**Review a database schema change before it breaks a downstream dashboard.**
+Review a database schema change against the lineage it affects, before it ships.
 
 [![Tests](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/ult666666/lineageguard-datahub-agent/actions/workflows/tests.yml)
 
-[**Open the demo**](https://lineageguard-datahub-agent.vercel.app/) · [Architecture](docs/ARCHITECTURE.md) · [Evaluation](docs/EVALUATION.md) · [Verification](docs/VERIFICATION.md) · [Threat model](docs/THREAT_MODEL.md) · [Demo walkthrough](docs/DEMO_WALKTHROUGH.md)
+Renaming `orders.order_total` looks harmless in one file, but a revenue table, a dashboard and the month-end close job may all read that column. LineageGuard Studio collects what is known about the column's consumers, applies fixed compatibility and evidence rules, and returns a decision with its reasons and a SQL draft for a person to review. When evidence is missing, the decision asks for it instead of assuming the change is safe.
 
-Renaming `orders.order_total` looks harmless in one file. A revenue table, the dashboard built on it and the monthly-close job may all read that column. LineageGuard Studio reviews a proposed change before it ships. It gathers read-only evidence about what depends on the data (from synthetic fixtures, a DataHub capture or a dbt `manifest.json`), applies deterministic compatibility and evidence rules, and returns a decision with the evidence behind it and a draft migration for a person to review. Charles Dai built it with AI-assisted implementation.
+![The Review tab after a rename review: the change request on the left, and the workflow graph, decision and reasons on the right](assets/studio-review.png)
 
-![LineageGuard Studio running a rename review, failing on a lineage outage, resuming the same run after the source is restored, and rerunning its evaluations](assets/studio-demo.gif)
+## Try it
 
-<sub>The real interface in browser-session mode, as in the hosted demo. Synthetic reads were slowed to 300 ms for this recording so each step is visible.</sub>
-
-## Quick start
-
-Use Node 24 (22.13+ also works). There is nothing to install: the application has zero runtime dependencies.
+[Open the demo](https://lineageguard-datahub-agent.vercel.app/) to run reviews in your browser on synthetic metadata. To run it locally, use Node 24 (22.13 or later also works). There is nothing to install.
 
 ```sh
 git clone https://github.com/ult666666/lineageguard-datahub-agent.git
@@ -22,35 +18,21 @@ cd lineageguard-datahub-agent
 npm run studio:local
 ```
 
-Open `http://127.0.0.1:4183`, pick a scenario and select **Run review**. To run the checks (`npm test` also needs Python 3 for the skill tests):
+Open `http://127.0.0.1:4183`, pick a scenario and select **Run review**. To see a failure and a recovery, run **Evidence-source outage**, select **Restore synthetic source**, then **Resume run**.
 
-```sh
-npm test                  # Node suite, including property tests and a killed-process recovery test
-npm run studio:evaluate   # runtime scenarios: retries, outage, pause and resume, tampering
-npm run studio:benchmark  # labelled policy benchmark with per-outcome precision and recall
-```
+## What it does
 
-## Evidence
+A review is a small workflow graph. Studio checks the graph before it runs, reads evidence under a call budget with bounded concurrency, retries and deadlines, and checkpoints every step. A run can be paused, cancelled or resumed after a source outage, and only complete evidence that is unchanged and still fresh is reused.
 
-CI runs every check below on each pull request and each push to `main` ([workflow](.github/workflows/tests.yml)).
+Compatibility risk and evidence readiness are judged separately. Unknown usage is not zero, partial lineage is not complete, and narrowing `BIGINT` to `SMALLINT` is blocked even though both are numeric. Each completed review ends in one of four decisions: `block`, `needs-evidence`, `review-required` or `proceed-with-checks`.
 
-**Labelled policy benchmark** ([rules, labels and results](docs/EVALUATION.md)):
-<!-- policy-benchmark:headline:start -->
-105 labelled cases: 101 decisions match the label (96.2%), 0 are more permissive than the label and 4 are stricter.
-<!-- policy-benchmark:headline:end -->
+Evidence can come from:
 
-| Claim | Checked by |
-| --- | --- |
-| No decision is more permissive than its label, and results match the pinned report | `npm run studio:benchmark -- --check` |
-| Batch order, letter case and catalog free text never change a decision | [`properties.test.mjs`](test/studio/properties.test.mjs) (seeded property tests) |
-| Hostile catalog text and summaries cannot change a review or break the brief and SQL draft | [`hostile-metadata.test.mjs`](test/studio/hostile-metadata.test.mjs) |
-| A local run killed mid-review resumes with the same identity and no false success | [`process-recovery.test.mjs`](test/studio/process-recovery.test.mjs) |
-| What a dbt manifest cannot show (usage, nullability, outside consumers, column paths) never clears a change | 16 benchmark cases on a real manifest, and [`dbt-properties.test.mjs`](test/studio/dbt-properties.test.mjs) |
-| dbt lineage equals an independent walk of `depends_on`, and a tampered `child_map` is refused | [`dbt-properties.test.mjs`](test/studio/dbt-properties.test.mjs), [`dbt-manifest.test.mjs`](test/studio/dbt-manifest.test.mjs) |
-| Both runtimes work in Chromium, including by keyboard, with external requests blocked | `npm run test:browser` |
-| The public build contains exactly the listed files, byte for byte | `node scripts/build-studio.mjs --verify dist` |
+- synthetic fixtures, which the demo and the tests use;
+- a dbt `manifest.json`, read offline ([below](#review-against-a-dbt-manifest));
+- a one-time, read-only capture from your own DataHub over MCP, which needs an explicit flag and your credentials.
 
-These checks found real bugs: five policy decisions more permissive than their labels, a type parser that let part of a blocked SQL statement escape its comment, and a summary that could add a fake decision line to the review brief. [Verification](docs/VERIFICATION.md#regressions-reproduced-before-each-fix) lists each one with its fix.
+A review exports as JSON, a Markdown brief and a SQL draft. The Review Inspector checks a saved export offline by recomputing its decision and drafts from the evidence inside it, and the Compare tab sets two saved reviews side by side or reruns the current one as an alternative plan.
 
 ## How it works
 
@@ -71,68 +53,13 @@ flowchart LR
   policy --> package["Decision, evidence,<br/>brief and SQL draft"]
 ```
 
-The graph is the program that runs, not a trace drawn afterwards. Evidence reads run in parallel under a call budget, bounded retries and deadlines. Each result is checked against its contract, hashed and checkpointed before dependent steps start. Compatibility and evidence readiness are judged separately: unknown usage is not zero, and partial lineage is not complete. No language model runs in the demo, the tests or the evaluations, and Studio never executes SQL or changes a catalog. [Architecture](docs/ARCHITECTURE.md) covers the state machine, recovery and both runtimes.
+The graph on screen is the compiled workflow that runs. Each step's output is checked against its contract, hashed and checkpointed before dependent steps start. The same interpreter runs in two places: in the browser for the hosted demo, with checkpoints in browser storage, and behind a loopback Node API for `npm run studio:local`, with checkpoints in SQLite. Revision compare-and-swap and expiring writer leases keep a stale process from overwriting a newer one. No language model runs in the demo, the tests or the evaluations.
 
-Optional parts: an offline review against your dbt project's `manifest.json` ([below](#review-against-a-dbt-manifest)), a read-only capture from your own DataHub instance, which needs an explicit flag and your own credentials, and the portable Codex skill in [`skills/`](skills/lineageguard-schema-review), which lets an AI coding agent run a schema review with a deterministic Python scorer. The repository name comes from the original DataHub-context agent; see [Project history](#project-history).
+[Architecture](docs/ARCHITECTURE.md) covers the state machine, recovery, both runtimes and a map of the code.
 
-## What you can try
+## Review against a dbt manifest
 
-**Compose.** Choose parallel, sequential or evidence-first recipes. Inspect the JSON graph, change bounded concurrency/retry settings, and see invalid dependencies or capabilities rejected before execution.
-
-**Inspect.** Source identity, coverage, observation time and digests travel with each result. Compatibility risk and evidence readiness are separate: unknown usage is not zero, partial lineage is not complete, and a numeric type family does not prove a narrowing conversion safe.
-
-**Interrupt and recover.** Pause before policy, reload, and resume. Cancel a run. Induce a source outage, restore the synthetic source, and resume the same identity. The runtime reuses only complete, digest-checked, still-fresh outputs under an unchanged binding.
-
-**Compare and export.** Execute an additive alternative or a stricter policy and compare real results. Exports carry exact requests, recipe, policy, evidence, event chain and draft artifacts. A changed request invalidates old results and review notes.
-
-**Evaluate.** Rerun named synthetic scenarios against the same interpreter, with expected and observed outcomes visible. The evaluation page does not replay a prerecorded pass table.
-
-**Review a dbt project.** Pick **dbt manifest: column rename** to review a rename against a real dbt manifest. The lineage view shows the downstream models and exposures with their owners, and the gaps a manifest always has keep the decision at `needs-evidence`. Edit the request to name any other model, seed or source in that manifest.
-
-## Two runtimes, explicitly separated
-
-| Surface | What runs | Where checkpoints live | What it does not claim |
-| --- | --- | --- | --- |
-| Public Studio | The shared browser DAG interpreter with same-origin synthetic tool calls | Current browser storage, unless exported | No durable cloud queue, live tenant, model inference or authenticated approval |
-| Local Studio | The shared interpreter behind a loopback Node API | SQLite, with revision compare-and-swap and expiring writer leases | Not a distributed scheduler or multi-user authorization service |
-| Optional DataHub capture | Two explicitly requested read-only MCP calls, followed by analysis against an immutable capture | A private, user-selected JSON export | No live-tenant validation in this release; no guessed graph edges or weekly usage |
-| Optional dbt manifest | Offline analysis of a local `manifest.json` and optional `catalog.json`, captured once into the same immutable evidence | A user-selected JSON export | No query usage, nullability, column lineage or consumers outside the project; those stay evidence gaps |
-
-There is **no SQL-execution or catalog-mutation capability** in the registry. A local acknowledgement is an unverified review note, not an organizational approval.
-
-## Delivery
-
-The [2.0 delivery guide](docs/RELEASE_2_0.md) gives exact local-stack commands, the five-minute demonstration, and the explicit deployed acceptance check.
-
-## Run locally
-
-Use **Node 24** (Node 22.13+ is also tested) and Python 3 for the preserved skill tests. The application has **zero runtime npm dependencies**. The two development dependencies are pinned browser-testing and formatting tools.
-
-`npm run studio:local` serves `http://127.0.0.1:4183` and stores SQLite checkpoints in the ignored `.lineageguard/` directory. Use an explicit private path for retained work:
-
-```sh
-npm run studio:local -- --port=4183 --store=/absolute/private/lineageguard-runs
-```
-
-`npm start` preserves the lightweight public-preview server at `http://127.0.0.1:4173`. The original interface remains at `/classic.html`; its historical scorer is not the Studio v2 evidence policy. The classic APIs and portable Codex skill remain available for compatibility.
-
-### Command-line review
-
-```sh
-npm run studio:review -- --scenario=safe-add --output=./.lineageguard/review.json
-```
-
-Existing output files are never overwritten. An optional live capture requires **both** an explicit flag and a validated request file, plus locally configured `DATAHUB_MCP_URL` and `DATAHUB_MCP_TOKEN`:
-
-```sh
-npm run studio:review -- --live-datahub --request=./private-request.json --output=./.lineageguard/private-review.json
-```
-
-The hosted demo, tests and evaluations never use this mode. Keep tenant exports private. A capture is a one-shot review input, not a background sync: unsupported schema fields, unverified column paths and missing weekly usage stay marked as incomplete evidence. The [DataHub integration profile](docs/ARCHITECTURE.md#datahub-integration-profile) lists the supported MCP protocol version.
-
-### Review against a dbt manifest
-
-Most data teams keep lineage in dbt. A dbt [`manifest.json`](https://docs.getdbt.com/reference/artifacts/manifest-json) lists every model, seed, snapshot, source, exposure and test, with `depends_on` edges, groups and owners. LineageGuard reads it offline, plus [`catalog.json`](https://docs.getdbt.com/reference/artifacts/catalog-json) from `dbt docs generate` for observed column types, and maps them into the same evidence the Studio analyses:
+Many data teams declare their lineage in dbt. LineageGuard reads a dbt [`manifest.json`](https://docs.getdbt.com/reference/artifacts/manifest-json) offline, plus [`catalog.json`](https://docs.getdbt.com/reference/artifacts/catalog-json) for observed column types if you have one, and maps them into the same evidence:
 
 ```sh
 npm run studio:review -- \
@@ -142,93 +69,59 @@ npm run studio:review -- \
   --output=./.lineageguard/dbt-review.json
 ```
 
-The bundled files are a trimmed manifest from [saas-analytics-warehouse](https://github.com/ult666666/saas-analytics-warehouse), a synthetic dbt project by the same author ([provenance](examples/dbt/README.md)). Renaming `fct_mrr.mrr_usd` returns `needs-evidence` with the rename reason, and lists five downstream models and two exposures with their owners, plus the 12 dbt tests that read the model. The Studio runs the same file as the **dbt manifest: column rename** scenario in both runtimes.
+The bundled files come from [saas-analytics-warehouse](https://github.com/ult666666/saas-analytics-warehouse), a synthetic dbt project. Renaming `fct_mrr.mrr_usd` lists the five models and two exposures downstream, with their owners. It also lists the 12 dbt tests that read the model. The decision stays at `needs-evidence`: a manifest records what a project declares, not query usage, nullability or consumers outside the project, so it can block a change or ask for more evidence but never clear one.
 
-A manifest records what a project declares, not what the warehouse observes. The adapter marks that honestly, and the policy treats each gap as a gap:
+The Studio runs the same files as the **dbt manifest: column rename** scenario. The [dbt example](examples/dbt/README.md) shows the full output and how to point the command at your own project, and the [integration profile](docs/ARCHITECTURE.md#dbt-manifest-integration-profile) gives the mapping.
 
-- lineage is model-level and lists only consumers declared in the project, so it is always partial;
-- a manifest has no column-level lineage, so column paths are unknown;
-- dbt artifacts do not record nullability, so the schema is at best partial and every column counts as nullable (a `not_null` data test is a check, not a constraint);
-- there is no query history, so usage is unknown;
-- `generated_at` is the observation time, so an old manifest is stale evidence.
-
-A review from manifest evidence can therefore block a change or ask for evidence, but never clear one. Only manifest schema v12 (dbt Core 1.8 and later; the fixture comes from 1.12.6) is read; other versions are refused by name. A manifest whose `parent_map`, `child_map` and `depends_on` lists disagree, or whose graph has a cycle, is refused. Use `--list-dbt-targets` to print the dataset URN of every model, seed, snapshot and source. The [dbt integration profile](docs/ARCHITECTURE.md#dbt-manifest-integration-profile) gives the full mapping.
-
-## Inspect a review after export
-
-**Review package → Review Inspector** checks saved JSON without uploading it or importing a runnable checkpoint. It verifies hashes and evidence contracts, reproduces deterministic conclusions and draft artifacts, and separates the recorded decision from the embedded evidence's freshness at inspection time. The same guard protects JSON, Markdown and SQL-draft exports. A passing inspection means the package is internally consistent, not that it is authentic or approved.
-
-**Compare two saved exports offline:** open **Compare → Compare saved reviews**, select the left and right JSON files and choose **Compare saved exports**. Both packages must pass the Inspector before any result appears, and the report can be downloaded or cleared without changing the current review. The command-line version applies the same check:
+## Command line
 
 ```sh
-node scripts/studio-compare.mjs --left=/path/left.json --right=/path/right.json
+npm run studio:review -- --scenario=safe-add --output=./.lineageguard/review.json
+npm run studio:verify -- --file=./.lineageguard/review.json
+node scripts/studio-compare.mjs --left=./.lineageguard/a.json --right=./.lineageguard/b.json
 ```
 
-It shows recorded policy and evidence differences without importing, calling tools, writing to a store or executing anything. Follow the [synthetic standard/strict walkthrough and command contract](docs/REVIEW_COMPARISON.md).
+The first command runs a review without the UI, the second checks a saved review offline, and the third compares two saved reviews. Output files are never overwritten. [Command line](docs/COMMAND_LINE.md) covers every option, including the live DataHub capture and the local launcher.
 
-```sh
-npm run studio:verify -- --file=/absolute/path/to/export.json
-```
+## How it is tested
 
-![Review Inspector checking an exported synthetic review offline, with separate recorded/current outcomes and explicit unauthenticated status](assets/review-inspector.png)
+<!-- policy-benchmark:headline:start -->
+On 105 labelled cases, no decision is more permissive than its label.
+<!-- policy-benchmark:headline:end -->
 
-The [Inspector guide](docs/REVIEW_INSPECTOR.md) explains offline operation, file bounds, replay semantics and adversarial tests. The Inspector was added on `main` after the `v2.0.0` tag.
-
-## Open, check or restart local Studio
-
-The [local-launch guide](docs/LOCAL_LAUNCH.md) explains what happens on a repeat start. These commands were added on `main` after the `v2.0.0` tag; the checkpoint format did not change.
-
-```sh
-npm run studio:local   # Start if free; otherwise identify the compatible running service.
-npm run studio:status # Read-only status, without opening the database or starting a server.
-npm run studio:open   # Open the already-running service in your browser.
-```
-
-Leave the original server terminal open. Ctrl+C in that terminal stops it. The launcher does not kill another listener, silently change ports or substitute an explicitly requested storage directory. Status checks do not authenticate process ownership or prove a storage path.
-
-## Engineering map
-
-| Concern | Implementation | Concrete verification |
-| --- | --- | --- |
-| Typed composition | [`recipe.js`](public/studio/core/recipe.js) | Cycles, duplicate steps, required dependencies, unknown capabilities and budgets |
-| Bounded orchestration | [`runtime.js`](public/studio/core/runtime.js) | Concurrency, retry accounting, deadlines, late results, cancellation and persistence failure |
-| Evidence / compatibility | [`evidence.js`](public/studio/core/evidence.js), [`policy.js`](public/studio/core/policy.js) | Exact targets, missing/partial/stale evidence, narrowing and schema mismatch |
-| Saved review comparison | [`review-comparison.js`](public/studio/core/review-comparison.js) | Shared browser/CLI validation of both exports, explicit alternatives and recorded/current decisions, stale-read and no-upload browser checks |
-| Offline review inspection | [`inspection.js`](public/studio/core/inspection.js) | Rehashed projection drift, policy/artifact replay, stale evidence, local-only file handling and no-upload browser checks |
-| Durable local state | [`store.mjs`](src/studio/store.mjs), [`service.mjs`](src/studio/service.mjs) | Real SQLite reopen, stale-writer fencing, simultaneous starts and interrupted-process recovery |
-| MCP boundary | [`datahub-mcp-client.mjs`](src/datahub-mcp-client.mjs) | Response IDs, protocol/tool errors, deadlines, byte limits and read-only capabilities |
-| Browser checkpoints | [`storage.js`](public/studio/storage.js) | Corruption preservation, quota failure, cross-tab conflicts and bounded history |
-| Reproducible evaluation | [`evaluations.js`](public/studio/core/evaluations.js) | Named actual outcomes, recovery identity and corrupted-history refusal |
-| Property and hostile-input tests | [`properties.test.mjs`](test/studio/properties.test.mjs), [`hostile-metadata.test.mjs`](test/studio/hostile-metadata.test.mjs) | Seeded generators for type, request, JSON and event-stream parsing, the compiler, policy invariants and SQL/Markdown output; hostile catalog text |
-| Labelled policy benchmark | [`policy-benchmark.mjs`](src/studio/policy-benchmark.mjs), [`policy-cases.json`](evals/policy-cases.json) | Labelled decisions, reasons and gaps; per-outcome precision and recall; CI fails on any decision more permissive than its label |
-| dbt manifest evidence | [`dbt-manifest.js`](public/studio/core/dbt-manifest.js), [`trim-dbt-manifest.mjs`](scripts/trim-dbt-manifest.mjs) | Version refusal, map consistency, cycles, hostile and oversized files, owner precedence, a differential lineage property and a lossless-trim comparison |
-| Public release boundary | [`build-studio.mjs`](scripts/build-studio.mjs) | Exact static inventory, hashes, linked files, unexpected files and overwrite refusal |
-
-## Verification commands
+CI runs on every push and pull request. The Node suite runs on Node 22 and 24 and includes seeded property tests and a test that kills a local run mid-review and resumes it. CI also checks the labelled policy benchmark against its pinned report and runs Chromium journeys through both runtimes with external requests blocked. The checks have caught bugs, such as policy decisions more permissive than their labels and a summary that could forge a decision line in the review brief.
 
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
-npm test
-npm run studio:evaluate
-npm run studio:benchmark -- --check
+npm test                              # Node suite; the skill tests also need Python 3
+npm run studio:evaluate               # named runtime scenarios
+npm run studio:benchmark -- --check   # labelled benchmark against its pinned report
 npx playwright install chromium
-npm run test:browser
-npm run build
-node scripts/build-studio.mjs --verify dist
+npm run test:browser                  # Chromium journeys in both runtimes
+npm run build                         # static release in dist/; refuses to overwrite it
 ```
 
-The build refuses an existing `dist/`; use a fresh checkout or remove only your own previous generated output after checking it. Browser tests exercise both runtime modes with synthetic data and block external requests. SQLite crash tests interrupt only a test-created child process in a temporary directory. See [Verification](docs/VERIFICATION.md) for what CI runs and what the checks cover.
+[Verification](docs/VERIFICATION.md) lists each claim with the check behind it, and the bugs the checks caught. [Evaluation](docs/EVALUATION.md) has the benchmark's labelling rules and full results.
 
-## Design tradeoffs and limits
+## Limits
 
-The runtime is intentionally domain-specific. Workflow JSON cannot execute arbitrary JavaScript, shell commands or SQL. This makes cancellation, reuse and policy review tractable. Hashes and a hash-linked event chain detect accidental changes; they are not signatures or defenses against a malicious same-origin/local owner. Browser persistence is not cloud durability. SQLite is a single-host store and the native Node binding's stability depends on the supported Node release.
+- Studio reviews and drafts, and never runs SQL or writes to a catalog; the SQL draft is not a tested migration or rollback plan.
+- The demo and tests use synthetic metadata, and the DataHub capture is tested with injected tool results, not a live tenant.
+- The dbt adapter reads manifest schema v12 only, and its lineage is model-level, not column-level.
+- Hashes detect accidental changes but are not signatures, and an acknowledgement is a local note, not an approval.
+- Durable state is one SQLite database on one host; browser checkpoints live only in that browser's storage.
 
-Snowflake-style SQL is a **review draft**, with unsupported/destructive operations withheld or commented. It is not an atomic migration or a tested production rollback plan. A favorable review still requires owning teams to validate actual consumers and platform behavior.
+## Docs
 
-The dbt adapter has its own limits. It reads manifest schema v12 only. It does not parse model SQL, so it cannot say which downstream model reads a given column, and a `select *` would defeat a text search anyway. Column types need `catalog.json` or `data_type` declarations, and types outside the Studio's scalar vocabulary (for example DuckDB `HUGEINT` or Snowflake `TIMESTAMP_NTZ`) are left out. Relation names must be simple unquoted identifiers, so a BigQuery project ID with a hyphen is refused. The Studio reviews only the bundled manifest; your own manifest goes through the CLI. Files are read whole, up to 128 MB.
-
-The owner set the domain, budget, scope and approval boundaries, and AI tools sped up implementation and adversarial test design. This is an independent engineering project, not a customer deployment or a security certification.
+- [Architecture](docs/ARCHITECTURE.md): run semantics, recovery, runtimes, the DataHub and dbt profiles, trade-offs and a code map.
+- [Verification](docs/VERIFICATION.md) and [Evaluation](docs/EVALUATION.md): what CI checks, and how the policy is measured.
+- [Command line](docs/COMMAND_LINE.md), [local launcher](docs/LOCAL_LAUNCH.md), [Review Inspector](docs/REVIEW_INSPECTOR.md) and [saved-review comparison](docs/REVIEW_COMPARISON.md).
+- [Threat model](docs/THREAT_MODEL.md), [demo walkthrough](docs/DEMO_WALKTHROUGH.md) and [delivery guide](docs/RELEASE_2_0.md).
 
 ## Project history
 
-The original DataHub-context MVP and the portable Codex skill are retained. [Classic project history](docs/CLASSIC_HISTORY.md) covers the hackathon and demo provenance, and the original submission notes and demo scripts are in [`docs/history/`](docs/history/). Source code, recordings and the Apache-2.0 license are preserved. Studio 2.0 is a later engineering expansion, not a retroactive claim about the original submission.
+LineageGuard began as a DataHub-context agent for a hackathon, which is where the repository name comes from. The original MVP, its interface at `/classic.html` and the portable Codex skill in [`skills/`](skills/lineageguard-schema-review) are kept, and [Classic project history](docs/CLASSIC_HISTORY.md) covers them. Studio 2.0 is later work, not part of the original submission.
+
+Built by Charles Dai with AI coding assistants, which sped up the implementation and the adversarial tests. I chose the problem and set its scope and approval boundaries.
+
+Licensed under [Apache-2.0](LICENSE).
