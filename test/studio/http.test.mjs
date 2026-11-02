@@ -99,3 +99,44 @@ test('public fixture API cannot choose network destinations or mutation tools', 
   assert.equal(result.evidence.kind, 'schema');
   assert.equal(result.evidence.source.mode, 'synthetic-fixture');
 });
+test('the dbt scenario runs in the local service and resumes, but the tool API never serves it', async (t) => {
+  const app = await setup(t);
+  const post = await fetch(app.base + '/api/runs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ scenarioId: 'dbt-manifest', pauseBeforePolicy: true }),
+  });
+  assert.equal(post.status, 202);
+  const initial = (await post.json()).run;
+  assert.equal(initial.sourceMode, 'dbt-manifest');
+  await app.service.wait(initial.id);
+  await fetch(app.base + '/api/runs/' + initial.id + '/resume', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  await app.service.wait(initial.id);
+  const saved = (await (await fetch(app.base + '/api/runs/' + initial.id)).json()).run;
+  assert.equal(saved.status, 'completed');
+  assert.equal(saved.result.policy.decision, 'needs-evidence');
+  assert.equal(saved.generation, 2);
+  const read = await fetch(app.base + '/api/studio', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      action: 'read',
+      scenarioId: 'dbt-manifest',
+      kind: 'lineage',
+      request: scenario('dbt-manifest').request,
+      requestId: 'r1',
+      attempt: 1,
+      restored: false,
+    }),
+  });
+  assert.equal(read.status, 403);
+  const listed = await (await fetch(app.base + '/api/studio')).json();
+  assert.ok(listed.scenarios.some((s) => s.id === 'dbt-manifest'));
+  const fixture = await fetch(app.base + '/studio/dbt/saas-analytics-warehouse/manifest.json');
+  assert.equal(fixture.status, 200);
+  assert.match(fixture.headers.get('content-type'), /json/);
+});

@@ -4,3 +4,5 @@ test-results
 assets
 .lineageguard
 docs/CLASSIC_HISTORY.md
+# Generated dbt fixture: one resource per line, written by scripts/trim-dbt-manifest.mjs
+public/studio/dbt

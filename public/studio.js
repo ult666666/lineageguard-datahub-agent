@@ -19,7 +19,7 @@ import {
 } from './studio/core/runtime.js';
 import { compareRuns } from './studio/core/comparison.js';
 import { BrowserCheckpoints } from './studio/storage.js';
-import { api, httpFixtureAdapter } from './studio/transport.js';
+import { api, scenarioAdapter } from './studio/transport.js';
 import {
   el,
   message,
@@ -221,7 +221,10 @@ async function execute({
     controls();
     return pollRun(result.run.id, { display, minimumGeneration: result.run.generation + 1 });
   }
-  const adapter = httpFixtureAdapter(id, { restored });
+  const adapter = await scenarioAdapter(id, {
+    restored,
+    target: (resume ? current.request : input).datasetUrn,
+  });
   const run = resume ? current : await createRun(input, graph, adapter);
   controller = new AbortController();
   if (display) await acceptRun(run);

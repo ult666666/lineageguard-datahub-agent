@@ -1,15 +1,27 @@
 import { randomUUID } from 'node:crypto';
-import { snapshot, exact, requireThat, publicError } from '../../public/studio/core/contract.js';
+import {
+  snapshot,
+  exact,
+  requireThat,
+  publicError,
+  validateRequest,
+} from '../../public/studio/core/contract.js';
 import { createRun, executeRun, acknowledgeRun } from '../../public/studio/core/runtime.js';
 import { scenario, createFixtureAdapter } from '../../public/studio/core/fixtures.js';
 import { makeRecipe } from '../../public/studio/core/recipe.js';
+import { dbtFixtureAdapter } from './dbt-fixture.mjs';
 export class RunService {
   constructor(
     store,
-    { adapterFactory = (id, options) => createFixtureAdapter(id, options), maxActive = 3 } = {},
+    {
+      adapterFactory = (id, options) => createFixtureAdapter(id, options),
+      dbtAdapterFactory = dbtFixtureAdapter,
+      maxActive = 3,
+    } = {},
   ) {
     this.store = store;
     this.adapterFactory = adapterFactory;
+    this.dbtAdapterFactory = dbtAdapterFactory;
     requireThat(
       Number.isInteger(maxActive) && maxActive >= 1 && maxActive <= 10,
       'INVALID_CAPACITY',
@@ -18,6 +30,12 @@ export class RunService {
     this.reservations = 0;
     this.active = new Map();
     this.errors = new Map();
+  }
+  /** dbt scenarios read the bundled manifest for the requested target. */
+  async adapterFor(id, request, options) {
+    return scenario(id).evidence === 'dbt-manifest'
+      ? this.dbtAdapterFactory(request.datasetUrn)
+      : this.adapterFactory(id, options);
   }
   async start(raw) {
     const input = snapshot(raw, { maxBytes: 60000 });
@@ -33,12 +51,9 @@ export class RunService {
     );
     this.reservations++;
     try {
-      const adapter = this.adapterFactory(input.scenarioId, {});
-      const run = await createRun(
-        input.request || spec.request,
-        input.recipe || makeRecipe('standard'),
-        adapter,
-      );
+      const request = validateRequest(input.request || spec.request);
+      const adapter = await this.adapterFor(input.scenarioId, request, {});
+      const run = await createRun(request, input.recipe || makeRecipe('standard'), adapter);
       await this.store.create(run);
       await this.launch(
         run,
@@ -97,7 +112,7 @@ export class RunService {
       );
     const { run } = await this.store.read(id);
     requireThat(run.status !== 'completed', 'RUN_COMPLETE', 'Completed reviews cannot be resumed');
-    const adapter = this.adapterFactory(run.context.scenarioId, {
+    const adapter = await this.adapterFor(run.context.scenarioId, run.request, {
       restored: options.restored === true,
     });
     await this.launch(run, adapter, { pauseBeforePolicy: options.pauseBeforePolicy === true });

@@ -1,0 +1,47 @@
+# LineageGuard fixture overlay. Not part of saas-analytics-warehouse.
+#
+# The source project declares no exposures, groups or owners. This file adds them so the
+# generated manifest exercises those fields. The two exposures describe consumers that do
+# exist in the source repository: src/saasreport/data.py and src/saasreport/churn.py query
+# exactly the marts listed under depends_on. The team names are synthetic, like the
+# fictional company Tallyloom that the project describes.
+version: 2
+
+groups:
+  - name: revenue
+    owner:
+      name: Revenue Analytics (synthetic)
+  - name: finance_reporting
+    owner:
+      name: Finance Reporting (synthetic)
+
+exposures:
+  - name: saas_metrics_report
+    label: SaaS metrics report
+    type: analysis
+    maturity: high
+    description: >
+      reports/report.md and its five charts, written by the saasreport package from the
+      marts below.
+    owner:
+      name: Finance Reporting (synthetic)
+    depends_on:
+      - ref('rpt_mrr_bridge')
+      - ref('rpt_cohort_retention')
+      - ref('rpt_unit_economics')
+      - ref('rpt_funnel')
+      - ref('fct_mrr')
+      - ref('dim_plans')
+
+  - name: churn_investigation
+    label: Customer-level churn investigation
+    type: analysis
+    maturity: medium
+    description: >
+      The reconciled churn investigation written by python -m saasreport.churn.
+    owner:
+      name: Revenue Analytics (synthetic)
+    depends_on:
+      - ref('rpt_mrr_bridge')
+      - ref('fct_mrr_movements')
+      - ref('dim_customers')

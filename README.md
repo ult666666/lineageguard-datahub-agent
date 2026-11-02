@@ -6,7 +6,7 @@
 
 [**Open the demo**](https://lineageguard-datahub-agent.vercel.app/) · [Architecture](docs/ARCHITECTURE.md) · [Evaluation](docs/EVALUATION.md) · [Verification](docs/VERIFICATION.md) · [Threat model](docs/THREAT_MODEL.md) · [Demo walkthrough](docs/DEMO_WALKTHROUGH.md)
 
-Renaming `orders.order_total` looks harmless in one file. A revenue table, the dashboard built on it and the monthly-close job may all read that column. LineageGuard Studio reviews a proposed change before it ships. It gathers read-only evidence about what depends on the data, applies deterministic compatibility and evidence rules, and returns a decision with the evidence behind it and a draft migration for a person to review. Charles Dai built it with AI-assisted implementation.
+Renaming `orders.order_total` looks harmless in one file. A revenue table, the dashboard built on it and the monthly-close job may all read that column. LineageGuard Studio reviews a proposed change before it ships. It gathers read-only evidence about what depends on the data (from synthetic fixtures, a DataHub capture or a dbt `manifest.json`), applies deterministic compatibility and evidence rules, and returns a decision with the evidence behind it and a draft migration for a person to review. Charles Dai built it with AI-assisted implementation.
 
 ![LineageGuard Studio running a rename review, failing on a lineage outage, resuming the same run after the source is restored, and rerunning its evaluations](assets/studio-demo.gif)
 
@@ -36,7 +36,7 @@ CI runs every check below on each pull request and each push to `main` ([workflo
 
 **Labelled policy benchmark** ([rules, labels and results](docs/EVALUATION.md)):
 <!-- policy-benchmark:headline:start -->
-89 labelled cases: 85 decisions match the label (95.5%), 0 are more permissive than the label and 4 are stricter.
+105 labelled cases: 101 decisions match the label (96.2%), 0 are more permissive than the label and 4 are stricter.
 <!-- policy-benchmark:headline:end -->
 
 | Claim | Checked by |
@@ -45,6 +45,8 @@ CI runs every check below on each pull request and each push to `main` ([workflo
 | Batch order, letter case and catalog free text never change a decision | [`properties.test.mjs`](test/studio/properties.test.mjs) (seeded property tests) |
 | Hostile catalog text and summaries cannot change a review or break the brief and SQL draft | [`hostile-metadata.test.mjs`](test/studio/hostile-metadata.test.mjs) |
 | A local run killed mid-review resumes with the same identity and no false success | [`process-recovery.test.mjs`](test/studio/process-recovery.test.mjs) |
+| What a dbt manifest cannot show (usage, nullability, outside consumers, column paths) never clears a change | 16 benchmark cases on a real manifest, and [`dbt-properties.test.mjs`](test/studio/dbt-properties.test.mjs) |
+| dbt lineage equals an independent walk of `depends_on`, and a tampered `child_map` is refused | [`dbt-properties.test.mjs`](test/studio/dbt-properties.test.mjs), [`dbt-manifest.test.mjs`](test/studio/dbt-manifest.test.mjs) |
 | Both runtimes work in Chromium, including by keyboard, with external requests blocked | `npm run test:browser` |
 | The public build contains exactly the listed files, byte for byte | `node scripts/build-studio.mjs --verify dist` |
 
@@ -71,7 +73,7 @@ flowchart LR
 
 The graph is the program that runs, not a trace drawn afterwards. Evidence reads run in parallel under a call budget, bounded retries and deadlines. Each result is checked against its contract, hashed and checkpointed before dependent steps start. Compatibility and evidence readiness are judged separately: unknown usage is not zero, and partial lineage is not complete. No language model runs in the demo, the tests or the evaluations, and Studio never executes SQL or changes a catalog. [Architecture](docs/ARCHITECTURE.md) covers the state machine, recovery and both runtimes.
 
-Optional parts: a read-only capture from your own DataHub instance, which needs an explicit flag and your own credentials, and the portable Codex skill in [`skills/`](skills/lineageguard-schema-review), which lets an AI coding agent run a schema review with a deterministic Python scorer. The repository name comes from the original DataHub-context agent; see [Project history](#project-history).
+Optional parts: an offline review against your dbt project's `manifest.json` ([below](#review-against-a-dbt-manifest)), a read-only capture from your own DataHub instance, which needs an explicit flag and your own credentials, and the portable Codex skill in [`skills/`](skills/lineageguard-schema-review), which lets an AI coding agent run a schema review with a deterministic Python scorer. The repository name comes from the original DataHub-context agent; see [Project history](#project-history).
 
 ## What you can try
 
@@ -85,6 +87,8 @@ Optional parts: a read-only capture from your own DataHub instance, which needs 
 
 **Evaluate.** Rerun named synthetic scenarios against the same interpreter, with expected and observed outcomes visible. The evaluation page does not replay a prerecorded pass table.
 
+**Review a dbt project.** Pick **dbt manifest: column rename** to review a rename against a real dbt manifest. The lineage view shows the downstream models and exposures with their owners, and the gaps a manifest always has keep the decision at `needs-evidence`. Edit the request to name any other model, seed or source in that manifest.
+
 ## Two runtimes, explicitly separated
 
 | Surface | What runs | Where checkpoints live | What it does not claim |
@@ -92,6 +96,7 @@ Optional parts: a read-only capture from your own DataHub instance, which needs 
 | Public Studio | The shared browser DAG interpreter with same-origin synthetic tool calls | Current browser storage, unless exported | No durable cloud queue, live tenant, model inference or authenticated approval |
 | Local Studio | The shared interpreter behind a loopback Node API | SQLite, with revision compare-and-swap and expiring writer leases | Not a distributed scheduler or multi-user authorization service |
 | Optional DataHub capture | Two explicitly requested read-only MCP calls, followed by analysis against an immutable capture | A private, user-selected JSON export | No live-tenant validation in this release; no guessed graph edges or weekly usage |
+| Optional dbt manifest | Offline analysis of a local `manifest.json` and optional `catalog.json`, captured once into the same immutable evidence | A user-selected JSON export | No query usage, nullability, column lineage or consumers outside the project; those stay evidence gaps |
 
 There is **no SQL-execution or catalog-mutation capability** in the registry. A local acknowledgement is an unverified review note, not an organizational approval.
 
@@ -124,6 +129,30 @@ npm run studio:review -- --live-datahub --request=./private-request.json --outpu
 ```
 
 The hosted demo, tests and evaluations never use this mode. Keep tenant exports private. A capture is a one-shot review input, not a background sync: unsupported schema fields, unverified column paths and missing weekly usage stay marked as incomplete evidence. The [DataHub integration profile](docs/ARCHITECTURE.md#datahub-integration-profile) lists the supported MCP protocol version.
+
+### Review against a dbt manifest
+
+Most data teams keep lineage in dbt. A dbt [`manifest.json`](https://docs.getdbt.com/reference/artifacts/manifest-json) lists every model, seed, snapshot, source, exposure and test, with `depends_on` edges, groups and owners. LineageGuard reads it offline, plus [`catalog.json`](https://docs.getdbt.com/reference/artifacts/catalog-json) from `dbt docs generate` for observed column types, and maps them into the same evidence the Studio analyses:
+
+```sh
+npm run studio:review -- \
+  --dbt-manifest=public/studio/dbt/saas-analytics-warehouse/manifest.json \
+  --dbt-catalog=public/studio/dbt/saas-analytics-warehouse/catalog.json \
+  --request=examples/dbt/rename-mrr-usd.json \
+  --output=./.lineageguard/dbt-review.json
+```
+
+The bundled files are a trimmed manifest from [saas-analytics-warehouse](https://github.com/ult666666/saas-analytics-warehouse), a synthetic dbt project by the same author ([provenance](examples/dbt/README.md)). Renaming `fct_mrr.mrr_usd` returns `needs-evidence` with the rename reason, and lists five downstream models and two exposures with their owners, plus the 12 dbt tests that read the model. The Studio runs the same file as the **dbt manifest: column rename** scenario in both runtimes.
+
+A manifest records what a project declares, not what the warehouse observes. The adapter marks that honestly, and the policy treats each gap as a gap:
+
+- lineage is model-level and lists only consumers declared in the project, so it is always partial;
+- a manifest has no column-level lineage, so column paths are unknown;
+- dbt artifacts do not record nullability, so the schema is at best partial and every column counts as nullable (a `not_null` data test is a check, not a constraint);
+- there is no query history, so usage is unknown;
+- `generated_at` is the observation time, so an old manifest is stale evidence.
+
+A review from manifest evidence can therefore block a change or ask for evidence, but never clear one. Only manifest schema v12 (dbt Core 1.8 and later; the fixture comes from 1.12.6) is read; other versions are refused by name. A manifest whose `parent_map`, `child_map` and `depends_on` lists disagree, or whose graph has a cycle, is refused. Use `--list-dbt-targets` to print the dataset URN of every model, seed, snapshot and source. The [dbt integration profile](docs/ARCHITECTURE.md#dbt-manifest-integration-profile) gives the full mapping.
 
 ## Inspect a review after export
 
@@ -172,6 +201,7 @@ Leave the original server terminal open. Ctrl+C in that terminal stops it. The l
 | Reproducible evaluation | [`evaluations.js`](public/studio/core/evaluations.js) | Named actual outcomes, recovery identity and corrupted-history refusal |
 | Property and hostile-input tests | [`properties.test.mjs`](test/studio/properties.test.mjs), [`hostile-metadata.test.mjs`](test/studio/hostile-metadata.test.mjs) | Seeded generators for type, request, JSON and event-stream parsing, the compiler, policy invariants and SQL/Markdown output; hostile catalog text |
 | Labelled policy benchmark | [`policy-benchmark.mjs`](src/studio/policy-benchmark.mjs), [`policy-cases.json`](evals/policy-cases.json) | Labelled decisions, reasons and gaps; per-outcome precision and recall; CI fails on any decision more permissive than its label |
+| dbt manifest evidence | [`dbt-manifest.js`](public/studio/core/dbt-manifest.js), [`trim-dbt-manifest.mjs`](scripts/trim-dbt-manifest.mjs) | Version refusal, map consistency, cycles, hostile and oversized files, owner precedence, a differential lineage property and a lossless-trim comparison |
 | Public release boundary | [`build-studio.mjs`](scripts/build-studio.mjs) | Exact static inventory, hashes, linked files, unexpected files and overwrite refusal |
 
 ## Verification commands
@@ -194,6 +224,8 @@ The build refuses an existing `dist/`; use a fresh checkout or remove only your 
 The runtime is intentionally domain-specific. Workflow JSON cannot execute arbitrary JavaScript, shell commands or SQL. This makes cancellation, reuse and policy review tractable. Hashes and a hash-linked event chain detect accidental changes; they are not signatures or defenses against a malicious same-origin/local owner. Browser persistence is not cloud durability. SQLite is a single-host store and the native Node binding's stability depends on the supported Node release.
 
 Snowflake-style SQL is a **review draft**, with unsupported/destructive operations withheld or commented. It is not an atomic migration or a tested production rollback plan. A favorable review still requires owning teams to validate actual consumers and platform behavior.
+
+The dbt adapter has its own limits. It reads manifest schema v12 only. It does not parse model SQL, so it cannot say which downstream model reads a given column, and a `select *` would defeat a text search anyway. Column types need `catalog.json` or `data_type` declarations, and types outside the Studio's scalar vocabulary (for example DuckDB `HUGEINT` or Snowflake `TIMESTAMP_NTZ`) are left out. Relation names must be simple unquoted identifiers, so a BigQuery project ID with a hyphen is refused. The Studio reviews only the bundled manifest; your own manifest goes through the CLI. Files are read whole, up to 128 MB.
 
 The owner set the domain, budget, scope and approval boundaries, and AI tools sped up implementation and adversarial test design. This is an independent engineering project, not a customer deployment or a security certification.
 

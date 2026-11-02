@@ -1,5 +1,11 @@
 import { StudioError, requireThat, snapshot } from './core/contract.js';
-import { createFixtureAdapter } from './core/fixtures.js';
+import {
+  DBT_FIXTURE,
+  createDbtScenarioAdapter,
+  createFixtureAdapter,
+  scenario,
+} from './core/fixtures.js';
+import { readDbtJson } from './core/dbt-manifest.js';
 export async function api(route, body, signal) {
   requireThat(
     typeof route === 'string' &&
@@ -37,6 +43,34 @@ export async function api(route, body, signal) {
         : `Local request failed (${response.status})`,
     );
   return snapshot(value, { maxBytes: 2_500_000, maxNodes: 120000, maxDepth: 30 });
+}
+// The bundled dbt files are static, same-origin and read once per page load.
+let dbtFiles = null;
+async function staticJson(file, label) {
+  const response = await fetch(file, {
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(25000),
+    redirect: 'error',
+  });
+  if (!response.ok)
+    throw new StudioError('FIXTURE_UNAVAILABLE', 'The bundled dbt manifest could not be loaded');
+  return readDbtJson(new Uint8Array(await response.arrayBuffer()), { label, maxBytes: 4_000_000 });
+}
+/** The read-only adapter for a scenario. dbt evidence never goes through the tool API. */
+export async function scenarioAdapter(id, { restored = false, target } = {}) {
+  if (scenario(id).evidence !== 'dbt-manifest') return httpFixtureAdapter(id, { restored });
+  dbtFiles ??= Promise.all([
+    staticJson(DBT_FIXTURE.manifest, 'bundled dbt manifest'),
+    staticJson(DBT_FIXTURE.catalog, 'bundled dbt catalog'),
+  ]);
+  try {
+    const [manifest, catalog] = await dbtFiles;
+    return await createDbtScenarioAdapter(manifest, catalog, target);
+  } catch (error) {
+    if (error.code === 'FIXTURE_UNAVAILABLE' || error.name === 'TimeoutError') dbtFiles = null;
+    throw error;
+  }
 }
 export function httpFixtureAdapter(id, { restored = false } = {}) {
   const source = createFixtureAdapter(id);

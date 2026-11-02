@@ -146,6 +146,48 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         );
         results.push(`${mode}: numeric narrowing`);
         results.push(`${mode}: keyboard run keeps focus and announces the decision`);
+        // A real dbt manifest: consumers, exposures and owners appear, and the gaps a
+        // manifest always has keep the review at needs-evidence.
+        await select('dbt-manifest');
+        await page.locator('#run-button').click();
+        await done('completed');
+        assert.match(
+          await page.locator('#decision-title').innerText(),
+          /evidence is required|refresh evidence/i,
+        );
+        const reasons = await page.locator('#policy-reasons').innerText();
+        assert.match(reasons, /mrr_usd → mrr_amount_usd/);
+        assert.match(reasons, /usage coverage is unknown/);
+        assert.match(reasons, /lineage coverage is partial/);
+        await page.locator('[data-view="evidence"]').first().click();
+        assert.equal(await page.locator('#lineage-graph [data-asset]').count(), 8);
+        const graph = await page.locator('#lineage-graph').textContent();
+        assert.match(graph, /SaaS metrics report/);
+        assert.match(graph, /Finance Reporting \(synthetic\)/);
+        assert.match(await page.locator('#lineage-note').innerText(), /12 quality checks/);
+        const box = await page.locator('#lineage-graph').evaluate((svg) => {
+          const view = svg.viewBox.baseVal;
+          return [...svg.querySelectorAll('[data-asset]')].every((g) => {
+            const r = g.getBBox(),
+              m = g.transform.baseVal.consolidate().matrix;
+            return m.f >= 0 && m.f + r.height <= view.height;
+          });
+        });
+        assert.equal(box, true, 'every lineage node fits inside the graph');
+        await page.locator('#evidence-select').selectOption('schema');
+        assert.match(await page.locator('#evidence-metadata').innerText(), /dbt-manifest/);
+        await page.screenshot({
+          path: path.join(evidence, `studio-${mode}-dbt-lineage.png`),
+          fullPage: true,
+        });
+        await page.setViewportSize({ width: 390, height: 844 });
+        assert(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+          `dbt lineage overflow ${mode}`,
+        );
+        await page.setViewportSize({ width: 1440, height: 1050 });
+        await page.locator('[data-view="overview"]').first().click();
+        results.push(`${mode}: dbt manifest review shows consumers, owners and open gaps`);
         await select('rename');
         await page.locator('#pause-toggle').check();
         await page.locator('#run-button').click();

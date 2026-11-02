@@ -12,18 +12,20 @@ function safePath(file) {
   }
 }
 export function readReviewFile(name) {
+  return readLocalFile(name, { maxBytes: MAX_REVIEW_BYTES, label: 'review file', limit: '4 MB' });
+}
+/**
+ * Read one regular, unlinked local file whose size, inode and timestamps do not change
+ * while it is read. Errors never include the path or the contents.
+ */
+export function readLocalFile(name, { maxBytes, label, limit }) {
   const file = path.resolve(name);
   safePath(file);
   const initial = fs.lstatSync(file);
-  if (
-    !initial.isFile() ||
-    initial.nlink !== 1 ||
-    initial.size < 1 ||
-    initial.size > MAX_REVIEW_BYTES
-  )
+  if (!initial.isFile() || initial.nlink !== 1 || initial.size < 1 || initial.size > maxBytes)
     throw new StudioError(
       'FILE_UNREADABLE',
-      'Choose one regular unlinked review file, at most 4 MB',
+      `Choose one regular unlinked ${label}, at most ${limit}`,
     );
   let fd;
   try {
@@ -40,7 +42,7 @@ export function readReviewFile(name) {
       opened.dev !== initial.dev ||
       opened.size !== initial.size
     )
-      throw new StudioError('FILE_UNREADABLE', 'The review file changed while opening');
+      throw new StudioError('FILE_UNREADABLE', `The ${label} changed while opening`);
     const bytes = Buffer.alloc(opened.size + 1);
     let used = 0;
     while (used < bytes.length) {
@@ -59,7 +61,7 @@ export function readReviewFile(name) {
       final.ino !== opened.ino ||
       final.dev !== opened.dev
     )
-      throw new StudioError('FILE_UNREADABLE', 'The review file changed while being read');
+      throw new StudioError('FILE_UNREADABLE', `The ${label} changed while being read`);
     return new Uint8Array(bytes.subarray(0, used));
   } finally {
     if (fd !== undefined) fs.closeSync(fd);
