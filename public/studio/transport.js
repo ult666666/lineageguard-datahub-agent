@@ -64,13 +64,15 @@ export async function scenarioAdapter(id, { restored = false, target } = {}) {
     staticJson(DBT_FIXTURE.manifest, 'bundled dbt manifest'),
     staticJson(DBT_FIXTURE.catalog, 'bundled dbt catalog'),
   ]);
+  let files;
   try {
-    const [manifest, catalog] = await dbtFiles;
-    return await createDbtScenarioAdapter(manifest, catalog, target);
+    files = await dbtFiles;
   } catch (error) {
-    if (error.code === 'FIXTURE_UNAVAILABLE' || error.name === 'TimeoutError') dbtFiles = null;
+    // Any failed load, including a dropped connection, is retried on the next run.
+    dbtFiles = null;
     throw error;
   }
+  return createDbtScenarioAdapter(...files, target);
 }
 export function httpFixtureAdapter(id, { restored = false } = {}) {
   const source = createFixtureAdapter(id);

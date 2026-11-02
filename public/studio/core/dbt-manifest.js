@@ -197,13 +197,16 @@ export function parseDbtManifest(raw, { maxResources = DBT_LIMITS.resources } = 
       owner: ownerOf(own(group, 'owner')),
     });
   }
+  // A group named from another package resolves only when its name is unique. The index
+  // keeps the lookup linear: scanning every group for every node is quadratic.
+  const byName = new Map();
+  for (const g of groups.values()) byName.set(g.name, byName.has(g.name) ? null : g);
   const groupOwner = (record) => {
     const name = own(record, 'group') ?? own(own(record, 'config'), 'group');
     if (typeof name !== 'string') return null;
     const exact = groups.get(`group.${own(record, 'package_name')}.${name}`);
     if (exact) return exact.owner;
-    const named = [...groups.values()].filter((g) => g.name === name);
-    return named.length === 1 ? named[0].owner : null;
+    return byName.get(name)?.owner ?? null;
   };
   const resources = new Map();
   for (const [section, value] of Object.entries(raw)) {
@@ -366,6 +369,9 @@ export function parseDbtCatalog(raw) {
       requireThat(isRecord(columns), 'INVALID_CATALOG', 'Catalog columns must be a mapping');
       const keys = Object.keys(columns);
       requireThat(keys.length <= DBT_LIMITS.columns, 'DATA_LIMIT', 'A table has too many columns');
+      // dbt keys catalog columns by name. A repeated name would let JSON key order choose
+      // which type the review sees, so the file is refused instead.
+      const names = new Set();
       const rows = keys.map((name) => {
         const column = own(columns, name);
         requireThat(
@@ -376,6 +382,12 @@ export function parseDbtCatalog(raw) {
           'INVALID_CATALOG',
           'Catalog columns need a name, type and index',
         );
+        requireThat(
+          !names.has(own(column, 'name')),
+          'INVALID_CATALOG',
+          'A catalog table lists the same column name twice',
+        );
+        names.add(own(column, 'name'));
         return {
           name: own(column, 'name'),
           type: own(column, 'type'),
