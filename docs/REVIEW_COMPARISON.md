@@ -1,23 +1,25 @@
-# Compare two saved reviews offline
+# Compare two saved reviews
 
-The **Compare → Compare saved reviews** browser panel and native `studio:compare` command validate **both** saved JSON exports using the existing [Review Inspector](REVIEW_INSPECTOR.md), then applies Studio's existing `compareRuns` to their recorded results. They share one byte-validation/comparison function and the same JSON report. They do not rerun evidence tools or import packages into history. The browser panel is separate from the existing live alternative-plan controls. The native command requires Node22.13–24, with no package installation, service, database, tenant or API credentials.
+Two exported reviews of the same change can reach different decisions, for example under the standard and the strict policy. Compare saved reviews puts them side by side. The browser panel and the `studio:compare` command both run the [Review Inspector](REVIEW_INSPECTOR.md) on each file first, then compare the recorded results with Studio's own `compareRuns`. They share one function for reading, checking and comparing the bytes, and produce the same JSON report.
+
+Neither runs an evidence tool again or imports a review into run history. The browser panel is separate from the Compare tab's live alternative-plan buttons. The command needs Node 22.13 to 24 and nothing else: no package installation, service, database, tenant or API credentials.
 
 ## In the browser
 
-1. Open **Compare → Compare saved reviews** in the hosted or local Studio. A current review is not required.
-2. Select **Left review JSON** and **Right review JSON**, each 1–4,000,000 bytes. Selection alone does not start a comparison.
-3. Choose **Compare files**. Both files must pass inspection and be completed reviews. A malformed right file produces a refusal, never a partial left result.
-4. Read the request/recipe/source-revision flags, recorded decisions and gap changes. Each side separately shows the current assessment of its embedded evidence at the shared displayed inspection time.
-5. **Download comparison** downloads the same `lineageguard.review-comparison/1` report as the CLI. It includes supplied request summaries and run identifiers; keep private files and reports local. The interface renders supplied text literally.
-6. Changing either selection immediately discards the old result/download. **Clear** also empties both file inputs. Neither changes the active workflow or saved checkpoints.
+1. Open the Compare tab in the hosted or local Studio and go to Compare saved reviews. You do not need a current review.
+2. Choose a Left review JSON and a Right review JSON, each between 1 and 4,000,000 bytes. Choosing files does not start the comparison.
+3. Select Compare files. Both files must pass inspection and be completed reviews. If the right file is malformed, you get a refusal, never a half-finished result for the left file.
+4. Read the flags for request, recipe and source revision, then the recorded decisions and the gaps that differ. Each side also shows how its embedded evidence looks now, at the inspection time shown once for both.
+5. Download comparison saves the same `lineageguard.review-comparison/1` report as the command. It includes the request summaries and run identifiers from the files, so keep private files and reports local. The panel shows text from the files literally.
+6. Changing either file discards the old result and its download at once. Clear also empties both file inputs. Neither changes the active workflow or saved checkpoints.
 
-The already-loaded panel works offline; loading Studio still needs its hosted/local application. There is no service worker or offline installation. Only one left-then-right file-read sequence can run. Clear or a selection change invalidates pending work immediately, but the browser's `File.arrayBuffer()` read itself is not abortable: a new comparison waits for that one sequence to settle. An obsolete left read never starts the obsolete right read. No files are uploaded, stored, imported or executed, in either browser-session or durable-local mode.
+Once Studio has loaded, the panel works offline. Studio itself still has to be reachable to load; there is no service worker or offline install. Files are read one pair at a time, left then right. Clear or a new selection cancels pending work immediately, but the browser cannot abort a `File.arrayBuffer()` read already in progress, so a new comparison waits for that read to finish. A cancelled left read never goes on to read the right file. In both storage modes, no file is uploaded, stored, imported or executed.
 
-Generate the synthetic standard/strict files below, select them in that order, and expect the same decisions and flags as the command. Selecting the same file on both sides is allowed. The synthetic rename export below demonstrates an explicitly labelled alternative plan.
+You can select the same file on both sides.
 
-## A reproducible synthetic pair
+## A synthetic pair to try
 
-From the repository root, create two **new** export paths with the existing fixture runner. The generator refuses existing output files; choose fresh names when repeating the example.
+From the repository root, create two new exports with the fixture runner. It refuses to overwrite an existing file, so pick new names if you run it again.
 
 ```sh
 npm run studio:review -- --scenario=safe-add --profile=standard --output=./.lineageguard/comparison-standard.json
@@ -25,41 +27,47 @@ npm run studio:review -- --scenario=safe-add --profile=strict --output=./.lineag
 node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-strict.json
 ```
 
-For these fictional inputs, the recorded standard decision is `proceed-with-checks` and strict is `review-required`. The request and source revision are the same; recipes differ. These are policy demonstration results, not organizational approval. Repeated execution creates different run IDs/timestamps, while the comparison's meaning remains the same.
+On these fictional inputs the standard policy records `proceed-with-checks` and the strict policy records `review-required`. The request and the source revision are the same; the recipes differ. These are policy examples, not an organisation's approval. Each run gets new run IDs and timestamps, but the comparison means the same thing. Selecting the two files in the browser, left then right, gives the same decisions and flags as the command.
 
-Use the direct Node entrypoint above for the sanitized stdout contract. Plain `npm run studio:compare` prints an argument banner, including supplied paths, before the script starts; do not use that unsilenced wrapper for private refusal receipts. The optional `npm --silent run studio:compare -- ... --json` wrapper suppresses the banner. To consume one JSON object directly:
+Call the script with `node` directly, as above, when the output must not reveal file paths. `npm run studio:compare` prints a banner with the arguments, including file paths, before the script starts, so do not use it when a refusal message must stay private. `npm --silent run studio:compare -- ... --json` hides the banner. For a single JSON object:
 
 ```sh
 node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-strict.json --json
 ```
 
-The native command writes only stdout. It does not create an output file. Successful JSON intentionally contains supplied request summaries, run identities, bindings, recorded decisions/gaps and inspection hashes/checks. Choose any redirected destination accordingly. Failure reports do not echo supplied file contents, private paths or raw exception text.
+The command writes only to standard output and creates no file. A successful JSON report contains the request summaries, run IDs, bindings, recorded decisions and gaps, and the inspection hashes and checks from both files, so choose where you redirect it with care. A failure report never repeats file contents, private paths or raw exception text.
 
-Different requests remain permitted and explicitly labelled **alternative-plan comparisons**. They are not repeated results on identical inputs:
+Comparing two different requests is allowed. The report labels it an alternative-plan comparison, not a repeat of the same input:
 
 ```sh
 npm run studio:review -- --scenario=rename --output=./.lineageguard/comparison-rename.json
 node scripts/studio-compare.mjs --left=./.lineageguard/comparison-standard.json --right=./.lineageguard/comparison-rename.json
 ```
 
-## Read the result
+## Reading the result
 
-- `comparison.sameRequest`, `sameRecipe` and `sameSourceRevision` retain the existing comparison semantics. The `left`/`right` decisions, risk, gaps, call counts and policy names are **recorded** values from the inspected exports. `addedGaps`/`removedGaps` are differences in those recorded gap sets.
-- `inspections.left` and `inspections.right` separately report integrity/consistency, SHA-256 of the exact supplied bytes, completion and the **current assessment of embedded evidence at one displayed inspection time**. Evidence may now be stale even when its recorded decision was favorable. The comparison never replaces recorded decisions with current ones.
-- Exit **0** means two internally consistent completed packages could be compared, including alternative requests. It does not establish authenticity, current catalog truth, approval or safety to migrate. Standalone `--help` also exits0. Exit **2** means arguments, reading, inspection or completion were refused; error `side` identifies left/right when applicable, with no comparison result.
-- A paused/failed but internally consistent package can be inspected on its own; comparison requires completed reviews on both sides. A corrupted right package cannot leave a successful partial comparison of the left.
+`comparison.sameRequest`, `sameRecipe` and `sameSourceRevision` mean what they mean in Studio's live comparison. The decisions, risk, gaps, call counts and policy names for `left` and `right` are the values recorded in each file, and `addedGaps` and `removedGaps` are the differences between the recorded gap sets.
 
-Human output shows recorded decisions, current assessments, comparison flags, gap counts and both file hashes without printing untrusted request summaries into the terminal. JSON escapes supplied strings. Identical file paths are permitted; each is safely read and inspected. Whitespace-different valid JSON may have different file hashes without changing request/recipe meaning.
+`inspections.left` and `inspections.right` each report integrity and consistency, the SHA-256 of the exact bytes supplied, whether the review completed, and how the embedded evidence looks at the one inspection time shown. Evidence can be stale now even when its recorded decision was favourable. The report never replaces a recorded decision with the current one.
 
-## Bounds and trust
+| Exit code | Meaning                                                                                                                                                                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0         | Two internally consistent, completed reviews were compared, including two different requests. This says nothing about authenticity, what the catalog contains now, approval or whether a migration is safe. `--help` on its own also exits 0. |
+| 2         | The arguments, a file read, an inspection or the completion check was refused. The error's `side` says left or right where that applies, and there is no comparison result.                                                                   |
 
-Each native CLI input must be an existing regular unlinked file, 1–4,000,000 bytes. The browser receives user-selected `File` snapshots and does not claim to inspect filesystem links or paths. The shared reader preserves the original Inspector CLI behavior: reject symlink ancestors, hardlinks, directories, FIFOs, empty/oversized/absent files, and observed identity/metadata changes while reading. The inspector rejects invalid UTF-8/JSON, duplicate members, unsupported structures, checksum/contract/replay/projection mismatches. The comparison owns both plain byte snapshots before asynchronous validation, including when a caller supplies Node Buffers.
+A paused or failed review that is internally consistent can be inspected on its own, but a comparison needs completed reviews on both sides. A corrupted right file never leaves a successful partial comparison of the left.
 
-There are no catalog/DataHub calls, stores, listeners, SQLite writes, uploaded files, executable imports, resume operations or SQL execution. The command never modifies either input. Its shared library API is `compareReviewBytes(leftBytes,rightBytes,{now})` in `public/studio/core/review-comparison.js`, re-exported through the preserved native `src/studio/review-comparison.mjs` path; the optional inspection time supports deterministic callers/tests, while the CLI always uses the current time.
+The terminal output shows the recorded decisions, current assessments, comparison flags, gap counts and both file hashes. It does not print request summaries from the files, which are untrusted input. JSON output escapes all text from the files. The same path can be given twice; each read is checked separately. Two valid JSON files that differ only in whitespace have different file hashes but the same request and recipe.
 
-Unkeyed hashes and shared-function replay prove internal consistency, not signatures or an independent policy implementation. Source authentication, execution authorization and resumable import remain false; tool calls remain 0. A locally acknowledged package stays locally unverified. The file boundary does not defend against a hostile operating-system owner who can replace files or change the process. Application/checkpoint/policy version 2.0.0 and the original release tag are unchanged. Report schema is `lineageguard.review-comparison/1`; refusal schema is `lineageguard.comparison-error/1`.
+## Limits and trust
 
-## Verify the workflow
+Each command-line input must be an existing regular file with no other links, between 1 and 4,000,000 bytes. The browser works on the `File` snapshots the user selects and makes no claim about links or paths. The shared reader keeps the Inspector command's rules: it rejects symlinked parent folders, hard links, directories, FIFOs, empty, oversized or missing files, and any change to the file's identity or metadata while it is read. The Inspector rejects invalid UTF-8 or JSON, repeated keys, unsupported structures, and any mismatch in checksums, evidence contracts, replay or projection. The comparison takes its own plain copy of both inputs before any asynchronous check, including when a caller passes Node `Buffer` objects.
+
+There are no catalog or DataHub calls, stores, listeners, SQLite writes, uploads, executable imports, resumed runs or SQL execution, and the command never changes either input. The library function is `compareReviewBytes(leftBytes, rightBytes, { now })` in `public/studio/core/review-comparison.js`, also exported from `src/studio/review-comparison.mjs`. Callers and tests can pass the inspection time for repeatable results; the command always uses the current time.
+
+Hashes without keys and replay through Studio's own functions show internal consistency. They are not signatures and not an independent implementation of the policy. Source authentication, execution authorisation and resumable import stay false, and the tool call count stays 0. A review acknowledged locally stays locally unverified. The file checks do not protect against someone who controls the operating system and can swap files or change the process. The application, checkpoint and policy stay at version 2.0.0, and the original release tag is unchanged. The report schema is `lineageguard.review-comparison/1` and the refusal schema is `lineageguard.comparison-error/1`.
+
+## Tests
 
 ```sh
 node --test test/studio/review-comparison.test.mjs test/studio/comparison-cli.test.mjs test/studio/inspection-cli.test.mjs
@@ -71,6 +79,8 @@ node scripts/build-studio.mjs --verify dist
 npm run test:browser
 ```
 
-Build into a fresh output directory; the existing builder refuses to overwrite `dist`. The explicit static inventory includes the shared comparison core and browser view; no runtime/server module is added to the public payload. Tests use actual synthetic runs, both-side corruption (including a rehashed projection mismatch), incomplete exports, ambiguous encodings, bounds, Buffer mutation, alternative requests, current-versus-recorded freshness and real CLI file/argument failures. They verify unchanged input bytes/directories and safe failure output. Existing Inspector tests protect its shared-reader extraction.
+Build into a fresh output directory, because the builder refuses to overwrite `dist`. The static file inventory lists the shared comparison module and the browser view, and adds no runtime or server module to the public files.
 
-The browser journey exercises this panel before a current review exists in both storage modes. It verifies exact browser/native JSON parity at the displayed inspection instant, same-file and alternative comparisons, separate stale-evidence judgments, both-side malformed/oversized/incomplete/rehashed refusals, literal hostile text, keyboard activation, 390/768/1440-pixel layouts and 200% zoom. Deferred real File-read barriers prove Clear/replacement invalidation without fixed waits; offline request and complete storage/current-run snapshots verify isolation. These are shared-implementation consistency checks, not independent source or policy certification.
+The unit tests use real synthetic runs. They cover corruption on either side (including a projection mismatch with a recomputed hash), incomplete exports, ambiguous encodings, size limits, input buffers overwritten while the comparison is still running, different requests, current against recorded freshness, and real command-line file and argument failures. They check that inputs and folders are unchanged and that failure output stays safe. The existing Inspector tests cover the shared reader.
+
+The browser journey uses the panel before any current review exists, in both storage modes. It checks that the browser and the command produce identical JSON for the same inspection time, compares a file with itself and two different requests, and shows each side's stale evidence separately. It also checks refusals for malformed, oversized, incomplete and rehashed files on either side, literal display of hostile text, keyboard use, layouts at 390, 768 and 1440 pixels, and 200% zoom. File reads held open by test barriers show that Clear and a new selection cancel pending work without fixed waits, and snapshots of network requests, storage and the current run show the panel stays isolated. These tests check consistency with Studio's own code, not an independent certification of the source or the policy.

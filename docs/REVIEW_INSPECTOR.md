@@ -1,55 +1,62 @@
 # Review Inspector
 
-A portable review should remain inspectable after leaving the running application. The Inspector is a local-only extension of Studio's existing export flow. It does not add an import-to-run endpoint, a catalog connection or an approval mechanism.
+A review is only useful after it leaves Studio if someone else can check it. The Inspector checks an exported review on your own machine. It recomputes the decision and the drafts from the evidence inside the file and reports any mismatch. It does not import the review, connect to a catalog or approve anything.
 
-## Try it in Studio
+## In Studio
 
-Open **Review package → Review Inspector**. Select **Inspect current review**, or choose an exported run JSON file. The file is read in the current browser; it is not uploaded or written into run history. A downloaded inspection summary contains the run identity, hashes, check outcomes and evidence freshness. It leaves out the raw SQL, request summary, target URN, reviewer name and catalog payloads.
+Open the Review package tab and scroll to Review Inspector. Choose Inspect current review, or pick an exported run JSON file. The browser reads the file locally; nothing is uploaded or added to run history.
 
 ![The Review Inspector after checking the current synthetic review: internally consistent, not authenticated, with the recorded decision next to the decision on the saved evidence](../assets/review-inspector.png)
 
-The panel separates the recorded decision from **the current assessment of the embedded evidence at the displayed inspection time**. An internally consistent old review can now need fresh evidence. A failed or paused checkpoint stays incomplete; inspection does not generate a favorable decision or resume it. Clear discards only the inspection view, not the active review or saved checkpoints. A file read already in flight cannot repopulate the view after Clear.
+The panel shows two decisions side by side: the one recorded in the file, and the one the same evidence gives at the time you inspect it. An old review can be internally consistent and still need fresh evidence today. A failed or paused review stays incomplete; inspecting it never produces a favourable decision or resumes the run.
 
-The loaded Inspector also works with the browser set offline. Loading Studio itself still needs the local or hosted application to be reachable; this is not an offline-installed PWA.
+Download summary saves the run identity, hashes, check results and evidence freshness. It leaves out the SQL, the request summary, the target URN, the reviewer name and any catalog payload.
 
-For two completed saved reviews, use **Compare → Compare saved reviews** or the native command described in [Compare two saved reviews](REVIEW_COMPARISON.md). Both consumers run this same Inspector before comparing recorded results.
+Clear empties the inspection view only. The active review and saved checkpoints stay as they were, and a file read that is still in flight cannot refill the view afterwards. Once Studio has loaded, the Inspector also works with the browser offline. Studio itself still has to be reachable to load; it is not an installable offline app.
 
-## Verify a file from the terminal
+To compare two completed reviews, use Compare saved reviews on the Compare tab, or the command in [Compare two saved reviews](REVIEW_COMPARISON.md). Both run this Inspector on each file first.
 
-Requires the Inspector update on current `main`; the original `v2.0.0` tag remains unchanged. No package installation, database or tenant is required for this command.
+## From the terminal
+
+The terminal check needs current `main`; the `v2.0.0` tag predates the Inspector. It needs no package installation, database or tenant.
 
 ```sh
 npm run studio:verify -- --file=/absolute/path/to/export.json
 node scripts/studio-inspect.mjs --file=/absolute/path/to/export.json --json
 ```
 
-Exit **0** means internal consistency checks passed. It does **not** mean approved, authentic, safe to migrate, or even that its evidence is still current. Exit **2** means arguments, file reading or review validation were refused. Errors do not echo the input file's contents, private path or supplied error strings. The command reads a single regular, unlinked file and does not overwrite it, write SQLite, start a listener or contact a tool.
+| Exit code | Meaning                                                                                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0         | Every internal consistency check passed. This does not mean the review is approved, authentic or safe to migrate, or that its evidence is still current. |
+| 2         | The arguments, the file read or the review validation was refused.                                                                                       |
 
-Input is bounded to 4,000,000 bytes of UTF-8. Duplicate object members, including differently escaped spellings, are refused rather than silently taking the last value. Existing structural limits reject deep/oversized objects, accessors, hidden fields and poison keys. CLI file handling checks path links, regular-file identity, byte limits and before/after metadata; it rejects directories, symlinks and FIFOs. This is not protection against a hostile operating-system owner able to replace files or change the running process.
+Error messages never repeat the file's contents, its path or error strings taken from the file. The command reads one regular file that has no other links, and never overwrites it. It writes no SQLite, opens no listener and calls no tool.
 
-## What the Inspector verifies
+Input is limited to 4,000,000 bytes of UTF-8. A JSON object that repeats a key is refused, even when the repeats are spelled with different escapes, instead of silently keeping the last value. Structural limits reject objects that are too deep or too large, accessors, hidden fields and the keys `__proto__`, `prototype` and `constructor`. The file reader checks path links, that the file is a regular file, its size, and its metadata before and after reading, and it rejects directories, symlinks and FIFOs. None of this protects against someone who controls the operating system and can swap files or change the running process.
 
-1. **Checkpoint integrity:** supported schema, request/recipe binding, checkpoint checksum, completed-output hashes and the hash-linked event chain.
-2. **Evidence contracts:** exact requested target, evidence kind, source mode/revision, declared coverage, bounded structures and the evidence's own digest.
-3. **Deterministic consistency:** compatibility reproduces from the embedded schema; policy matches a freshness-consistent time within its declared execution window; artifacts regenerate from the bound inputs.
-4. **Result projection:** exported policy, artifacts and evidence equal their completed step outputs. Recomputing an outer checksum alone does not repair a mismatched result.
-5. **Current assessment:** the policy is evaluated again at inspection time using the same embedded evidence. Sources are not reread. Recorded and current judgments remain distinct.
+## What it checks
 
-Policy replay considers every relevant freshness transition within the recorded policy step's time window, not just its endpoints. A regression constructs two evidence transitions where the recorded policy is consistent only in the interior. This avoids falsely rejecting a legitimate result merely because a timestamp crossed a boundary during the step.
+1. Checkpoint integrity: a supported schema, the binding between request and recipe, the checkpoint checksum, the hashes of completed outputs and the hash-linked event chain.
+2. Evidence contracts: the requested target, the evidence kind, the source mode and revision, the declared coverage, size limits and each piece of evidence's own digest.
+3. Deterministic results: the compatibility result follows from the embedded schema, the policy matches a freshness-consistent moment inside its recorded time window, and the drafts regenerate from their inputs.
+4. Result projection: the exported policy, drafts and evidence equal the completed step outputs. Recomputing an outer checksum does not hide a mismatched result.
+5. Current assessment: the policy is evaluated again at inspection time on the same embedded evidence. Sources are not read again, and the recorded and current decisions stay separate.
 
-The same inspection guard runs before Studio exports run JSON, Markdown or SQL drafts. Changed input during inspection cancels the obsolete export. The guard does not alter the stored workflow or execute the SQL.
+Policy replay considers every freshness change inside the policy step's recorded time window, not only its start and end. A regression test builds two evidence changes where the recorded policy is consistent only in the middle of the window, so a timestamp that crossed a boundary during the step does not cause a false rejection.
 
-## Trust boundaries
+The same check runs before Studio exports run JSON, Markdown or SQL drafts. If the input changes during the check, the stale export is cancelled. The check never changes the stored workflow or runs the SQL.
 
-**Consistent is not authentic.** SHA-256 digests and hash chains are unkeyed, not signatures. A party who can reconstruct an entire self-consistent package can also reconstruct its hashes. Passing inspection does not authenticate the author, verify real catalog truth, establish an independently observed execution history, prove completeness beyond supplied evidence, or grant organizational approval.
+## What a pass does not mean
 
-The Inspector shares the existing policy and artifact functions with Studio; it checks replay consistency, not an independent implementation of those algorithms. An acknowledgement remains `local-unverified` and `executionAuthorized=false`. The report always sets `sourceAuthenticated=false`, `toolCalls=0` and `resumableImport=false`.
+A pass means the file is consistent with itself, not that it is authentic. SHA-256 digests and hash chains have no key, so they are not signatures: anyone who can rebuild a whole consistent package can rebuild its hashes too. A pass does not identify the author, confirm what the catalog really contains, prove the run happened as recorded, prove the evidence is complete or grant approval.
 
-Imported packages never enter the execution runtime, server store or browser checkpoint store. There is no upload or restore endpoint. All content shown in the panel uses text nodes, not HTML from the file. An invalid selection clears the old successful report and disables its download, preventing a stale success from being mistaken for a new result.
+The Inspector calls the same policy and draft functions as Studio. It checks that replaying them gives the recorded results; it is not a second, independent implementation. An acknowledgement stays `local-unverified` with `executionAuthorized=false`, and every report sets `sourceAuthenticated=false`, `toolCalls=0` and `resumableImport=false`.
 
-Inspector version/schema are `1.0.0` / `lineageguard.inspection/1`. The application, policy, original runtime interpreter, database format and `lineageguard.run/2` checkpoint schema remain 2.0.0. This follow-up does not retroactively change the original tagged release.
+An inspected file never enters the runtime, the server store or the browser checkpoint store, and there is no upload or restore endpoint. The panel renders file content as text, never as HTML. Choosing an invalid file clears the previous successful report and disables its download, so an old pass cannot be mistaken for a new one.
 
-## Reproducible checks
+The Inspector is version `1.0.0` with report schema `lineageguard.inspection/1`. The application, the policy, the original runtime interpreter, the database format and the `lineageguard.run/2` checkpoint schema stay at 2.0.0, and the tagged 2.0.0 release is unchanged.
+
+## Tests
 
 ```sh
 node --test test/studio/inspection.test.mjs test/studio/inspection-cli.test.mjs
@@ -60,6 +67,8 @@ npm run build
 node scripts/build-studio.mjs --verify dist
 ```
 
-Build into a fresh output directory; the existing build refuses overwriting `dist`. The public inventory now explicitly includes the two Inspector modules. `npm run verify:deployed` verifies the matching published bytes and exercises the same Inspector UI against a fresh synthetic browser context; it is an opt-in hosted check, not part of offline CI.
+Build into a fresh output directory, because the builder refuses to overwrite `dist`. The public file inventory lists both Inspector modules. `npm run verify:deployed` is an opt-in check of the hosted copy, not part of offline CI: it compares the published bytes and runs the Inspector panel in a fresh synthetic browser session.
 
-Tests cover tampering with and without a recomputed checksum, invented policy and drafts, wrong evidence targets/digests/modes, stale and incomplete reviews, strict policy, malformed encodings and duplicate keys, accessor refusal, CLI no-write behavior and exact byte preservation. Browser checks run inspection with networking disabled, assert zero requests and unchanged local checkpoint bytes, check late-read/Clear handling and stale-result invalidation, and validate the panel at 390, 768 and 1440 pixels. A separate test deliberately modifies only its own synthetic browser checkpoint to prove all draft exports are guarded; it restores the original test bytes afterward.
+The unit tests cover tampering with and without a recomputed checksum, invented policy results and drafts, wrong evidence targets, digests and modes, stale and incomplete reviews, the strict policy, malformed encodings, duplicate keys, accessors, the command line writing nothing, and byte-for-byte preservation of the input.
+
+The browser checks run the Inspector with networking disabled and confirm there are no requests and the local checkpoint bytes do not change. They also cover a late file read after Clear, a stale result being cleared, and the panel at 390, 768 and 1440 pixels wide. One test changes its own synthetic browser checkpoint to show that every draft export goes through the check, then restores the original bytes.
