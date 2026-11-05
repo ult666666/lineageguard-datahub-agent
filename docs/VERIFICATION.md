@@ -213,7 +213,7 @@ can contain private metadata, so never commit one.
   Its [tagged verification record](https://github.com/ult666666/lineageguard-datahub-agent/blob/v2.0.0/docs/VERIFICATION.md)
   lists what was run for that release, and the [local record](verification/studio-2.0-local.json)
   lists its inputs and artifact hashes.
-- **Added on `main` after v2.0.0:** the [local launcher](LOCAL_LAUNCH.md), the
+- **Added in v2.1.0:** the [local launcher](LOCAL_LAUNCH.md), the
   [Review Inspector](REVIEW_INSPECTOR.md), [saved-review comparison](REVIEW_COMPARISON.md)
   and the [dbt manifest source](ARCHITECTURE.md#dbt-manifest-integration-profile).
   Each guide describes its own checks.

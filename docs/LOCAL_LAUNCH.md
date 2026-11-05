@@ -1,6 +1,6 @@
 # Local launch reliability
 
-This follow-up to Studio 2.0 fixes duplicate starts and adds read-only status/browser commands. The web application, review policy, database format and checkpoint bindings remain version 2.0.0. The original `v2.0.0` release tag is preserved; the commands in this page require the subsequent launcher update on `main` or its reviewed commit. This is not a new orchestration engine or a cloud-service change.
+This follow-up to Studio 2.0 fixes duplicate starts and adds read-only status/browser commands. The web application, review policy, database format and checkpoint bindings remain version 2.0.0. The original `v2.0.0` release tag is preserved; the commands in this page require `v2.1.0` or later. This is not a new orchestration engine or a cloud-service change.
 
 ## Everyday commands
 

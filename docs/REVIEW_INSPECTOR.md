@@ -18,7 +18,7 @@ To compare two completed reviews, use Compare saved reviews on the Compare tab, 
 
 ## From the terminal
 
-The terminal check needs current `main`; the `v2.0.0` tag predates the Inspector. It needs no package installation, database or tenant.
+The terminal check needs `v2.1.0` or later; the `v2.0.0` tag predates the Inspector. It needs no package installation, database or tenant.
 
 ```sh
 npm run studio:verify -- --file=/absolute/path/to/export.json
