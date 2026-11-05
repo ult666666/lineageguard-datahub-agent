@@ -184,7 +184,7 @@ export class DataHubMcpClient {
           {
             protocolVersion: MCP_PROFILE,
             capabilities: {},
-            clientInfo: { name: 'lineageguard', version: '2.0.0' },
+            clientInfo: { name: 'lineageguard', version: '2.1.0' },
           },
           false,
           { signal },

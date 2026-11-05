@@ -33,7 +33,7 @@ Do not put a tenant capture, database or run export in public source. The option
 
 ## Subsequent launcher update
 
-The original `v2.0.0` tag remains unchanged. Current `main` adds `npm run studio:status`, `npm run studio:open` and a clear already-running message for repeat starts. See [LOCAL_LAUNCH.md](LOCAL_LAUNCH.md) for exact commands, version boundaries and safe handling of an occupied port. This update does not require migrating existing 2.0.0 checkpoints.
+The original `v2.0.0` tag remains unchanged. Release `v2.1.0` adds `npm run studio:status`, `npm run studio:open` and a clear already-running message for repeat starts. See [LOCAL_LAUNCH.md](LOCAL_LAUNCH.md) for exact commands, version boundaries and safe handling of an occupied port. This update does not require migrating existing 2.0.0 checkpoints.
 
 ## What each surface proves
 

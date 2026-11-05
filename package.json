@@ -1,6 +1,6 @@
 {
   "name": "lineageguard-datahub-agent",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "description": "Evidence-driven workflow orchestration: typed DAGs, bounded execution, SQLite recovery, policy readiness and reproducible evaluations.",
