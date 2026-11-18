@@ -35,10 +35,11 @@ fields, the fixture was generated with the two files in [`overlay/`](saas-analyt
 
 ## Reproduce
 
-Run from a scratch directory with a clone of each repository. The commands are the ones
-used to produce the committed files.
+From a scratch directory containing both repository clones, build the pinned warehouse and
+write the two trimmed files to a fresh directory alongside the clones.
 
 ```sh
+mkdir saw
 git -C saas-analytics-warehouse archive 28b75e8c1545da0d64ac26231045b80009f2fe5e | tar -x -C saw
 cp lineageguard-datahub-agent/examples/dbt/saas-analytics-warehouse/overlay/lineageguard_overlay.yml saw/dbt/models/
 patch -p1 -d saw < lineageguard-datahub-agent/examples/dbt/saas-analytics-warehouse/overlay/dbt_project.yml.patch
@@ -49,20 +50,24 @@ make build                       # dbt build: PASS=173, ERROR=0
 (cd dbt && DBT_PROFILES_DIR=$PWD uv run dbt docs generate)
 cd ../lineageguard-datahub-agent
 node scripts/trim-dbt-manifest.mjs --manifest=../saw/dbt/target/manifest.json \
-  --catalog=../saw/dbt/target/catalog.json --out=public/studio/dbt/saas-analytics-warehouse
+  --catalog=../saw/dbt/target/catalog.json --out=../trimmed-saw
 node scripts/trim-dbt-manifest.mjs --compare --manifest=../saw/dbt/target/manifest.json \
-  --catalog=../saw/dbt/target/catalog.json --trimmed=public/studio/dbt/saas-analytics-warehouse
+  --catalog=../saw/dbt/target/catalog.json --trimmed=../trimmed-saw
 ```
 
 `dbt docs generate` works offline here because the warehouse is a local DuckDB file. A
 fresh run gets new `generated_at` times, so its evidence revisions differ from the
 committed ones.
 
+The command preserves existing files with either output name. To repeat the comparison,
+reuse the full and trimmed files from the same build.
+
 The trim keeps only the fields LineageGuard reads: resource identity, relation names,
 columns and their declared types, `depends_on`, owners, groups, exposures, test metadata,
 `parent_map` and `child_map`. It drops SQL, descriptions, macros, docs and local paths.
 dbt itself cannot load the result. `--compare` checks that the trim is lossless for
-LineageGuard: for each of the 30 models, seeds and sources, with and without the
+LineageGuard. It checks that both files list the same review targets. For each of the 30
+models, seeds and sources, with and without the
 catalog, the full and trimmed files must give the same evidence revision. The committed
 files passed: `{"targets":30,"identical":30}`.
 
