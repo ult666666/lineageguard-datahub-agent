@@ -7,6 +7,7 @@
 //   node scripts/trim-dbt-manifest.mjs --manifest=<full> --catalog=<full> --out=<dir>
 //   node scripts/trim-dbt-manifest.mjs --compare --manifest=<full> --catalog=<full> --trimmed=<dir>
 import fs from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
@@ -151,6 +152,8 @@ export async function compareTrim(manifestFile, catalogFile, trimmedDir) {
   const small = parseDbtManifest(read(path.join(trimmedDir, 'manifest.json'), 'manifest'));
   const smallCatalog = parseDbtCatalog(read(path.join(trimmedDir, 'catalog.json'), 'catalog'));
   const targets = listDbtTargets(full);
+  if (!isDeepStrictEqual(targets, listDbtTargets(small)))
+    throw new Error('The full and trimmed manifests have different review targets');
   let identical = 0;
   for (const t of targets) {
     for (const withCatalog of [true, false]) {
@@ -168,6 +171,27 @@ export async function compareTrim(manifestFile, catalogFile, trimmedDir) {
   return { targets: targets.length, identical };
 }
 
+// Reserve each output exclusively and roll back only files created by this invocation.
+function writeFixture(out, files) {
+  fs.mkdirSync(out, { recursive: true });
+  const created = [];
+  try {
+    for (const [name, bytes] of files) {
+      const file = path.join(out, name);
+      const descriptor = fs.openSync(file, 'wx');
+      created.push(file);
+      try {
+        fs.writeFileSync(descriptor, bytes);
+      } finally {
+        fs.closeSync(descriptor);
+      }
+    }
+  } catch (error) {
+    for (const file of created) fs.unlinkSync(file);
+    throw error;
+  }
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   const get = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -181,11 +205,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     } else {
       const out = get('out');
       if (!out) throw new Error('Pass --out=<dir>');
-      fs.mkdirSync(out, { recursive: true });
-      const write = (name, value) =>
-        fs.writeFileSync(path.join(out, name), formatCompact(value), { flag: 'wx' });
-      write('manifest.json', trimManifest(JSON.parse(fs.readFileSync(get('manifest'), 'utf8'))));
-      write('catalog.json', trimCatalog(JSON.parse(fs.readFileSync(get('catalog'), 'utf8'))));
+      const manifest = JSON.parse(fs.readFileSync(get('manifest'), 'utf8'));
+      const catalog = JSON.parse(fs.readFileSync(get('catalog'), 'utf8'));
+      parseDbtManifest(manifest);
+      parseDbtCatalog(catalog);
+      writeFixture(out, [
+        ['manifest.json', formatCompact(trimManifest(manifest))],
+        ['catalog.json', formatCompact(trimCatalog(catalog))],
+      ]);
       console.log(JSON.stringify({ written: ['manifest.json', 'catalog.json'], out }));
     }
   } catch (error) {
